@@ -27,6 +27,7 @@ class _SubjectEditPageState extends State<SubjectEditPage> {
   late final TextEditingController _shortNameController;
 
   late Color _selectedColor;
+  late int _countingTerms;
   late Set<int> _selectedTerms;
   late SubjectType _selectedSubjectType;
   late List<Performance> _performances;
@@ -36,6 +37,7 @@ class _SubjectEditPageState extends State<SubjectEditPage> {
     _nameController = TextEditingController(text: widget.subject.name);
     _shortNameController = TextEditingController(text: widget.subject.shortName);
     _selectedColor = widget.subject.color;
+    _countingTerms = widget.subject.countingTermAmount;
     _selectedTerms = widget.subject.terms;
     _selectedSubjectType = widget.subject.subjectType;
     _performances = widget.subject.performances;
@@ -100,6 +102,17 @@ class _SubjectEditPageState extends State<SubjectEditPage> {
 
                 FormGap(),
 
+                SubjectTypeSelector(
+                  selectedSubjectType: _selectedSubjectType,
+                  onSelected: (SubjectType newSelection) {
+                    setState(() {
+                      _selectedSubjectType = newSelection;
+                    });
+                  },
+                ),
+
+                FormGap(),
+
                 TermsMultipleChoice(
                   selectedTerms: _selectedTerms,
                   onSelected: (Set<int> newSelection) {
@@ -111,11 +124,17 @@ class _SubjectEditPageState extends State<SubjectEditPage> {
 
                 FormGap(),
 
-                SubjectTypeSelector(
-                  selectedSubjectType: _selectedSubjectType,
-                  onSelected: (SubjectType newSelection) {
+                Text("Einzubringende Halbjahre:"),
+
+                Slider( // todo material3: https://m3.material.io/components/sliders/overview
+                  min: 0,
+                  max: _selectedTerms.length.toDouble(),
+                  divisions: _selectedTerms.length,
+                  value: _countingTerms.toDouble(),
+                  label: "$_countingTerms",
+                  onChanged: (newValue) {
                     setState(() {
-                      _selectedSubjectType = newSelection;
+                      _countingTerms = newValue.toInt();
                     });
                   },
                 ),
@@ -153,6 +172,7 @@ class _SubjectEditPageState extends State<SubjectEditPage> {
             shortName: _shortNameController.text,
             color: _selectedColor,
             terms: _selectedTerms,
+            countingTermAmount: _countingTerms,
             subjectType: _selectedSubjectType,
             performances: _performances,
           );

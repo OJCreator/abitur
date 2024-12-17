@@ -16,10 +16,12 @@ class InfoCard extends StatelessWidget {
           children: [
             Icon(Icons.info, color: Theme.of(context).colorScheme.onPrimaryContainer,),
             const SizedBox(width: 8,),
-            Text(
-              text,
-              style: TextStyle(
-                color: Theme.of(context).colorScheme.onPrimaryContainer,
+            Expanded(
+              child: Text(
+                text,
+                style: TextStyle(
+                  color: Theme.of(context).colorScheme.onPrimaryContainer,
+                ),
               ),
             ),
           ],

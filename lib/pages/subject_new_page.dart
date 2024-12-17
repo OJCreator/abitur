@@ -8,6 +8,7 @@ import 'package:abitur/widgets/forms/subject_color_picker.dart';
 import 'package:abitur/widgets/forms/subject_name_and_short_name_input.dart';
 import 'package:abitur/widgets/forms/subject_type_selector.dart';
 import 'package:abitur/widgets/forms/terms_multiple_choice.dart';
+import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 
 import '../storage/entities/subject.dart';
@@ -28,6 +29,7 @@ class _SubjectNewPageState extends State<SubjectNewPage> {
   final TextEditingController _shortName = TextEditingController();
   Color _color = primaryColor;
   Set<int> _terms = {0,1,2,3};
+  int _countingTerms = 4;
   SubjectType _subjectType = SubjectType.basic;
   List<Performance> _performances = [
     Performance(name: "Klausur", weighting: 0.5),
@@ -65,22 +67,42 @@ class _SubjectNewPageState extends State<SubjectNewPage> {
 
                 FormGap(),
 
-                TermsMultipleChoice(
-                  selectedTerms: _terms,
-                  onSelected: (Set<int> newSelection) {
+                SubjectTypeSelector(
+                  selectedSubjectType: _subjectType,
+                  onSelected: (SubjectType newSelection) {
                     setState(() {
-                      _terms = newSelection;
+                      _subjectType = newSelection;
                     });
                   },
                 ),
 
                 FormGap(),
 
-                SubjectTypeSelector(
-                  selectedSubjectType: _subjectType,
-                  onSelected: (SubjectType newSelection) {
+                TermsMultipleChoice(
+                  selectedTerms: _terms,
+                  onSelected: (Set<int> newSelection) {
                     setState(() {
-                      _subjectType = newSelection;
+                      _terms = newSelection;
+                      if (_countingTerms > _terms.length) {
+                        _countingTerms = _terms.length;
+                      }
+                    });
+                  },
+                ),
+
+                FormGap(),
+
+                Text("Einzubringende Halbjahre:"),
+
+                Slider( // todo material3: https://m3.material.io/components/sliders/overview
+                  min: 0,
+                  max: _terms.length.toDouble(),
+                  divisions: _terms.length,
+                  value: _countingTerms.toDouble(),
+                  label: "$_countingTerms",
+                  onChanged: (newValue) {
+                    setState(() {
+                      _countingTerms = newValue.toInt();
                     });
                   },
                 ),
@@ -115,6 +137,7 @@ class _SubjectNewPageState extends State<SubjectNewPage> {
             _shortName.text,
             _color,
             _terms,
+            _countingTerms,
             _subjectType,
             _performances.map((p) => p.id).toList(),
           );

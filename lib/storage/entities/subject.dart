@@ -37,11 +37,14 @@ class Subject {
   }
 
   @HiveField(5)
+  int countingTermAmount;
+
+  @HiveField(6)
   List<String> _performanceIds;
   set performances(List<Performance> newPerformances) => _performanceIds = newPerformances.map((p) => p.id).toList();
   List<Performance> get performances => _performanceIds.map((p) => PerformanceService.findById(p)!).toList();
 
-  @HiveField(6)
+  @HiveField(7)
   String id;
 
   Subject({
@@ -50,6 +53,7 @@ class Subject {
     Color color = primaryColor,
     SubjectType subjectType = SubjectType.basic,
     Set<int>? terms,
+    required this.countingTermAmount,
     List<String> performanceIds = const [],
     String? id,
   }) : _color = color.value,
@@ -69,6 +73,7 @@ class Subject {
     "color": _color,
     "subjectType": _subjectType,
     "terms": _terms,
+    "countingTermAmount": countingTermAmount,
     "performanceIds": _performanceIds,
     "id": id,
   };
@@ -80,6 +85,7 @@ class Subject {
       color: Color(json["color"]),
       subjectType: SubjectType.fromCode(json["subjectType"]),
       terms: (json["terms"] as List).map((e) => e as int).toSet(),
+      countingTermAmount: json["countingTermAmount"] as int,
       performanceIds: (json["performanceIds"] as List).map((e) => e as String).toList(),
       id: json["id"],
     );

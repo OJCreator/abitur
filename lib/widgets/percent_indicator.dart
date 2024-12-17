@@ -3,17 +3,30 @@ import 'package:percent_indicator/circular_percent_indicator.dart';
 
 class PercentIndicator extends StatelessWidget {
 
-  final double? pointAverage;
+  final double? value;
+  final PercentIndicatorType type;
+  double get _percent {
+    switch (type) {
+      case PercentIndicatorType.points:
+        return (value ?? 0) / 15.0;
+      case PercentIndicatorType.note:
+        return -((value ?? 6) - 6) / 5.0;
+    }
+  }
   String get pointString {
-    if (pointAverage == null) {
+    if (value == null) {
       return "-";
     }
-    double oneDecimalAvg = (pointAverage! * 10).round() / 10.0;
-    return oneDecimalAvg.toString();
+    if (type == PercentIndicatorType.points) {
+      double oneDecimalAvg = (value! * 100).round() / 100.0;
+      return oneDecimalAvg.toString();
+    } else {
+      return value.toString();
+    }
   }
   final Color? color;
 
-  const PercentIndicator({required this.pointAverage, super.key, this.color});
+  const PercentIndicator({required this.value, this.type = PercentIndicatorType.points, super.key, this.color});
 
   @override
   Widget build(BuildContext context) {
@@ -22,7 +35,7 @@ class PercentIndicator extends StatelessWidget {
       animation: true,
       curve: Curves.easeOut,
       animationDuration: 1000,
-      percent: (pointAverage ?? 0) / 15.0,
+      percent: _percent,
       circularStrokeCap: CircularStrokeCap.round,
       lineWidth: 10,
       progressColor: color ?? Theme.of(context).colorScheme.surfaceTint,
@@ -33,4 +46,8 @@ class PercentIndicator extends StatelessWidget {
       ),
     );
   }
+}
+
+enum PercentIndicatorType {
+  points, note;
 }

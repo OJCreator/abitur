@@ -209,7 +209,7 @@ class _TermViewState extends State<_TermView> {
               Padding(
                 padding: const EdgeInsets.all(8.0),
                 child: Center(
-                  child: PercentIndicator(pointAverage: SubjectService.getAverageByTerm(widget.subject, widget.term), color: widget.subject.color),
+                  child: PercentIndicator(value: SubjectService.getAverageByTerm(widget.subject, widget.term), color: widget.subject.color),
                 ),
               ),
               Text(

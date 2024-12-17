@@ -1,4 +1,3 @@
-import 'package:abitur/pages/evaluation_new_page.dart';
 import 'package:abitur/storage/services/subject_service.dart';
 import 'package:abitur/utils/constants.dart';
 import 'package:fl_chart/fl_chart.dart';

@@ -125,6 +125,75 @@ double? avg(Iterable<int?> values) {
 int? roundNote(double? average) {
   return average?.round();
 }
+double abiturAvg(int points) {
+  if (points >= 823) {
+    return 1.0;
+  } if (points >= 805) {
+    return 1.1;
+  } if (points >= 787) {
+    return 1.2;
+  } if (points >= 769) {
+    return 1.3;
+  } if (points >= 751) {
+    return 1.4;
+  } if (points >= 733) {
+    return 1.5;
+  } if (points >= 715) {
+    return 1.6;
+  } if (points >= 697) {
+    return 1.7;
+  } if (points >= 679) {
+    return 1.8;
+  } if (points >= 661) {
+    return 1.9;
+  } // AB 2.0
+  if (points >= 643) {
+    return 2.0;
+  } if (points >= 625) {
+    return 2.1;
+  } if (points >= 607) {
+    return 2.2;
+  } if (points >= 589) {
+    return 2.3;
+  } if (points >= 571) {
+    return 2.4;
+  } if (points >= 553) {
+    return 2.5;
+  } if (points >= 535) {
+    return 2.6;
+  } if (points >= 517) {
+    return 2.7;
+  } if (points >= 499) {
+    return 2.8;
+  } if (points >= 481) {
+    return 2.9;
+  } // AB 3.0
+  if (points >= 463) {
+    return 3.0;
+  } if (points >= 445) {
+    return 3.1;
+  } if (points >= 427) {
+    return 3.2;
+  } if (points >= 409) {
+    return 3.3;
+  } if (points >= 391) {
+    return 3.4;
+  } if (points >= 373) {
+    return 3.5;
+  } if (points >= 355) {
+    return 3.6;
+  } if (points >= 337) {
+    return 3.7;
+  } if (points >= 319) {
+    return 3.8;
+  } if (points >= 301) {
+    return 3.9;
+  } // AB 4.0
+  if (points == 300) {
+    return 4.0;
+  }
+  return 6.0;
+}
 double? weightedAvg(Iterable<Pair<double, double?>> weightAndValue) {
 
   if (weightAndValue.isEmpty) {
@@ -182,5 +251,56 @@ extension ListExtensions<T> on List<T> {
       }
     }
     return indices;
+  }
+}
+extension FindNLargestIndices on List<int?> {
+  List<int> findNLargestIndices(int n) {
+    // Liste von Paaren (Index, Wert), wobei nur nicht-null-Werte berücksichtigt werden
+    List<MapEntry<int, int>> nonNullEntries = asMap()
+        .entries
+        .where((entry) => entry.value != null)
+        .map((entry) => MapEntry(entry.key, entry.value!))
+        .toList();
+
+    // Sortiere die nicht-null-Werte absteigend nach Wert
+    nonNullEntries.sort((a, b) => b.value.compareTo(a.value));
+
+    // Indizes der größten nicht-null-Werte
+    List<int> result = nonNullEntries.take(n).map((entry) => entry.key).toList();
+
+    // Falls wir noch weitere Indizes brauchen, füge die ersten null-Indizes hinzu
+    if (result.length < n) {
+      List<int> nullIndices = asMap()
+          .entries
+          .where((entry) => entry.value == null)
+          .map((entry) => entry.key)
+          .toList();
+
+      result.addAll(nullIndices.take(n - result.length));
+    }
+
+    return result;
+  }
+}
+extension ExpandToList<E> on Iterable<Iterable<E>> {
+  /// Kombiniert verschachtelte Listen zu einer flachen Liste.
+  List<E> expandToList() => expand((list) => list).toList();
+}
+extension CountWhere<E> on Iterable<E> {
+  /// Zählt die Elemente, die der Bedingung [test] entsprechen.
+  int countWhere(bool Function(E element) test) {
+    return where(test).length;
+  }
+}
+extension SumBy<E> on Iterable<E> {
+  /// Summiert die Werte, die durch die Transformationsfunktion [selector] bestimmt werden.
+  num sumBy(num Function(E element) selector) {
+    return fold(0, (previousValue, element) => previousValue + selector(element));
+  }
+}
+extension Sum<E> on Iterable<num> {
+  /// Summiert die Werte einer Liste an Zahlen
+  num sum() {
+    return sumBy((i) => i);
   }
 }

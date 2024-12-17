@@ -1,5 +1,8 @@
 import 'package:abitur/storage/entities/settings.dart';
+import 'package:abitur/storage/entities/subject.dart';
+import 'package:abitur/storage/services/subject_service.dart';
 import 'package:abitur/storage/storage.dart';
+import 'package:abitur/utils/constants.dart';
 
 class SettingsService {
 
@@ -33,5 +36,10 @@ class SettingsService {
     Settings s = loadSettings();
     s.viewedWelcomeScreen = true;
     Storage.saveSettings(s);
+  }
+
+  static List<Subject> graduationSubjects() {
+    // TODO
+    return SubjectService.findAllGradable().maxSize(5);
   }
 }

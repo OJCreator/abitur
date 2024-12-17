@@ -13,12 +13,13 @@ import 'performance_service.dart';
 
 class SubjectService {
 
-  static Future<Subject> newSubject(String name, String shortName, Color color, Set<int> terms, SubjectType subjectType, List<String> performanceIds) async {
+  static Future<Subject> newSubject(String name, String shortName, Color color, Set<int> terms, int countingTermAmount, SubjectType subjectType, List<String> performanceIds) async {
     Subject s = Subject(
       name: name,
       shortName: shortName,
       subjectType: subjectType,
       terms: terms,
+      countingTermAmount: countingTermAmount,
       performanceIds: performanceIds,
       color: color,
     );
@@ -26,7 +27,7 @@ class SubjectService {
     return s;
   }
 
-  static Future<Subject> editSubject(Subject subject, {required String name, required String shortName, required Color color, required Set<int> terms, required SubjectType subjectType, required List<Performance> performances}) async {
+  static Future<Subject> editSubject(Subject subject, {required String name, required String shortName, required Color color, required Set<int> terms, required int countingTermAmount, required SubjectType subjectType, required List<Performance> performances}) async {
 
     await PerformanceService.savePerformances(performances);
     List<Performance> performancesToDelete = subject.performances.where((p) => !performances.contains(p)).toList();
@@ -36,6 +37,7 @@ class SubjectService {
     subject.shortName = shortName;
     subject.color = color;
     subject.terms = terms;
+    subject.countingTermAmount = countingTermAmount;
     subject.subjectType = subjectType;
     subject.performances = performances;
     await Storage.saveSubject(subject);

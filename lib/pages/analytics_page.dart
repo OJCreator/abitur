@@ -6,6 +6,8 @@ import 'package:abitur/widgets/analytics/timetable_analytics.dart';
 import 'package:abitur/widgets/percent_indicator.dart';
 import 'package:flutter/material.dart';
 
+import '../widgets/analytics/projection_analytics.dart';
+
 class AnalyticsPage extends StatelessWidget {
   const AnalyticsPage({super.key});
 
@@ -30,12 +32,13 @@ class AnalyticsPage extends StatelessWidget {
       body: SingleChildScrollView(
         child: Column(
           children: [
-            PercentIndicator(pointAverage: SubjectService.getCurrentAverage(),),
+            PercentIndicator(value: SubjectService.getCurrentAverage(),),
             SubjectsAnalytics(
               subjects: SubjectService.findAllGradable(),
             ),
             TimetableAnalytics(),
             AverageAnalytics(),
+            ProjectionAnalytics(),
           ],
         ),
       ),
