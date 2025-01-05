@@ -1,3 +1,4 @@
+import 'package:abitur/pages/analytics_pages/projection_change_graduation_subjects_page.dart';
 import 'package:abitur/storage/services/projection_service.dart';
 import 'package:abitur/storage/services/settings_service.dart';
 import 'package:abitur/storage/services/subject_service.dart';
@@ -117,8 +118,25 @@ class _ProjectionAnalyticsPageState extends State<ProjectionAnalyticsPage> {
               FormGap(),
 
               Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text("Abiturfächer:", style: Theme.of(context).textTheme.bodyLarge,)
+                  Text(
+                    "Abiturfächer:",
+                    style: Theme.of(context).textTheme.titleMedium,
+                  ),
+                  IconButton(
+                    onPressed: () async {
+                      await Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => ProjectionChangeGraduationSubjectsPage(),
+                          fullscreenDialog: true,
+                        ),
+                      );
+                      setState(() { });
+                    },
+                    icon: Icon(Icons.edit),
+                  ),
                 ],
               ),
 

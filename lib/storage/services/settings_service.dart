@@ -32,14 +32,23 @@ class SettingsService {
     await Storage.saveSettings(s);
   }
 
-  static void markWelcomeScreenAsViewed() {
+  static Future<void> markWelcomeScreenAsViewed() async {
     Settings s = loadSettings();
     s.viewedWelcomeScreen = true;
-    Storage.saveSettings(s);
+    await Storage.saveSettings(s);
   }
 
   static List<Subject> graduationSubjects() {
-    // TODO
-    return SubjectService.findAllGradable().maxSize(5);
+    return loadSettings().graduationSubjectsIds.map((it) => SubjectService.findById(it)!).toList();
+    // TODO subjects löschen??
+  }
+
+  static Future<void> setGraduationSubjects(List<Subject?> subjects) async {
+    if (subjects.contains(null)) {
+      throw Exception("Subjects dürfen nicht null sein!");
+    }
+    Settings s = loadSettings();
+    s.graduationSubjectsIds = subjects.map((it) => it?.id ?? "").toList();
+    await Storage.saveSettings(s);
   }
 }

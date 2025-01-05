@@ -28,20 +28,26 @@ class Settings {
   @HiveField(4)
   bool viewedWelcomeScreen;
 
+  @HiveField(5)
+  List<String> graduationSubjectsIds;
+
   Settings({
     required this.graduationYear,
     this.lightMode = true,
     Land land = Land.by,
     Color accentColor = primaryColor,
     this.viewedWelcomeScreen = false,
+    List<String>? graduationSubjectsIds,
   }) : _accentColor = accentColor.value,
-        _land = land.code;
+        _land = land.code,
+        graduationSubjectsIds = graduationSubjectsIds?.toList() ?? [];
 
   Map<String, dynamic> toJson() => {
     "graduationYear": graduationYear.toString(),
     "lightMode": lightMode,
     "accentColor": _accentColor,
     "land": _land,
+    "graduationSubjectsIds": graduationSubjectsIds,
   };
 
   static Settings fromJson(Map<String, dynamic> json) {
@@ -50,6 +56,7 @@ class Settings {
       lightMode: json["lightMode"],
       land: Land.fromCode(json["land"]),
       accentColor: Color(json["accentColor"]),
+      graduationSubjectsIds: json["graduationSubjectsIds"],
     );
   }
 }
