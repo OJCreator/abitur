@@ -94,7 +94,7 @@ class _ProjectionAnalyticsPageState extends State<ProjectionAnalyticsPage> {
                       ],
                     );
                   }
-                  Subject s = subjects[row - 1];
+                  Subject s = data.keys.toList()[row - 1];
                   return TableRow(
                     decoration: BoxDecoration(
                       color: row%2 == 0 ? Theme.of(context).colorScheme.surface : Theme.of(context).colorScheme.surfaceContainer,
@@ -133,7 +133,9 @@ class _ProjectionAnalyticsPageState extends State<ProjectionAnalyticsPage> {
                           fullscreenDialog: true,
                         ),
                       );
-                      setState(() { });
+                      setState(() {
+                        abiSubjects = SettingsService.graduationSubjects();
+                      });
                     },
                     icon: Icon(Icons.edit),
                   ),

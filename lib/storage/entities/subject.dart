@@ -104,12 +104,14 @@ class Subject {
 }
 
 enum SubjectType {
-  basic("Grundlegendes Anforderungsniveau"),
-  advanced("Erhöhtes Anforderungsniveau"),
-  profile("Profilfach"),
-  voluntary("Wahlfach");
+  basic("Grundlegendes Anforderungsniveau", "gA"),
+  advanced("Erhöhtes Anforderungsniveau", "eA"),
+  profile("Profilfach", "Profilfach"),
+  voluntary("Wahlfach", "Wahlfach"),
+  seminar("W-Seminar", "W-S");
 
   final String name;
+  final String shortName;
   String get code {
     switch (this) {
       case SubjectType.basic:
@@ -120,10 +122,12 @@ enum SubjectType {
         return "profile";
       case SubjectType.voluntary:
         return "voluntary";
+      case SubjectType.seminar:
+        return "seminar";
     }
   }
 
-  const SubjectType(this.name);
+  const SubjectType(this.name, this.shortName);
 
   static SubjectType fromCode(String code) {
     switch (code) {
@@ -133,8 +137,10 @@ enum SubjectType {
         return SubjectType.advanced;
       case "profile":
         return SubjectType.profile;
-      default:
+      case "voluntary":
         return SubjectType.voluntary;
+      default:
+        return SubjectType.seminar;
     }
   }
 }

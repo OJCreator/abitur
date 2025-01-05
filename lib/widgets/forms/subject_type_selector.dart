@@ -29,11 +29,15 @@ class SubjectTypeSelector extends StatelessWidget {
         ),
         ButtonSegment(
           value: SubjectType.profile,
-          label: Text("Profilfach"),
+          label: Text("Profilf."),
         ),
         ButtonSegment(
           value: SubjectType.voluntary,
-          label: Text("Wahlfach"),
+          label: Text("Wahlf."),
+        ),
+        ButtonSegment(
+          value: SubjectType.seminar,
+          label: Text("W-S"),
         ),
       ],
     );

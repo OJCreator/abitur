@@ -13,40 +13,54 @@ class ProjectionService {
   }
 
   static int resultBlock1() {
-    List<Subject> subjects = SubjectService.findAllGradable();
-    List<TermNoteDto> termNotes = subjects.map((s) {
-      return _buildTermNoteDtos(s);
-    }).expandToList();
-
-    int alreadyCountingNotes = termNotes.countWhere((note) => note.counting);
-
-
-    var nonCountingNotes = termNotes.where((note) => !note.counting).toList();
-    nonCountingNotes.sort((a,b) => -(a.note ?? 0).compareTo(b.note ?? 0));
-
-    for (int i = 0; i < (40-alreadyCountingNotes); i++) { // todo anpassen mit W-Seminararbeit
-      nonCountingNotes[i].counting = true;
-    }
-
+    List<TermNoteDto> termNotes = buildProjectionOverviewInformation().values.expandToList();
     return termNotes.where((note) => note.counting).sumBy((note) => note.note!).toInt();
   }
   static int resultBlock2() {
     List<Subject> abiSubjects = SettingsService.graduationSubjects();
-    Iterable<int> examNotes = abiSubjects.map((s) => roundNote(SubjectService.getAverage(s) ?? overallAvg)!);
+    Iterable<int> examNotes = abiSubjects.map((s) => roundNote(SubjectService.getAverage(s) ?? overallAvg)!); // TODO Was wenn schon geschrieben?
     return examNotes.sum().toInt() * 4;
   }
 
   static Map<Subject, List<TermNoteDto>> buildProjectionOverviewInformation() {
     List<Subject> subjects = SubjectService.findAllGradable();
-    return subjects.asMap().map((i, s) {
+    Subject? wSeminar = subjects.where((it) => it.subjectType == SubjectType.seminar).firstOrNull;
+
+    Map<Subject, List<TermNoteDto>> map = subjects.where((s) => s != wSeminar).toList().asMap().map((i, s) {
       return MapEntry(s, _buildTermNoteDtos(s));
     });
+
+    // 40 Noten zählen lassen
+    int alreadyCountingNotes = map.values.expandToList().countWhere((note) => note.counting);
+
+    var nonCountingNotes = map.values.expandToList().where((note) => !note.counting).toList();
+    nonCountingNotes.sort((a,b) => -(a.note ?? 0).compareTo(b.note ?? 0));
+
+    for (int i = 0; i < ((wSeminar == null ? 40 : 36)-alreadyCountingNotes); i++) {
+      nonCountingNotes[i].counting = true;
+    }
+
+    if (wSeminar == null) {
+      return map;
+    }
+
+    map[wSeminar] = _buildTermNoteDtos(wSeminar);
+    Subject seminararbeit = Subject(name: "Seminararbeit", shortName: "Arbeit", countingTermAmount: 2, color: wSeminar.color);
+    int? seminararbeitNote = roundNote(SubjectService.getAverage(wSeminar) ?? overallAvg); // todo was wenn schon geschireben?
+    map[seminararbeit] = [
+      TermNoteDto(note: seminararbeitNote, projection: true, counting: true),
+      TermNoteDto(note: seminararbeitNote, projection: true, counting: true),
+      TermNoteDto(note: null, projection: false, counting: false),
+      TermNoteDto(note: null, projection: false, counting: false),
+    ];
+
+    return map;
   }
 
   static List<TermNoteDto> _buildTermNoteDtos(Subject s) {
 
     List<int?> notes = List.generate(4, (term) => _calcTermAverage(s, term));
-    List<int> countingTerms = notes.findNLargestIndices(s.countingTermAmount);
+    List<int> countingTerms = notes.findNLargestIndices(SettingsService.graduationSubjects().contains(s) ? 4 : s.countingTermAmount);
 
     return List.generate(4, (term) {
       if (!s.terms.contains(term)) {
