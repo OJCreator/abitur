@@ -56,7 +56,7 @@ class Settings {
       lightMode: json["lightMode"],
       land: Land.fromCode(json["land"]),
       accentColor: Color(json["accentColor"]),
-      graduationSubjectsIds: json["graduationSubjectsIds"],
+      graduationSubjectsIds: (json["graduationSubjectsIds"] as List).map((e) => e as String).toList(),
     );
   }
 }

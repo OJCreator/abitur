@@ -1,6 +1,7 @@
 import 'package:abitur/pages/evaluation_edit_page.dart';
 import 'package:abitur/pages/evaluation_new_page.dart';
 import 'package:abitur/storage/entities/evaluation.dart';
+import 'package:abitur/storage/services/api_service.dart';
 import 'package:abitur/storage/services/evaluation_service.dart';
 import 'package:abitur/storage/services/subject_service.dart';
 import 'package:abitur/storage/storage.dart';
@@ -21,11 +22,21 @@ class EvaluationsPage extends StatefulWidget {
 class _EvaluationsPageState extends State<EvaluationsPage> {
 
   List<Evaluation> evaluations = [];
+  List<Holiday> holidays = [];
+  DateTime focusedDay = DateTime.now();
 
   @override
   void initState() {
     searchEvaluations();
+    DateTime now = DateTime.now();
+    loadHolidays(now);
     super.initState();
+  }
+
+  Future<void> loadHolidays(DateTime date) async {
+    focusedDay = date;
+    holidays = await ApiService.loadHolidays(date.year, date.month);
+    setState(() { });
   }
 
   void searchEvaluations() {
@@ -66,8 +77,12 @@ class _EvaluationsPageState extends State<EvaluationsPage> {
           children: [
             // Kalender
             TableCalendar(
+              onPageChanged: loadHolidays,
+              holidayPredicate: (date) {
+                return isHoliday(date) != null;
+              },
               locale: "de_DE",
-              focusedDay: DateTime.now(),
+              focusedDay: focusedDay,
               firstDay: DateTime(Storage.loadSettings().graduationYear.year-2, 9, 1),
               lastDay: DateTime(Storage.loadSettings().graduationYear.year, 8, 1),
               headerStyle: HeaderStyle(formatButtonVisible: false, titleCentered: true,),
@@ -114,11 +129,26 @@ class _EvaluationsPageState extends State<EvaluationsPage> {
     );
   }
 
+  String? isHoliday(DateTime date) {
+    List<Holiday> possibleHolidays = holidays.where((holiday) => holiday.begin.isBefore(date.add(Duration(days: 1))) && holiday.end.isAfter(date.add(Duration(days: -1)))).toList();
+    if (possibleHolidays.isNotEmpty) {
+      return possibleHolidays.first.name;
+    }
+    if (date.weekday > 5) {
+      return "Wochenende";
+    }
+    return null;
+  }
+
   Future<void> _onDaySelected(DateTime selected, DateTime focused) async {
+    String? holiday = isHoliday(selected);
     await showDialog(
       context: context,
       builder: (context) {
-        return EvaluationDayDialog(day: selected, reloadEvaluations: searchEvaluations,);
+        if (holiday == null) {
+          return EvaluationDayDialog(day: selected, reloadEvaluations: searchEvaluations,);
+        }
+        return HolidayDayDialog(day: selected, holiday: holiday);
       },
     );
   }
@@ -249,3 +279,32 @@ class _EvaluationDayDialogState extends State<EvaluationDayDialog> {
     );
   }
 }
+
+class HolidayDayDialog extends StatelessWidget {
+
+  final DateTime day;
+  final String holiday;
+
+  const HolidayDayDialog({super.key, required this.day, required this.holiday});
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: Text(day.format()),
+      content: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 7),
+        child: Text(holiday),
+      ),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 0, vertical: 20),
+      actions: [
+        TextButton(
+          onPressed: () {
+            Navigator.of(context).pop();
+          },
+          child: Text("Cool"),
+        )
+      ],
+    );
+  }
+}
+
