@@ -25,7 +25,7 @@ class _ProjectionAnalyticsPageState extends State<ProjectionAnalyticsPage> {
   double overallAvg = SubjectService.getCurrentAverage() ?? 15;
 
   late Map<Subject, List<TermNoteDto>> data;
-  List<Subject> abiSubjects = SettingsService.graduationSubjects();
+  List<Subject?> graduationSubjects = SettingsService.graduationSubjects();
 
   late int resultBlock1;
   late int resultBlock2;
@@ -33,11 +33,18 @@ class _ProjectionAnalyticsPageState extends State<ProjectionAnalyticsPage> {
   @override
   void initState() {
     data = ProjectionService.buildProjectionOverviewInformation();
-
     resultBlock1 = ProjectionService.resultBlock1();
-    resultBlock2 = ProjectionService.resultBlock2();
+    loadGraduationData();
 
     super.initState();
+  }
+
+  void loadGraduationData() {
+
+    setState(() {
+      resultBlock2 = ProjectionService.resultBlock2();
+      graduationSubjects = SettingsService.graduationSubjects();
+    });
   }
 
   @override
@@ -133,9 +140,7 @@ class _ProjectionAnalyticsPageState extends State<ProjectionAnalyticsPage> {
                           fullscreenDialog: true,
                         ),
                       );
-                      setState(() {
-                        abiSubjects = SettingsService.graduationSubjects();
-                      });
+                      loadGraduationData();
                     },
                     icon: Icon(Icons.edit),
                   ),
@@ -147,14 +152,17 @@ class _ProjectionAnalyticsPageState extends State<ProjectionAnalyticsPage> {
                   0: FlexColumnWidth(1),
                   2: FlexColumnWidth(1),
                 },
-                children: List.generate(abiSubjects.length, (row) {
-                  Subject s = abiSubjects[row];
+                children: List.generate(graduationSubjects.length, (row) {
+                  Subject? s = graduationSubjects[row];
                   return TableRow(
                     decoration: BoxDecoration(
                       color: row%2 == 0 ? Theme.of(context).colorScheme.surface : Theme.of(context).colorScheme.surfaceContainer,
                       borderRadius: BorderRadius.circular(5),
                     ),
                     children: List.generate(2, (col) {
+                      if (s == null) {
+                        return Container();
+                      }
                       if (col == 0) {
                         return SubjectTableLabel(subject: s);
                       }

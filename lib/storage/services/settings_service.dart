@@ -2,7 +2,10 @@ import 'package:abitur/storage/entities/settings.dart';
 import 'package:abitur/storage/entities/subject.dart';
 import 'package:abitur/storage/services/subject_service.dart';
 import 'package:abitur/storage/storage.dart';
-import 'package:abitur/utils/constants.dart';
+import 'package:flutter/cupertino.dart';
+import 'package:provider/provider.dart';
+
+import '../../utils/seed_notifier.dart';
 
 class SettingsService {
 
@@ -38,9 +41,9 @@ class SettingsService {
     await Storage.saveSettings(s);
   }
 
-  static List<Subject> graduationSubjects() {
-    return loadSettings().graduationSubjectsIds.map((it) => SubjectService.findById(it)!).toList();
-    // TODO subjects löschen??
+  static List<Subject?> graduationSubjects() {
+    List<Subject?> graduationSubjects = loadSettings().graduationSubjectsIds.map((it) => SubjectService.findById(it)).toList();
+    return graduationSubjects;
   }
 
   static Future<void> setGraduationSubjects(List<Subject?> subjects) async {
@@ -49,6 +52,13 @@ class SettingsService {
     }
     Settings s = loadSettings();
     s.graduationSubjectsIds = subjects.map((it) => it?.id ?? "").toList();
+    await Storage.saveSettings(s);
+  }
+
+  static Future<void> setAccentColor(BuildContext context, Color newAccentColor) async {
+    Settings s = loadSettings();
+    s.accentColor = newAccentColor;
+    Provider.of<SeedNotifier>(context, listen: false).seed = newAccentColor;
     await Storage.saveSettings(s);
   }
 }

@@ -12,6 +12,21 @@ class ProjectionAnalytics extends StatefulWidget {
 }
 
 class _ProjectionAnalyticsState extends State<ProjectionAnalytics> {
+
+  double graduationAvg = 0;
+
+  @override
+  void initState() {
+    loadGraduationAvg();
+    super.initState();
+  }
+
+  void loadGraduationAvg() {
+    setState(() {
+      graduationAvg = ProjectionService.getGraduationAvg();
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Padding(
@@ -30,16 +45,17 @@ class _ProjectionAnalyticsState extends State<ProjectionAnalytics> {
           ),
 
           GestureDetector(
-            onTap: () {
-              Navigator.push(
+            onTap: () async {
+              await Navigator.push(
                 context,
                 MaterialPageRoute(builder: (context) {
                   return ProjectionAnalyticsPage();
                 }),
               );
+              loadGraduationAvg();
             },
             child: Center(
-              child: PercentIndicator(value: ProjectionService.getGraduationAvg(), type: PercentIndicatorType.note,),
+              child: PercentIndicator(value: graduationAvg, type: PercentIndicatorType.note,),
             ),
           ),
 

@@ -8,7 +8,6 @@ import 'package:abitur/storage/services/subject_service.dart';
 import 'package:abitur/storage/services/timetable_service.dart';
 import 'package:abitur/storage/storage.dart';
 import 'package:abitur/utils/constants.dart';
-import 'package:abitur/utils/seed_notifier.dart';
 import 'package:abitur/widgets/color_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
@@ -72,10 +71,8 @@ class _SettingsPageState extends State<SettingsPage> {
                   return;
                 }
                 setState(() {
-                  s.accentColor = newAccentColor;
+                  SettingsService.setAccentColor(context, newAccentColor);
                 });
-                Provider.of<SeedNotifier>(context, listen: false).seed = newAccentColor;
-                Storage.saveSettings(s);
               },
             ),
             SwitchListTile(

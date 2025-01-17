@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:abitur/storage/services/settings_service.dart';
 import 'package:abitur/storage/services/subject_service.dart';
 
@@ -17,7 +19,7 @@ class ProjectionService {
     return termNotes.where((note) => note.counting).sumBy((note) => note.note!).toInt();
   }
   static int resultBlock2() {
-    List<Subject> abiSubjects = SettingsService.graduationSubjects();
+    List<Subject> abiSubjects = SettingsService.graduationSubjects().whereType<Subject>().toList();
     Iterable<int> examNotes = abiSubjects.map((s) => roundNote(SubjectService.getAverage(s) ?? overallAvg)!); // TODO Was wenn schon geschrieben?
     return examNotes.sum().toInt() * 4;
   }
@@ -36,7 +38,9 @@ class ProjectionService {
     var nonCountingNotes = map.values.expandToList().where((note) => !note.counting).toList();
     nonCountingNotes.sort((a,b) => -(a.note ?? 0).compareTo(b.note ?? 0));
 
-    for (int i = 0; i < ((wSeminar == null ? 40 : 36)-alreadyCountingNotes); i++) {
+    int missingNotesAmount = min(((wSeminar == null ? 40 : 36)-alreadyCountingNotes), nonCountingNotes.length);
+
+    for (int i = 0; i < missingNotesAmount; i++) {
       nonCountingNotes[i].counting = true;
     }
 
