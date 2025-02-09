@@ -82,7 +82,7 @@ class _SettingsPageState extends State<SettingsPage> {
                 setState(() {
                   s.lightMode = !s.lightMode;
                 });
-                Provider.of<BrightnessNotifier>(context, listen: false).toggleBrightness();
+                Provider.of<BrightnessNotifier>(context, listen: false).setBrightness(s.lightMode);
                 Storage.saveSettings(s);
               },
             ),

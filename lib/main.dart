@@ -100,7 +100,7 @@ class _ScreenScaffoldingState extends State<ScreenScaffolding> {
             NavigationDestination(
               icon: Icon(Icons.list_outlined),
               selectedIcon: Icon(Icons.list),
-              label: "Schulfächer",
+              label: "Fächer",
             ),
             NavigationDestination(
               icon: Icon(Icons.calendar_month_outlined),

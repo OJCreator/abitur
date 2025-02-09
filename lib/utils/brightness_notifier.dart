@@ -6,8 +6,8 @@ class BrightnessNotifier extends ChangeNotifier {
 
   bool get isLightMode => _isLightMode;
 
-  void toggleBrightness() {
-    _isLightMode = !_isLightMode;
+  void setBrightness(bool isLightMode) {
+    _isLightMode = isLightMode;
     notifyListeners();
   }
 

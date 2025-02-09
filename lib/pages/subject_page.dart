@@ -7,9 +7,11 @@ import 'package:abitur/utils/constants.dart';
 import 'package:abitur/widgets/info_card.dart';
 import 'package:abitur/widgets/percent_indicator.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 import '../storage/entities/evaluation.dart';
 import '../storage/entities/subject.dart';
+import '../utils/brightness_notifier.dart';
 
 class SubjectPage extends StatefulWidget {
 
@@ -104,54 +106,63 @@ class _SubjectPageState extends State<SubjectPage> with SingleTickerProviderStat
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(subject.name),
-        actions: [
-          PopupMenuButton<String>(
-            onSelected: (value) {
-              if (value == 'delete') {
-                deleteSubject();
-              } else {
-                editSubject(context);
-              }
-            },
-            itemBuilder: (BuildContext context) => [
-              PopupMenuItem(
-                value: 'edit',
-                child: Text('Bearbeiten'),
-              ),
-              PopupMenuItem(
-                value: 'delete',
-                child: Text('Löschen'),
-              ),
-            ],
+
+    Brightness b = Provider.of<BrightnessNotifier>(context).currentBrightness;
+    return Theme(
+        data: ThemeData(
+          colorScheme: ColorScheme.fromSeed(seedColor: subject.color, brightness: b,),
+          useMaterial3: true,
+          brightness: b,
+        ),
+      child: Scaffold(
+        appBar: AppBar(
+          title: Text(subject.name),
+          actions: [
+            PopupMenuButton<String>(
+              onSelected: (value) {
+                if (value == 'delete') {
+                  deleteSubject();
+                } else {
+                  editSubject(context);
+                }
+              },
+              itemBuilder: (BuildContext context) => [
+                PopupMenuItem(
+                  value: 'edit',
+                  child: Text('Bearbeiten'),
+                ),
+                PopupMenuItem(
+                  value: 'delete',
+                  child: Text('Löschen'),
+                ),
+              ],
+            ),
+          ],
+          bottom: TabBar(
+            controller: _tabController,
+            tabs: subject.terms.map((term) {
+              return Tab(
+                text: "${term + 1}. Halbjahr",
+              );
+            }).toList(),
           ),
-        ],
-        bottom: TabBar(
+        ),
+        body: TabBarView(
           controller: _tabController,
-          tabs: subject.terms.map((term) {
-            return Tab(
-              text: "${term + 1}. Halbjahr",
+          children: subject.terms.toList().asMap().entries.map((entry) {
+            return _TermView(
+              subject: subject,
+              term: entry.value,
+              key: _tabKeys[entry.key]
             );
           }).toList(),
         ),
-      ),
-      body: TabBarView(
-        controller: _tabController,
-        children: subject.terms.toList().asMap().entries.map((entry) {
-          return _TermView(
-            subject: subject,
-            term: entry.value,
-            key: _tabKeys[entry.key]
-          );
-        }).toList(),
-      ),
-      floatingActionButton: FloatingActionButton(
-        child: Icon(Icons.add),
-        onPressed: () {
-          _newEvaluation(context);
-        },
+        floatingActionButton: FloatingActionButton(
+          child: Icon(Icons.add),
+          onPressed: () {
+            _newEvaluation(context);
+          },
+        ),
       ),
     );
   }

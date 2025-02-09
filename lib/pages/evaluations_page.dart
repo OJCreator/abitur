@@ -5,11 +5,11 @@ import 'package:abitur/storage/services/api_service.dart';
 import 'package:abitur/storage/services/evaluation_service.dart';
 import 'package:abitur/storage/services/subject_service.dart';
 import 'package:abitur/storage/storage.dart';
-import 'package:abitur/widgets/subject_badge.dart';
 import 'package:flutter/material.dart';
 import 'package:table_calendar/table_calendar.dart';
 
 import '../utils/constants.dart';
+import '../widgets/badge.dart';
 
 class EvaluationsPage extends StatefulWidget {
 
@@ -102,6 +102,22 @@ class _EvaluationsPageState extends State<EvaluationsPage> {
               holidayPredicate: (date) {
                 return isHoliday(date) != null;
               },
+              calendarStyle: CalendarStyle(
+                holidayTextStyle: TextStyle(
+                  color: Theme.of(context).colorScheme.primary
+                ),
+                holidayDecoration: BoxDecoration(
+                  border: Border.fromBorderSide(
+                    BorderSide(color: Theme.of(context).colorScheme.secondary, width: 1.4),
+                  ),
+                  shape: BoxShape.circle,
+                ),
+                todayTextStyle: TextStyle(),
+                todayDecoration: BoxDecoration(
+                  color: Theme.of(context).colorScheme.secondaryContainer,
+                  shape: BoxShape.circle,
+                ),
+              ),
               locale: "de_DE",
               focusedDay: focusedDay,
               firstDay: DateTime(Storage.loadSettings().graduationYear.year-2, 9, 1),

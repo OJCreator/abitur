@@ -8,8 +8,10 @@ import 'package:abitur/widgets/forms/subject_name_and_short_name_input.dart';
 import 'package:abitur/widgets/forms/subject_type_selector.dart';
 import 'package:abitur/widgets/forms/terms_multiple_choice.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 import '../storage/entities/subject.dart';
+import '../utils/brightness_notifier.dart';
 
 class SubjectEditPage extends StatefulWidget {
 
@@ -74,113 +76,122 @@ class _SubjectEditPageState extends State<SubjectEditPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text("Fach bearbeiten"),
-      ),
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.all(8),
-          child: Form(
-            child: Column(
-              children: [
-                SubjectNameAndShortNameInput(
-                  nameController: _nameController,
-                  shortNameController: _shortNameController,
-                ),
 
-                FormGap(),
+    Brightness b = Provider.of<BrightnessNotifier>(context).currentBrightness;
+    return Theme(
+        data: ThemeData(
+          colorScheme: ColorScheme.fromSeed(seedColor: _selectedColor, brightness: b,),
+          useMaterial3: true,
+          brightness: b,
+        ),
+      child: Scaffold(
+        appBar: AppBar(
+          title: Text("Fach bearbeiten"),
+        ),
+        body: SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.all(8),
+            child: Form(
+              child: Column(
+                children: [
+                  SubjectNameAndShortNameInput(
+                    nameController: _nameController,
+                    shortNameController: _shortNameController,
+                  ),
 
-                SubjectColorPicker(
-                  currentColor: _selectedColor,
-                  onSelected: (newColor) {
-                    setState(() {
-                      _selectedColor = newColor;
-                    });
-                  },
-                ),
+                  FormGap(),
 
-                FormGap(),
+                  SubjectColorPicker(
+                    currentColor: _selectedColor,
+                    onSelected: (newColor) {
+                      setState(() {
+                        _selectedColor = newColor;
+                      });
+                    },
+                  ),
 
-                SubjectTypeSelector(
-                  selectedSubjectType: _selectedSubjectType,
-                  onSelected: (SubjectType newSelection) {
-                    setState(() {
-                      _selectedSubjectType = newSelection;
-                    });
-                  },
-                ),
+                  FormGap(),
 
-                FormGap(),
+                  SubjectTypeSelector(
+                    selectedSubjectType: _selectedSubjectType,
+                    onSelected: (SubjectType newSelection) {
+                      setState(() {
+                        _selectedSubjectType = newSelection;
+                      });
+                    },
+                  ),
 
-                TermsMultipleChoice(
-                  selectedTerms: _selectedTerms,
-                  onSelected: (Set<int> newSelection) {
-                    setState(() {
-                      _selectedTerms = newSelection;
-                    });
-                  },
-                ),
+                  FormGap(),
 
-                FormGap(),
+                  TermsMultipleChoice(
+                    selectedTerms: _selectedTerms,
+                    onSelected: (Set<int> newSelection) {
+                      setState(() {
+                        _selectedTerms = newSelection;
+                      });
+                    },
+                  ),
 
-                Text("Einzubringende Halbjahre:"),
+                  FormGap(),
 
-                Slider( // todo material3: https://m3.material.io/components/sliders/overview
-                  min: 0,
-                  max: _selectedTerms.length.toDouble(),
-                  divisions: _selectedTerms.length,
-                  value: _countingTerms.toDouble(),
-                  label: "$_countingTerms",
-                  onChanged: (newValue) {
-                    setState(() {
-                      _countingTerms = newValue.toInt();
-                    });
-                  },
-                ),
-                
-                FormGap(),
+                  Text("Einzubringende Halbjahre:"),
 
-                PerformanceForm(
-                  performances: _performances,
-                  onChanged: (data) {
-                    setState(() {
-                      _performances = data;
-                    });
-                  },
-                ),
-              ],
+                  Slider( // todo material3: https://m3.material.io/components/sliders/overview
+                    min: 0,
+                    max: _selectedTerms.length.toDouble(),
+                    divisions: _selectedTerms.length,
+                    value: _countingTerms.toDouble(),
+                    label: "$_countingTerms",
+                    onChanged: (newValue) {
+                      setState(() {
+                        _countingTerms = newValue.toInt();
+                      });
+                    },
+                  ),
+
+                  FormGap(),
+
+                  PerformanceForm(
+                    performances: _performances,
+                    onChanged: (data) {
+                      setState(() {
+                        _performances = data;
+                      });
+                    },
+                  ),
+                ],
+              ),
             ),
           ),
         ),
-      ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () async {
+        floatingActionButton: FloatingActionButton.extended(
+          onPressed: () async {
 
-          List<int> termsThatDontExist = [0,1,2,3].where((i) => !_selectedTerms.contains(i)).toList();
-          int evaluationThatWouldBeDeleted = EvaluationService.findAllBySubjectAndTerms(widget.subject, termsThatDontExist).length;
-          if (evaluationThatWouldBeDeleted > 0) {
-            bool userAware = await userAwareThatEvaluationsWillBeDeleted(evaluationThatWouldBeDeleted);
-            if (!userAware) {
-              return;
+            List<int> termsThatDontExist = [0,1,2,3].where((i) => !_selectedTerms.contains(i)).toList();
+            int evaluationThatWouldBeDeleted = EvaluationService.findAllBySubjectAndTerms(widget.subject, termsThatDontExist).length;
+            if (evaluationThatWouldBeDeleted > 0) {
+              bool userAware = await userAwareThatEvaluationsWillBeDeleted(evaluationThatWouldBeDeleted);
+              if (!userAware) {
+                return;
+              }
             }
-          }
 
-          Subject editedSubject = await SubjectService.editSubject(
-            widget.subject,
-            name: _nameController.text,
-            shortName: _shortNameController.text,
-            color: _selectedColor,
-            terms: _selectedTerms,
-            countingTermAmount: _countingTerms,
-            subjectType: _selectedSubjectType,
-            performances: _performances,
-          );
+            Subject editedSubject = await SubjectService.editSubject(
+              widget.subject,
+              name: _nameController.text,
+              shortName: _shortNameController.text,
+              color: _selectedColor,
+              terms: _selectedTerms,
+              countingTermAmount: _countingTerms,
+              subjectType: _selectedSubjectType,
+              performances: _performances,
+            );
 
-          Navigator.pop(context, editedSubject);
-        },
-        label: Text("Speichern"),
-        icon: Icon(Icons.save),
+            Navigator.pop(context, editedSubject);
+          },
+          label: Text("Speichern"),
+          icon: Icon(Icons.save),
+        ),
       ),
     );
   }

@@ -1,10 +1,12 @@
 import 'package:abitur/pages/subject_new_page.dart';
 import 'package:abitur/pages/subject_page.dart';
+import 'package:abitur/storage/services/settings_service.dart';
 import 'package:abitur/storage/services/subject_service.dart';
 import 'package:abitur/widgets/info_card.dart';
 import 'package:flutter/material.dart';
 
 import '../storage/entities/subject.dart';
+import '../widgets/badge.dart';
 
 class SubjectsPage extends StatefulWidget {
 
@@ -37,7 +39,7 @@ class _SubjectsPageState extends State<SubjectsPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("Schulfächer"),
+        title: Text("Fächer"),
       ),
       body: SingleChildScrollView(
         child: Column(
@@ -55,12 +57,18 @@ class _SubjectsPageState extends State<SubjectsPage> {
                 _reloadSubjects();
               },
               leading: Container(
-                margin: const EdgeInsets.only(right: 8),
+                margin: const EdgeInsets.only(left: 10),
                 width: 8,
                 decoration: BoxDecoration(
                   color: subject.color,
                   borderRadius: BorderRadius.circular(5),
                 ),
+              ),
+              trailing: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  if (SettingsService.graduationSubjects().contains(subject)) GraduationBadge(),
+                ],
               ),
             );
           }).toList() : [

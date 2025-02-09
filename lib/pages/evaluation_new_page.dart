@@ -1,17 +1,17 @@
 import 'package:abitur/storage/services/evaluation_service.dart';
 import 'package:abitur/storage/services/settings_service.dart';
 import 'package:abitur/storage/services/subject_service.dart';
-import 'package:abitur/storage/storage.dart';
-import 'package:abitur/utils/constants.dart';
 import 'package:abitur/widgets/forms/date_input.dart';
 import 'package:abitur/widgets/forms/performance_selector.dart';
 import 'package:abitur/widgets/forms/subject_dropdown.dart';
 import 'package:abitur/widgets/forms/term_selector.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 import '../storage/entities/evaluation.dart';
 import '../storage/entities/performance.dart';
 import '../storage/entities/subject.dart';
+import '../utils/brightness_notifier.dart';
 import '../widgets/forms/form_gap.dart';
 
 class EvaluationNewPage extends StatefulWidget {
@@ -26,7 +26,7 @@ class EvaluationNewPage extends StatefulWidget {
     this.initialTerm,
     super.key,
   }) : initialDateTime = initialDateTime ?? DateTime.now(),
-        initialSubject = initialSubject ?? SubjectService.findAll()[0];
+        initialSubject = initialSubject ?? SubjectService.findAllGradable()[0];
 
   @override
   State<EvaluationNewPage> createState() => _EvaluationNewPageState();
@@ -95,118 +95,126 @@ class _EvaluationNewPageState extends State<EvaluationNewPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text("Neue Prüfung"),
+    Brightness b = Provider.of<BrightnessNotifier>(context).currentBrightness;
+    return Theme(
+      data: ThemeData(
+        colorScheme: ColorScheme.fromSeed(seedColor: _selectedSubject.color, brightness: b,),
+        useMaterial3: true,
+        brightness: b,
       ),
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: Form(
-            key: _formKey,
-            child: Column(
-              children: [
-                TextFormField(
-                  controller: _name,
-                  validator: (input) {
-                    if (input == null || input.isEmpty) {
-                      return "Erforderlich";
-                    }
-                    return null;
-                  },
-                  decoration: InputDecoration(
-                    labelText: "Name",
-                    border: OutlineInputBorder(),
+      child: Scaffold(
+        appBar: AppBar(
+          title: Text("Neue Prüfung"),
+        ),
+        body: SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Form(
+              key: _formKey,
+              child: Column(
+                children: [
+                  TextFormField(
+                    controller: _name,
+                    validator: (input) {
+                      if (input == null || input.isEmpty) {
+                        return "Erforderlich";
+                      }
+                      return null;
+                    },
+                    decoration: InputDecoration(
+                      labelText: "Name",
+                      border: OutlineInputBorder(),
+                    ),
                   ),
-                ),
 
-                FormGap(),
+                  FormGap(),
 
-                SubjectDropdown(
-                  subjects: SubjectService.findAllGradable(),
-                  selectedSubject: _selectedSubject,
-                  onSelected: _selectSubject,
-                ),
+                  SubjectDropdown(
+                    subjects: SubjectService.findAllGradable(),
+                    selectedSubject: _selectedSubject,
+                    onSelected: _selectSubject,
+                  ),
 
-                FormGap(),
+                  FormGap(),
 
-                PerformanceSelector(
-                  performances: _selectedSubject.performances,
-                  currentPerformance: _selectedPerformance,
-                  onSelected: (Performance selected) {
-                    setState(() {
-                      _selectedPerformance = selected;
-                    });
-                  },
-                ),
+                  PerformanceSelector(
+                    performances: _selectedSubject.performances,
+                    currentPerformance: _selectedPerformance,
+                    onSelected: (Performance selected) {
+                      setState(() {
+                        _selectedPerformance = selected;
+                      });
+                    },
+                  ),
 
-                FormGap(),
+                  FormGap(),
 
-                DateInput(
-                  dateTime: _selectedDateTime,
-                  firstDate: SettingsService.firstDayOfSchool,
-                  lastDate: SettingsService.lastDayOfSchool,
-                  onSelected: _selectedDate,
-                ),
+                  DateInput(
+                    dateTime: _selectedDateTime,
+                    firstDate: SettingsService.firstDayOfSchool,
+                    lastDate: SettingsService.lastDayOfSchool,
+                    onSelected: _selectedDate,
+                  ),
 
-                FormGap(),
+                  FormGap(),
 
-                TermSelector(
-                  selectedTerm: _term,
-                  terms: _selectedSubject.terms,
-                  onSelected: (int newTerm) {
-                    setState(() {
-                      _term = newTerm;
-                    });
-                  },
-                ),
+                  TermSelector(
+                    selectedTerm: _term,
+                    terms: _selectedSubject.terms,
+                    onSelected: (int newTerm) {
+                      setState(() {
+                        _term = newTerm;
+                      });
+                    },
+                  ),
 
-                FormGap(),
+                  FormGap(),
 
-                SwitchListTile(
-                  title: Text("Note eintragen"),
-                  value: _giveNote,
-                  onChanged: (newValue) {
-                    setState(() {
-                      _giveNote = !_giveNote;
-                    });
-                  },
-                ),
+                  SwitchListTile(
+                    title: Text("Note eintragen"),
+                    value: _giveNote,
+                    onChanged: (newValue) {
+                      setState(() {
+                        _giveNote = !_giveNote;
+                      });
+                    },
+                  ),
 
-                Slider( // todo material3: https://m3.material.io/components/sliders/overview
-                  min: 0,
-                  max: 15,
-                  divisions: 15,
-                  value: _currentNote.toDouble(),
-                  label: "$_currentNote",
-                  onChanged: _giveNote ? (newValue) {
-                    setState(() {
-                      _currentNote = newValue.toInt();
-                    });
-                  } : null,
-                ),
-              ],
+                  Slider( // todo material3: https://m3.material.io/components/sliders/overview
+                    min: 0,
+                    max: 15,
+                    divisions: 15,
+                    value: _currentNote.toDouble(),
+                    label: "$_currentNote",
+                    onChanged: _giveNote ? (newValue) {
+                      setState(() {
+                        _currentNote = newValue.toInt();
+                      });
+                    } : null,
+                  ),
+                ],
+              ),
             ),
           ),
         ),
-      ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () async {
-          if (!_formKey.currentState!.validate()) {
-            return;
-          }
-          Evaluation newEvaluation = await EvaluationService.newEvaluation(
-              _selectedSubject,
-              _selectedPerformance,
-              _term,
-              _name.text,
-              _selectedDateTime,
-              _giveNote ? _currentNote : null
-          );
-          Navigator.pop(context, newEvaluation);
-        },
-        label: Text("Eintragen"),
-        icon: Icon(Icons.save),
+        floatingActionButton: FloatingActionButton.extended(
+          onPressed: () async {
+            if (!_formKey.currentState!.validate()) {
+              return;
+            }
+            Evaluation newEvaluation = await EvaluationService.newEvaluation(
+                _selectedSubject,
+                _selectedPerformance,
+                _term,
+                _name.text,
+                _selectedDateTime,
+                _giveNote ? _currentNote : null
+            );
+            Navigator.pop(context, newEvaluation);
+          },
+          label: Text("Eintragen"),
+          icon: Icon(Icons.save),
+        ),
       ),
     );
   }
