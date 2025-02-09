@@ -47,7 +47,13 @@ class _AverageAnalyticsState extends State<AverageAnalytics> {
     return LineChartBarData(
       color: s.color,
       isStrokeCapRound: true,
-      dotData: const FlDotData(show: false),
+      dotData: FlDotData(
+        show: true,
+        getDotPainter: (a,b,c,d) => FlDotCirclePainter(
+          color: s.color,
+          radius: 3,
+        ),
+      ),
       spots: filteredAvgHistory.map((data) => FlSpot(data.first.difference(startDate).inDays.toDouble(), data.second)).toList(),
     );
   }

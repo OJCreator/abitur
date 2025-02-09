@@ -2,7 +2,6 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:abitur/main.dart';
-import 'package:abitur/pages/BundeslandPage.dart';
 import 'package:abitur/pages/setup_pages/setup_land_page.dart';
 import 'package:abitur/storage/services/evaluation_service.dart';
 import 'package:abitur/storage/services/performance_service.dart';

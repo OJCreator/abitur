@@ -9,10 +9,24 @@ class EvaluationService {
 
 
   static List<Evaluation> findAll() {
-    return Storage.loadEvaluations();
+    List<Evaluation> evaluations = Storage.loadEvaluations();
+    evaluations.sort((a,b) => a.date.compareTo(b.date));
+    return evaluations;
   }
   static List<Evaluation> findAllByDay(DateTime day) {
     return findAll().where((e) => e.date.isOnSameDay(day)).toList();
+  }
+  static List<Evaluation> findAllByQuery(String text) {
+    List<String> queries = text.toLowerCase().split(" ");
+    queries.removeWhere((it) => it.isEmpty);
+    return findAll().where((e) {
+      return queries.every((query) =>
+      e.name.toLowerCase().contains(query) ||
+          e.subject.name.toLowerCase().contains(query) ||
+          e.subject.shortName.toLowerCase().contains(query) ||
+          (e.note != null && e.note.toString() == query)
+      );
+    }).toList();
   }
 
   static List<Evaluation> findAllBySubject(Subject s) {

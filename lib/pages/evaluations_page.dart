@@ -71,6 +71,27 @@ class _EvaluationsPageState extends State<EvaluationsPage> {
     return Scaffold(
       appBar: AppBar(
         title: Text("Prüfungen"),
+        actions: [
+          SearchAnchor(
+            builder: (BuildContext context, SearchController controller) {
+              return IconButton(onPressed: () {
+                controller.openView();
+              }, icon: Icon(Icons.search));
+            },
+            suggestionsBuilder: (context, controller) {
+              String text = controller.text;
+              List<Evaluation> evaluations = EvaluationService.findAllByQuery(text);
+
+              return evaluations.map((e) {
+                return EvaluationListTile(
+                  evaluation: e,
+                  enabled: false,
+                  reloadEvaluations: () {},
+                );
+              });
+            },
+          ),
+        ],
       ),
       body: SingleChildScrollView(
         child: Column(
@@ -159,8 +180,9 @@ class EvaluationListTile extends StatelessWidget {
   final Evaluation evaluation;
   final Function reloadEvaluations;
   final bool showDate;
+  final bool enabled;
 
-  const EvaluationListTile({super.key, required this.evaluation, required this.reloadEvaluations, this.showDate = true});
+  const EvaluationListTile({super.key, required this.evaluation, required this.reloadEvaluations, this.showDate = true, this.enabled = true});
 
   @override
   Widget build(BuildContext context) {
@@ -182,7 +204,7 @@ class EvaluationListTile extends StatelessWidget {
           ),
         ),
       ),
-      onTap: () async {
+      onTap: enabled ? () async { // Enabled umfunktionieren: -> Link zu Fach??
         await Navigator.push(
           context,
           MaterialPageRoute(builder: (context) {
@@ -191,7 +213,7 @@ class EvaluationListTile extends StatelessWidget {
         );
 
         reloadEvaluations();
-      },
+      } : null,
     );
   }
 }
