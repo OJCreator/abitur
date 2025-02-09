@@ -1,11 +1,11 @@
-import 'package:abitur/pages/setup_pages/setup_graduation_year_page.dart';
+import 'package:abitur/pages/setup_pages/setup_ui_page.dart';
 import 'package:abitur/storage/entities/settings.dart';
 import 'package:abitur/storage/services/settings_service.dart';
 import 'package:abitur/storage/storage.dart';
 import 'package:flutter/material.dart';
 
-class SetupLandPage extends StatelessWidget {
-  const SetupLandPage({super.key});
+class SetupGraduationYearPage extends StatelessWidget {
+  const SetupGraduationYearPage({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -18,22 +18,22 @@ class SetupLandPage extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  "Welches Schulsystem besuchst du?",
+                  "In welchem Jahr machst du voraussichtlich dein Abitur?",
                   style: Theme.of(context).textTheme.titleMedium,
                 ),
-                ...Land.values.map((land) {
+                ...generateChoices().map((year) {
                   return ListTile(
                     dense: true,
-                    title: Text(land.name),
+                    title: Text(year.toString()),
                     onTap: () async {
                       Settings s = SettingsService.loadSettings();
-                      s.land = land;
+                      s.graduationYear = DateTime(year);
                       await Storage.saveSettings(s);
 
                       Navigator.pushReplacement(
                         context,
                         MaterialPageRoute(builder: (context) {
-                          return SetupGraduationYearPage();
+                          return SetupUiPage();
                         }),
                       );
                     },
@@ -45,5 +45,15 @@ class SetupLandPage extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  List<int> generateChoices() {
+    DateTime now = DateTime.now();
+    int currentYear = now.year;
+
+    if (now.isBefore(now.copyWith(month: 8, day: 1))) {
+      return [currentYear, currentYear + 1, currentYear + 2, currentYear + 3];
+    }
+    return [currentYear + 1, currentYear + 2, currentYear + 3];
   }
 }

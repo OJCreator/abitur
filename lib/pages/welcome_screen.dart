@@ -7,8 +7,11 @@ import 'package:abitur/storage/services/evaluation_service.dart';
 import 'package:abitur/storage/services/performance_service.dart';
 import 'package:abitur/storage/services/settings_service.dart';
 import 'package:abitur/storage/services/timetable_service.dart';
+import 'package:abitur/utils/brightness_notifier.dart';
+import 'package:abitur/utils/seed_notifier.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 import '../storage/services/subject_service.dart';
 
@@ -37,7 +40,7 @@ class WelcomeScreen extends StatelessWidget {
             SizedBox(height: 40),
             FilledButton(
               onPressed: () {
-                Navigator.pushReplacement(
+                Navigator.push(
                   context,
                   MaterialPageRoute(builder: (context) {
                     return SetupLandPage();
@@ -76,6 +79,11 @@ class WelcomeScreen extends StatelessWidget {
         await TimetableService.buildFromJson(jsonData["timetable"] as Map<String, dynamic>);
 
         SettingsService.markWelcomeScreenAsViewed();
+
+        // Theming
+        Provider.of<BrightnessNotifier>(context, listen: false,).setBrightness(SettingsService.loadSettings().lightMode);
+        Provider.of<SeedNotifier>(context, listen: false,).seed = SettingsService.loadSettings().accentColor;
+
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (context) {
