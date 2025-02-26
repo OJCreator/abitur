@@ -2,6 +2,7 @@ import 'package:abitur/pages/evaluation_edit_page.dart';
 import 'package:abitur/pages/evaluation_new_page.dart';
 import 'package:abitur/pages/subject_edit_page.dart';
 import 'package:abitur/storage/services/evaluation_service.dart';
+import 'package:abitur/storage/services/settings_service.dart';
 import 'package:abitur/storage/services/subject_service.dart';
 import 'package:abitur/utils/constants.dart';
 import 'package:abitur/widgets/info_card.dart';
@@ -34,7 +35,11 @@ class _SubjectPageState extends State<SubjectPage> with SingleTickerProviderStat
   void initState() {
     subject = widget.subject;
 
-    _tabController = TabController(length: subject.terms.length, vsync: this);
+    int currentTerm = SettingsService.probableTerm(DateTime.now());
+    if (!subject.terms.contains(currentTerm)) {
+      currentTerm = 0;
+    }
+    _tabController = TabController(length: subject.terms.length, vsync: this, initialIndex: currentTerm);
     _tabKeys = subject.terms.map((e) =>  GlobalKey<_TermViewState>()).toList();
 
     super.initState();

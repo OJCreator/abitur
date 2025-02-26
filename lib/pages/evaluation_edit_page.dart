@@ -74,7 +74,7 @@ class _EvaluationEditPageState extends State<EvaluationEditPage> {
                       actions: [
                         TextButton(
                           onPressed: () async {
-                            EvaluationService.deleteEvaluation(widget.evaluation);
+                            await EvaluationService.deleteEvaluation(widget.evaluation);
                             Navigator.pop(context, true);
                           },
                           child: Text("Löschen"),

@@ -2,6 +2,7 @@ import 'package:abitur/storage/entities/settings.dart';
 import 'package:abitur/storage/entities/subject.dart';
 import 'package:abitur/storage/services/subject_service.dart';
 import 'package:abitur/storage/storage.dart';
+import 'package:abitur/utils/calender_sync.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:provider/provider.dart';
 
@@ -46,6 +47,10 @@ class SettingsService {
     return graduationSubjects;
   }
 
+  static bool calendarSynchronisation() {
+    return loadSettings().calendarSynchronisation;
+  }
+
   static Future<void> setGraduationSubjects(List<Subject?> subjects) async {
     if (subjects.contains(null)) {
       throw Exception("Subjects dürfen nicht null sein!");
@@ -60,5 +65,7 @@ class SettingsService {
     s.accentColor = newAccentColor;
     Provider.of<SeedNotifier>(context, listen: false).seed = newAccentColor;
     await Storage.saveSettings(s);
+
+    await changeCalendarColor(newAccentColor);
   }
 }

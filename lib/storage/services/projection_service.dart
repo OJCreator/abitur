@@ -16,7 +16,7 @@ class ProjectionService {
 
   static int resultBlock1() {
     List<TermNoteDto> termNotes = buildProjectionOverviewInformation().values.expandToList();
-    return termNotes.where((note) => note.counting).sumBy((note) => note.note!).toInt();
+    return termNotes.where((note) => note.counting && note.note != null).sumBy((note) => note.note!).toInt();
   }
   static int resultBlock2() {
     List<Subject> abiSubjects = SettingsService.graduationSubjects().whereType<Subject>().toList();

@@ -7,6 +7,7 @@ import 'package:abitur/storage/services/settings_service.dart';
 import 'package:abitur/storage/services/subject_service.dart';
 import 'package:abitur/storage/services/timetable_service.dart';
 import 'package:abitur/storage/storage.dart';
+import 'package:abitur/utils/calender_sync.dart';
 import 'package:abitur/utils/constants.dart';
 import 'package:abitur/widgets/color_dialog.dart';
 import 'package:flutter/material.dart';
@@ -84,6 +85,21 @@ class _SettingsPageState extends State<SettingsPage> {
                 });
                 Provider.of<BrightnessNotifier>(context, listen: false).setBrightness(s.lightMode);
                 Storage.saveSettings(s);
+              },
+            ),
+            SwitchListTile(
+              title: Text("Kalender Synchronisierung"),
+              value: s.calendarSynchronisation,
+              onChanged: (v) async {
+                setState(() {
+                  s.calendarSynchronisation = !s.calendarSynchronisation;
+                });
+                Storage.saveSettings(s);
+                if (!s.calendarSynchronisation) {
+                  await deleteAllCalendarEvents();
+                } else {
+                  syncEvaluationCalendarEvents(EvaluationService.findAll());
+                }
               },
             ),
             ListTile(

@@ -21,6 +21,7 @@ class SettingsAdapter extends TypeAdapter<Settings> {
       lightMode: fields[1] as bool,
       viewedWelcomeScreen: fields[4] as bool,
       graduationSubjectsIds: (fields[5] as List?)?.cast<String>(),
+      calendarSynchronisation: fields[6] as bool,
     )
       .._accentColor = fields[2] as int
       .._land = fields[3] as String;
@@ -29,7 +30,7 @@ class SettingsAdapter extends TypeAdapter<Settings> {
   @override
   void write(BinaryWriter writer, Settings obj) {
     writer
-      ..writeByte(6)
+      ..writeByte(7)
       ..writeByte(0)
       ..write(obj.graduationYear)
       ..writeByte(1)
@@ -41,7 +42,9 @@ class SettingsAdapter extends TypeAdapter<Settings> {
       ..writeByte(4)
       ..write(obj.viewedWelcomeScreen)
       ..writeByte(5)
-      ..write(obj.graduationSubjectsIds);
+      ..write(obj.graduationSubjectsIds)
+      ..writeByte(6)
+      ..write(obj.calendarSynchronisation);
   }
 
   @override

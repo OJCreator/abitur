@@ -31,6 +31,9 @@ class Settings {
   @HiveField(5)
   List<String> graduationSubjectsIds;
 
+  @HiveField(6)
+  bool calendarSynchronisation; // TODO -> Nur Klausuren und Tests, Zeiten anpassen (nach Stundenplan), Namensgebung
+
   Settings({
     required this.graduationYear,
     this.lightMode = true,
@@ -38,6 +41,7 @@ class Settings {
     Color accentColor = primaryColor,
     this.viewedWelcomeScreen = false,
     List<String>? graduationSubjectsIds,
+    this.calendarSynchronisation = true,
   }) : _accentColor = accentColor.value,
         _land = land.code,
         graduationSubjectsIds = graduationSubjectsIds?.toList() ?? [];

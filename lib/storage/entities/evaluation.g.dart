@@ -22,6 +22,7 @@ class EvaluationAdapter extends TypeAdapter<Evaluation> {
       date: fields[4] as DateTime,
       note: fields[5] as int?,
       id: fields[6] as String?,
+      calendarId: fields[7] as String?,
     )
       .._subjectId = fields[0] as String
       .._performanceId = fields[1] as String;
@@ -30,7 +31,7 @@ class EvaluationAdapter extends TypeAdapter<Evaluation> {
   @override
   void write(BinaryWriter writer, Evaluation obj) {
     writer
-      ..writeByte(7)
+      ..writeByte(8)
       ..writeByte(0)
       ..write(obj._subjectId)
       ..writeByte(1)
@@ -44,7 +45,9 @@ class EvaluationAdapter extends TypeAdapter<Evaluation> {
       ..writeByte(5)
       ..write(obj.note)
       ..writeByte(6)
-      ..write(obj.id);
+      ..write(obj.id)
+      ..writeByte(7)
+      ..write(obj.calendarId);
   }
 
   @override

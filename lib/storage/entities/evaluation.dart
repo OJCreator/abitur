@@ -34,6 +34,9 @@ class Evaluation {
   @HiveField(6)
   String id;
 
+  @HiveField(7)
+  String? calendarId;
+
   Evaluation({
     String subjectId = "",
     String performanceId = "",
@@ -42,6 +45,7 @@ class Evaluation {
     required this.date,
     this.note,
     String? id,
+    this.calendarId,
   }) : id = id ?? Uuid.generate(),
         _subjectId = subjectId,
         _performanceId = performanceId;
