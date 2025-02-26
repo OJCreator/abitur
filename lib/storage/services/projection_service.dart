@@ -32,10 +32,18 @@ class ProjectionService {
       return MapEntry(s, _buildTermNoteDtos(s));
     });
 
-    // 40 Noten zählen lassen
-    int alreadyCountingNotes = map.values.expandToList().countWhere((note) => note.counting);
+    List<TermNoteDto> allTermNotes = map.values.expandToList();
 
-    var nonCountingNotes = map.values.expandToList().where((note) => !note.counting).toList();
+    // Optionsregel (schlechteste Note aus Nicht-Abiturfach gegen noch nicht zählende Note tauschen)
+    List<Subject> subjectsWithOneNoteCounting = subjects.where((s) => s != wSeminar).where((s) => map[s]!.countWhere((n) => n.counting) == 1).toList();
+    List<TermNoteDto> notesWithOptionRulePossible = allTermNotes.where((note) => !SettingsService.isGraduationSubject(note.subject) && note.note != null && !subjectsWithOneNoteCounting.contains(note.subject)).toList();
+    notesWithOptionRulePossible.sort((a,b) => a.note!.compareTo(b.note!));
+    notesWithOptionRulePossible.first.counting = false;
+
+    // 40 Noten zählen lassen
+    int alreadyCountingNotes = allTermNotes.countWhere((note) => note.counting);
+
+    var nonCountingNotes = allTermNotes.where((note) => !note.counting).toList();
     nonCountingNotes.sort((a,b) => -(a.note ?? 0).compareTo(b.note ?? 0));
 
     int missingNotesAmount = min(((wSeminar == null ? 40 : 36)-alreadyCountingNotes), nonCountingNotes.length);
@@ -52,10 +60,10 @@ class ProjectionService {
     Subject seminararbeit = Subject(name: "Seminararbeit", shortName: "Arbeit", countingTermAmount: 2, color: wSeminar.color);
     int? seminararbeitNote = roundNote(SubjectService.getAverage(wSeminar) ?? overallAvg); // todo was wenn schon geschireben?
     map[seminararbeit] = [
-      TermNoteDto(note: seminararbeitNote, projection: true, counting: true),
-      TermNoteDto(note: seminararbeitNote, projection: true, counting: true),
-      TermNoteDto(note: null, projection: false, counting: false),
-      TermNoteDto(note: null, projection: false, counting: false),
+      TermNoteDto(note: seminararbeitNote, projection: true, counting: true, subject: wSeminar),
+      TermNoteDto(note: seminararbeitNote, projection: true, counting: true, subject: wSeminar),
+      TermNoteDto(note: null, projection: false, counting: false, subject: wSeminar),
+      TermNoteDto(note: null, projection: false, counting: false, subject: wSeminar),
     ];
 
     return map;
@@ -68,7 +76,7 @@ class ProjectionService {
 
     return List.generate(4, (term) {
       if (!s.terms.contains(term)) {
-        return TermNoteDto(note: null, projection: false, counting: false);
+        return TermNoteDto(note: null, projection: false, counting: false, subject: s);
       }
 
       final termAverage = notes[term] ?? roundNote(SubjectService.getAverage(s) ?? overallAvg);
@@ -78,6 +86,7 @@ class ProjectionService {
         note: termAverage,
         projection: projection,
         counting: countingTerms.contains(term),
+        subject: s,
       );
     });
   }
@@ -93,6 +102,7 @@ class TermNoteDto {
   String get noteString => note?.toString() ?? "-";
   bool projection;
   bool counting;
+  Subject subject;
 
-  TermNoteDto({required this.note, required this.projection, required this.counting});
+  TermNoteDto({required this.note, required this.projection, required this.counting, required this.subject});
 }

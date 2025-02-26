@@ -1,5 +1,6 @@
 import 'package:abitur/storage/entities/settings.dart';
 import 'package:abitur/storage/entities/subject.dart';
+import 'package:abitur/storage/services/projection_service.dart';
 import 'package:abitur/storage/services/subject_service.dart';
 import 'package:abitur/storage/storage.dart';
 import 'package:abitur/utils/calender_sync.dart';
@@ -47,8 +48,8 @@ class SettingsService {
     return graduationSubjects;
   }
 
-  static bool calendarSynchronisation() {
-    return loadSettings().calendarSynchronisation;
+  static bool isGraduationSubject(Subject subject) {
+    return graduationSubjects().contains(subject);
   }
 
   static Future<void> setGraduationSubjects(List<Subject?> subjects) async {
@@ -58,6 +59,10 @@ class SettingsService {
     Settings s = loadSettings();
     s.graduationSubjectsIds = subjects.map((it) => it?.id ?? "").toList();
     await Storage.saveSettings(s);
+  }
+
+  static bool calendarSynchronisation() {
+    return loadSettings().calendarSynchronisation;
   }
 
   static Future<void> setAccentColor(BuildContext context, Color newAccentColor) async {
