@@ -20,7 +20,7 @@ class TimetableService {
   }
 
   static TimetableEntry loadTimetableEntry(String id) {
-    return loadTimetableEntries().firstWhere((e) => e.id == id);
+    return Storage.loadTimetableEntry(id);
   }
 
   static List<TimetableEntry> loadTimetableEntries() {
@@ -48,6 +48,10 @@ class TimetableService {
         await Storage.saveTimetableEntry(entry);
       }
     } else {
+      String? timetableEntryId = t.timetableEntryIds[day][hour];
+      if (timetableEntryId != null) {
+        Storage.deleteTimetableEntry(timetableEntryId);
+      }
       t.timetableEntryIds[day][hour] = null;
       await Storage.saveTimetable(t);
     }
@@ -75,15 +79,30 @@ class TimetableService {
     return entryId == null ? null : loadTimetableEntry(entryId);
   }
 
-  // static List<List<Subject?>> buildTable() {
-  //   return [
-  //     _monday,
-  //     _tuesday,
-  //     _wednesday,
-  //     _thursday,
-  //     _friday
-  //   ];
-  // }
+  static bool timetableIsEmpty(int term) {
+    Timetable t = loadTimetable(term);
+    return t.timetableEntryIds.expandToList().every((it) => it == null);
+  }
+
+  static Future<void> copyTimetable(int fromTerm, int toTerm) async {
+    assert(timetableIsEmpty(toTerm));
+    Timetable tFrom = loadTimetable(fromTerm);
+    Timetable tTo = loadTimetable(toTerm);
+
+    for (int day = 0; day < 5; day++) {
+      for (int hour = 0; hour < tFrom.timetableEntryIds[day].length; hour++) {
+        String? entryId = tFrom.timetableEntryIds[day][hour];
+        if (entryId == null) {
+          continue;
+        }
+        TimetableEntry fromEntry = loadTimetableEntry(entryId);
+        TimetableEntry toEntry = TimetableEntry(subjectId: fromEntry.subjectId, room: fromEntry.room);
+        await Storage.saveTimetableEntry(toEntry);
+        tTo.timetableEntryIds[day][hour] = toEntry.id;
+      }
+    }
+    await Storage.saveTimetable(tTo);
+  }
 
   static String? knownRoom(Subject? s) {
     int currentTerm = SettingsService.currentProbableTerm();
@@ -125,7 +144,7 @@ class TimetableService {
   static DateTime getEndTime(int term, Subject subject, int weekday) {
     TimetableSettings timetableSettings = loadTimetableSettings();
     Timetable t = loadTimetable(term);
-    var lastHour = t.timetableEntryIds[weekday-1].indexWhere((it) => it != null && loadTimetableEntry(it).subjectId == subject.id);
+    var lastHour = t.timetableEntryIds[weekday-1].lastIndexWhere((it) => it != null && loadTimetableEntry(it).subjectId == subject.id);
     String from = timetableSettings.times.elementAtOrNull(lastHour)?.split(" - ")[1] ?? "23:55";
     DateFormat format = DateFormat("HH:mm");
     return format.parse(from);

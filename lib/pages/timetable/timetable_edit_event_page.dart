@@ -7,7 +7,7 @@ import '../../storage/services/timetable_service.dart';
 import '../../widgets/forms/form_gap.dart';
 import '../../widgets/forms/subject_dropdown.dart';
 
-class TimetableModifyPage extends StatefulWidget {
+class TimetableEditEventPage extends StatefulWidget {
 
   final int term;
 
@@ -17,13 +17,13 @@ class TimetableModifyPage extends StatefulWidget {
   final Subject? initialSubject;
   final String? initialRoom;
 
-  const TimetableModifyPage({super.key, required this.term, required this.day, required this.hour, required this.initialSubject, required this.initialRoom});
+  const TimetableEditEventPage({super.key, required this.term, required this.day, required this.hour, required this.initialSubject, required this.initialRoom});
 
   @override
-  State<TimetableModifyPage> createState() => _TimetableModifyPageState();
+  State<TimetableEditEventPage> createState() => _TimetableEditEventPageState();
 }
 
-class _TimetableModifyPageState extends State<TimetableModifyPage> {
+class _TimetableEditEventPageState extends State<TimetableEditEventPage> {
 
   Subject? _selectedSubject;
   final TextEditingController _roomController = TextEditingController();
@@ -85,7 +85,6 @@ class _TimetableModifyPageState extends State<TimetableModifyPage> {
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () async {
           await TimetableService.changeSubject(widget.term, widget.day, widget.hour, _selectedSubject, _roomController.text);
-
           Navigator.pop(context);
         },
         label: Text("Speichern"),

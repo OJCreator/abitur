@@ -3,8 +3,10 @@ import 'package:flutter/material.dart';
 class InfoCard extends StatelessWidget {
 
   final String text;
+  final String? action;
+  final Function()? onAction;
 
-  const InfoCard(this.text, {super.key});
+  const InfoCard(this.text, {super.key, this.action, this.onAction});
 
   @override
   Widget build(BuildContext context) {
@@ -24,6 +26,11 @@ class InfoCard extends StatelessWidget {
                 ),
               ),
             ),
+            if (action != null)
+              FilledButton(
+                onPressed: onAction,
+                child: Text(action!),
+              )
           ],
         ),
       ),

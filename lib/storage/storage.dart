@@ -171,14 +171,16 @@ class Storage {
     return _timetableEntryBox.values.toList();
   }
 
+  static TimetableEntry loadTimetableEntry(String entryId) {
+    return _timetableEntryBox.get(entryId)!;
+  }
+
   static Future<void> saveTimetableEntry(TimetableEntry t) async {
-    int index = loadTimetableEntries().indexOf(t);
-    if (index == -1) {
-      await _timetableEntryBox.add(t);
-    }
-    else {
-      await _timetableEntryBox.deleteAt(index);
-      await _timetableEntryBox.add(t);
-    }
+    await _timetableEntryBox.delete(t.id);
+    await _timetableEntryBox.put(t.id, t);
+  }
+
+  static Future<void> deleteTimetableEntry(String entryId) async {
+    await _timetableEntryBox.delete(entryId);
   }
 }
