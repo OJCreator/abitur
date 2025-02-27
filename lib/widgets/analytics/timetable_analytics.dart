@@ -1,9 +1,9 @@
-import 'package:abitur/storage/entities/subject.dart';
+import 'package:abitur/pages/timetable_page.dart';
+import 'package:abitur/storage/entities/timetable/timetable_entry.dart';
+import 'package:abitur/storage/services/settings_service.dart';
 import 'package:abitur/storage/services/timetable_service.dart';
 import 'package:abitur/utils/constants.dart';
 import 'package:flutter/material.dart';
-
-import '../../pages/analytics_pages/timetable_modify_page.dart';
 
 class TimetableAnalytics extends StatefulWidget {
 
@@ -15,20 +15,9 @@ class TimetableAnalytics extends StatefulWidget {
 
 class _TimetableAnalyticsState extends State<TimetableAnalytics> {
 
-  bool editMode = false;
-
-  void _loadTimeTable() {
-    setState(() { });
-  }
-
-  @override
-  void initState() {
-    _loadTimeTable();
-    super.initState();
-  }
-
   @override
   Widget build(BuildContext context) {
+    int term = SettingsService.currentProbableTerm();
     return Padding(
       padding: const EdgeInsets.all(16.0),
       child: Column(
@@ -41,88 +30,64 @@ class _TimetableAnalyticsState extends State<TimetableAnalytics> {
                 "Stundenplan",
                 style: Theme.of(context).textTheme.titleMedium,
               ),
-              IconButton(
-                onPressed: () {
-                  setState(() {
-                    editMode = !editMode;
-                  });
-                },
-                icon: Icon(editMode ? Icons.check : Icons.edit),
-              ),
             ],
           ),
           const SizedBox(height: 8),
-          GridView.builder(
-            physics: NeverScrollableScrollPhysics(),
-            shrinkWrap: true,
-            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 5,
-              childAspectRatio: 1.5,
-            ),
-            itemCount: editMode ? 5*14 : TimetableService.maxHours() * 5,
-            itemBuilder: (context, index) {
-              int day = index % 5;  // Berechnung des Tages
-              int hour = index ~/ 5; // Berechnung der Stunde
+          GestureDetector(
+            onTap: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(builder: (context) {
+                  return TimetablePage();
+                })
+              );
+              setState(() { });
+            },
+            child: GridView.builder(
+              physics: NeverScrollableScrollPhysics(),
+              shrinkWrap: true,
+              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 5,
+                childAspectRatio: 1.5,
+              ),
+              itemCount: TimetableService.maxHours(term) * 5,
+              itemBuilder: (context, index) {
+                int day = index % 5;  // Berechnung des Tages
+                int hour = index ~/ 5; // Berechnung der Stunde
 
-              Subject? subject = TimetableService.getSubject(day, hour);
-              String? room = TimetableService.getRoom(day, hour);
+                TimetableEntry? entry = TimetableService.getTimetableEntry(term, day, hour);
 
-              return GestureDetector(
-                onTap: () {
-                  _changeSubject(day, hour, subject, room);
-                },
-                child: Card(
+                return Card(
                   elevation: 0,
                   margin: const EdgeInsets.all(2.0),
-                  // shape: RoundedRectangleBorder(
-                  //   borderRadius: BorderRadius.circular(5),
-                  // ),
-                  color: subject == null ? Theme.of(context).colorScheme.surfaceContainer : subject.color,
+                  color: entry == null ? Theme.of(context).colorScheme.surfaceContainer : entry.subject.color,
                   child: Center(
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Text(
-                          subject?.shortName ?? (editMode ? "+" : ""),
+                          entry?.subject.shortName ?? "",
                           textAlign: TextAlign.center,
                           style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                            color: getContrastingTextColor(subject?.color ?? Colors.black),
+                            color: getContrastingTextColor(entry?.subject.color ?? Colors.black),
                           ),
                         ),
-                        if (room?.isNotEmpty ?? false)
+                        if (entry?.room?.isNotEmpty ?? false)
                           Text(
-                            room!,
+                            entry!.room!,
                             textAlign: TextAlign.center,
                             style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                              color: getContrastingTextColor(subject?.color ?? Colors.black),
+                              color: getContrastingTextColor(entry.subject.color),
                             ),
-                          )
+                          ),
                       ],
                     ),
                   ),
-                ),
-              );
-            },
+                );
+              },
+            ),
           ),
         ],
       ),
     );
-  }
-
-  Future<void> _changeSubject(int day, int hour, Subject? subject, String? room) async {
-
-    if (!editMode) {
-      return;
-    }
-
-    await Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => TimetableModifyPage(day: day, hour: hour, initialSubject: subject, initialRoom: room,),
-        fullscreenDialog: true,
-      ),
-    );
-
-    setState(() {});
   }
 }

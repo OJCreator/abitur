@@ -22,6 +22,10 @@ class Performance {
     String? id,
   }) : id = id ?? Uuid.generate();
 
+  static Performance empty() {
+    return Performance(name: "-", weighting: 0);
+  }
+
   Map<String, dynamic> toJson() => {
     "name": name,
     "weighting": weighting,

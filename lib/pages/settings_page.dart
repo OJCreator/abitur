@@ -1,13 +1,14 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:abitur/pages/settings_pages/settings_calendar_page.dart';
+import 'package:abitur/storage/entities/timetable/timetable_entry.dart';
 import 'package:abitur/storage/services/evaluation_service.dart';
 import 'package:abitur/storage/services/performance_service.dart';
 import 'package:abitur/storage/services/settings_service.dart';
 import 'package:abitur/storage/services/subject_service.dart';
 import 'package:abitur/storage/services/timetable_service.dart';
 import 'package:abitur/storage/storage.dart';
-import 'package:abitur/utils/calender_sync.dart';
 import 'package:abitur/utils/constants.dart';
 import 'package:abitur/widgets/color_dialog.dart';
 import 'package:flutter/material.dart';
@@ -20,7 +21,8 @@ import '../storage/entities/evaluation.dart';
 import '../storage/entities/performance.dart';
 import '../storage/entities/settings.dart';
 import '../storage/entities/subject.dart';
-import '../storage/entities/timetable.dart';
+import '../storage/entities/timetable/timetable.dart';
+import '../storage/entities/timetable/timetable_settings.dart';
 import '../utils/brightness_notifier.dart';
 
 class SettingsPage extends StatefulWidget {
@@ -87,19 +89,14 @@ class _SettingsPageState extends State<SettingsPage> {
                 Storage.saveSettings(s);
               },
             ),
-            SwitchListTile(
-              title: Text("Kalender Synchronisierung"),
-              value: s.calendarSynchronisation,
-              onChanged: (v) async {
-                setState(() {
-                  s.calendarSynchronisation = !s.calendarSynchronisation;
-                });
-                Storage.saveSettings(s);
-                if (!s.calendarSynchronisation) {
-                  await deleteAllCalendarEvents();
-                } else {
-                  syncEvaluationCalendarEvents(EvaluationService.findAll());
-                }
+            ListTile(
+              title: Text("Kalender-Synchronisierung"),
+              onTap: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(builder: (context) {
+                    return SettingsCalendarPage();
+                  })
+                );
               },
             ),
             ListTile(
@@ -132,20 +129,24 @@ class _SettingsPageState extends State<SettingsPage> {
     List<Subject> subjects = SubjectService.findAll();
     List<Performance> performances = PerformanceService.findAll();
     Settings settings = SettingsService.loadSettings();
-    Timetable timetable = TimetableService.loadTimetable();
+    TimetableSettings timetableSettings = TimetableService.loadTimetableSettings();
+    List<Timetable> timetables = TimetableService.loadTimetables();
+    List<TimetableEntry> timetableEntries = TimetableService.loadTimetableEntries();
 
-    String jsonContent = exportDataToJson(subjects, performances, evaluations, settings, timetable);
+    String jsonContent = exportDataToJson(subjects, performances, evaluations, settings, timetableSettings, timetables, timetableEntries);
     File f = await _saveToFile("abitur_data", jsonContent);
     Share.shareXFiles([XFile(f.path)], text: "Hier sind die Abitur-Daten!");
   }
 
-  String exportDataToJson(List<Subject> subjects, List<Performance> performances, List<Evaluation> evaluations, Settings settings, Timetable timetable) {
+  String exportDataToJson(List<Subject> subjects, List<Performance> performances, List<Evaluation> evaluations, Settings settings, TimetableSettings timetableSettings, List<Timetable> timetables, List<TimetableEntry> timetableEntries) {
     final Map<String, dynamic> data = {
       "subjects": subjects.map((s) => s.toJson()).toList(),
       "performances": performances.map((p) => p.toJson()).toList(),
       "evaluations": evaluations.map((e) => e.toJson()).toList(),
       "settings": settings.toJson(),
-      "timetable": timetable.toJson(),
+      "timetableSettings": timetableSettings.toJson(),
+      "timetables": timetables.map((t) => t.toJson()).toList(),
+      "timetableEntries": timetableEntries.map((t) => t.toJson()).toList(),
     };
     return jsonEncode(data);
   }

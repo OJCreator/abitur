@@ -1,6 +1,5 @@
 import 'package:abitur/storage/entities/settings.dart';
 import 'package:abitur/storage/entities/subject.dart';
-import 'package:abitur/storage/services/projection_service.dart';
 import 'package:abitur/storage/services/subject_service.dart';
 import 'package:abitur/storage/storage.dart';
 import 'package:abitur/utils/calender_sync.dart';
@@ -16,6 +15,10 @@ class SettingsService {
 
   static Settings loadSettings() {
     return Storage.loadSettings();
+  }
+
+  static int currentProbableTerm() {
+    return probableTerm(DateTime.now());
   }
 
   static int probableTerm(DateTime date) {

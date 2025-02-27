@@ -62,6 +62,10 @@ class Subject {
         _terms = terms?.toList() ?? [0,1,2,3],
         _performanceIds = performanceIds;
 
+  static Subject empty() {
+    return Subject(name: "-", shortName: "", countingTermAmount: 0);
+  }
+
   @override
   String toString() {
     return "Subject#$id (Name: '$name', Type: '${subjectType.name}')";

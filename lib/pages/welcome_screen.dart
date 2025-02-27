@@ -72,11 +72,21 @@ class WelcomeScreen extends StatelessWidget {
 
         Map<String, dynamic> jsonData = jsonDecode(fileContent);
 
+        print("Extracted data from JSON...");
         await PerformanceService.buildFromJson((jsonData["performances"] as List).map((e) => e as Map<String, dynamic>).toList());
+        print("Extracted Performances from JSON.");
         await SubjectService.buildFromJson((jsonData["subjects"] as List).map((e) => e as Map<String, dynamic>).toList());
+        print("Extracted Subjects from JSON.");
         await EvaluationService.buildFromJson((jsonData["evaluations"] as List).map((e) => e as Map<String, dynamic>).toList());
+        print("Extracted Evaluations from JSON.");
         await SettingsService.buildFromJson(jsonData["settings"] as Map<String, dynamic>);
-        await TimetableService.buildFromJson(jsonData["timetable"] as Map<String, dynamic>);
+        print("Extracted Settings from JSON.");
+        await TimetableService.buildSettingsFromJson(jsonData["timetableSettings"] as Map<String, dynamic>);
+        print("Extracted TimetableSettings from JSON.");
+        await TimetableService.buildTimetableFromJson((jsonData["timetables"] as List).map((e) => e as Map<String, dynamic>).toList());
+        print("Extracted Timetables from JSON.");
+        await TimetableService.buildEntriesFromJson((jsonData["timetableEntries"] as List).map((e) => e as Map<String, dynamic>).toList());
+        print("Extracted TimetableEntries from JSON.");
 
         SettingsService.markWelcomeScreenAsViewed();
 

@@ -9,13 +9,15 @@ import '../../widgets/forms/subject_dropdown.dart';
 
 class TimetableModifyPage extends StatefulWidget {
 
+  final int term;
+
   final int day;
   final int hour;
 
   final Subject? initialSubject;
   final String? initialRoom;
 
-  const TimetableModifyPage({super.key, required this.day, required this.hour, required this.initialSubject, required this.initialRoom});
+  const TimetableModifyPage({super.key, required this.term, required this.day, required this.hour, required this.initialSubject, required this.initialRoom});
 
   @override
   State<TimetableModifyPage> createState() => _TimetableModifyPageState();
@@ -82,7 +84,7 @@ class _TimetableModifyPageState extends State<TimetableModifyPage> {
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () async {
-          await TimetableService.changeSubject(widget.day, widget.hour, _selectedSubject, _roomController.text);
+          await TimetableService.changeSubject(widget.term, widget.day, widget.hour, _selectedSubject, _roomController.text);
 
           Navigator.pop(context);
         },

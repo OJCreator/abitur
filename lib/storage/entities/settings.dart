@@ -31,8 +31,11 @@ class Settings {
   @HiveField(5)
   List<String> graduationSubjectsIds;
 
+  // Kalender
   @HiveField(6)
   bool calendarSynchronisation; // TODO -> Nur Klausuren und Tests, Zeiten anpassen (nach Stundenplan), Namensgebung
+  @HiveField(7)
+  bool calendarFullDayEvents;
 
   Settings({
     required this.graduationYear,
@@ -42,6 +45,7 @@ class Settings {
     this.viewedWelcomeScreen = false,
     List<String>? graduationSubjectsIds,
     this.calendarSynchronisation = true,
+    this.calendarFullDayEvents = false,
   }) : _accentColor = accentColor.value,
         _land = land.code,
         graduationSubjectsIds = graduationSubjectsIds?.toList() ?? [];
@@ -52,6 +56,8 @@ class Settings {
     "accentColor": _accentColor,
     "land": _land,
     "graduationSubjectsIds": graduationSubjectsIds,
+    "calendarSynchronisation": calendarSynchronisation,
+    "calendarFullDayEvents": calendarFullDayEvents,
   };
 
   static Settings fromJson(Map<String, dynamic> json) {
@@ -61,6 +67,8 @@ class Settings {
       land: Land.fromCode(json["land"]),
       accentColor: Color(json["accentColor"]),
       graduationSubjectsIds: (json["graduationSubjectsIds"] as List).map((e) => e as String).toList(),
+      calendarSynchronisation: json["calendarSynchronisation"] ?? true,
+      calendarFullDayEvents: json["calendarFullDayEvents"] ?? false,
     );
   }
 }

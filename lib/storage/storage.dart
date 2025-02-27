@@ -1,11 +1,14 @@
 import 'package:abitur/storage/entities/settings.dart';
-import 'package:abitur/storage/entities/timetable.dart';
+import 'package:abitur/storage/entities/timetable/timetable.dart';
+import 'package:abitur/storage/entities/timetable/timetable_entry.dart';
 import 'package:abitur/storage/services/evaluation_service.dart';
+import 'package:abitur/storage/services/timetable_service.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
 import 'entities/evaluation.dart';
 import 'entities/performance.dart';
 import 'entities/subject.dart';
+import 'entities/timetable/timetable_settings.dart';
 
 class Storage {
 
@@ -13,7 +16,9 @@ class Storage {
   static late Box<Performance> _performanceBox;
   static late Box<Subject> _subjectBox;
   static late Box<Settings> _settingsBox;
+  static late Box<TimetableSettings> _timetableSettingsBox;
   static late Box<Timetable> _timetableBox;
+  static late Box<TimetableEntry> _timetableEntryBox;
 
   static Future<void> init() async {
     await Hive.initFlutter();
@@ -22,13 +27,32 @@ class Storage {
     Hive.registerAdapter(PerformanceAdapter());
     Hive.registerAdapter(SubjectAdapter());
     Hive.registerAdapter(SettingsAdapter());
+    Hive.registerAdapter(TimetableSettingsAdapter());
     Hive.registerAdapter(TimetableAdapter());
+    Hive.registerAdapter(TimetableEntryAdapter());
 
     _evaluationBox = await Hive.openBox<Evaluation>('evaluations');
     _performanceBox = await Hive.openBox<Performance>('performances');
     _subjectBox = await Hive.openBox<Subject>('subjects');
     _settingsBox = await Hive.openBox<Settings>('settings');
-    _timetableBox = await Hive.openBox<Timetable>('timetable');
+    _timetableSettingsBox = await Hive.openBox<TimetableSettings>('timetableSettings');
+    _timetableBox = await Hive.openBox<Timetable>('timetables');
+    _timetableEntryBox = await Hive.openBox<TimetableEntry>('timetableEntries');
+
+    initialValues();
+  }
+
+  static void initialValues() {
+    TimetableSettings s = TimetableService.loadTimetableSettings();
+    if (s.timetables.length == 4) {
+      return;
+    }
+    List<Timetable> timetables = List.generate(4, (i) => Timetable());
+    s.timetables = timetables.map((it) => it.id).toList();
+    saveTimetableSettings(s);
+    for (Timetable t in timetables) {
+      Storage.saveTimetable(t);
+    }
   }
 
   // Evaluations
@@ -117,12 +141,44 @@ class Storage {
     await _settingsBox.put("data", s);
   }
 
-  // Timetable
-  static Timetable loadTimetable() {
-    return _timetableBox.get("data", defaultValue: Timetable())!;
+  // TimetableSettings
+  static TimetableSettings loadTimetableSettings() {
+    return _timetableSettingsBox.get("data", defaultValue: TimetableSettings())!;
+  }
+
+  static Future<void> saveTimetableSettings(TimetableSettings t) async {
+    await _timetableSettingsBox.put("data", t);
+  }
+
+  // Timetables
+  static List<Timetable> loadTimetables() {
+    return _timetableBox.values.toList();
   }
 
   static Future<void> saveTimetable(Timetable t) async {
-    await _timetableBox.put("data", t);
+    int index = loadTimetables().indexOf(t);
+    if (index == -1) {
+      await _timetableBox.add(t);
+    }
+    else {
+      await _timetableBox.deleteAt(index);
+      await _timetableBox.add(t);
+    }
+  }
+
+  // TimetableEntries
+  static List<TimetableEntry> loadTimetableEntries() {
+    return _timetableEntryBox.values.toList();
+  }
+
+  static Future<void> saveTimetableEntry(TimetableEntry t) async {
+    int index = loadTimetableEntries().indexOf(t);
+    if (index == -1) {
+      await _timetableEntryBox.add(t);
+    }
+    else {
+      await _timetableEntryBox.deleteAt(index);
+      await _timetableEntryBox.add(t);
+    }
   }
 }

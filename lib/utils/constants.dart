@@ -252,6 +252,15 @@ extension ListExtensions<T> on List<T> {
     }
     return indices;
   }
+  List<int> indicesWhere(bool Function(T element) test) {
+    List<int> indices = [];
+    for (int i = 0; i < length; i++) {
+      if (test(this[i])) {
+        indices.add(i);
+      }
+    }
+    return indices;
+  }
 }
 extension FindNLargestIndices on List<int?> {
   List<int> findNLargestIndices(int n) {

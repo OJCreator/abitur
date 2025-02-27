@@ -35,7 +35,7 @@ class _SubjectPageState extends State<SubjectPage> with SingleTickerProviderStat
   void initState() {
     subject = widget.subject;
 
-    int currentTerm = SettingsService.probableTerm(DateTime.now());
+    int currentTerm = SettingsService.currentProbableTerm();
     if (!subject.terms.contains(currentTerm)) {
       currentTerm = 0;
     }

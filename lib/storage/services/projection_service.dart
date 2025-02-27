@@ -38,7 +38,7 @@ class ProjectionService {
     List<Subject> subjectsWithOneNoteCounting = subjects.where((s) => s != wSeminar).where((s) => map[s]!.countWhere((n) => n.counting) == 1).toList();
     List<TermNoteDto> notesWithOptionRulePossible = allTermNotes.where((note) => !SettingsService.isGraduationSubject(note.subject) && note.note != null && !subjectsWithOneNoteCounting.contains(note.subject)).toList();
     notesWithOptionRulePossible.sort((a,b) => a.note!.compareTo(b.note!));
-    notesWithOptionRulePossible.first.counting = false;
+    notesWithOptionRulePossible.firstOrNull?.counting = false;
 
     // 40 Noten zählen lassen
     int alreadyCountingNotes = allTermNotes.countWhere((note) => note.counting);

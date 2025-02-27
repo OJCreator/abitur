@@ -11,12 +11,12 @@ part 'evaluation.g.dart';
 class Evaluation {
   @HiveField(0)
   String _subjectId;
-  Subject get subject => SubjectService.findById(_subjectId)!;
+  Subject get subject => SubjectService.findById(_subjectId) ?? Subject.empty();
   set subject(Subject newSubject) => _subjectId = newSubject.id;
 
   @HiveField(1)
   String _performanceId;
-  Performance get performance => PerformanceService.findById(_performanceId)!;
+  Performance get performance => PerformanceService.findById(_performanceId) ?? Performance.empty();
   set performance(Performance newPerformance) => _performanceId = newPerformance.id;
 
   @HiveField(2)

@@ -15,7 +15,7 @@ class AverageAnalytics extends StatefulWidget {
 
 class _AverageAnalyticsState extends State<AverageAnalytics> {
 
-  DateTime get startDate => DateTime.now().add(Duration(days: -90));
+  DateTime get startDate => DateTime.now().add(Duration(days: -150));
 
   List<LineChartBarData> get lineData {
     return averageHistory.mapToIterable((key, value) => generateAverageData(key)).toList();

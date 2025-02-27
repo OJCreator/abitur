@@ -2,6 +2,7 @@ import 'dart:ui';
 
 import 'package:abitur/storage/services/evaluation_service.dart';
 import 'package:abitur/storage/services/settings_service.dart';
+import 'package:abitur/storage/services/timetable_service.dart';
 import 'package:device_calendar/device_calendar.dart';
 
 import '../storage/entities/evaluation.dart';
@@ -15,6 +16,7 @@ Future<void> syncEvaluationCalendarEvent(Evaluation evaluation) async {
 Future<void> syncEvaluationCalendarEvents(List<Evaluation> evaluations) async {
 
   if (!SettingsService.calendarSynchronisation()) {
+    deleteAllCalendarEvents();
     return;
   }
 
@@ -27,13 +29,16 @@ Future<void> syncEvaluationCalendarEvents(List<Evaluation> evaluations) async {
   for (Evaluation evaluation in evaluations) {
     await deleteEvaluationCalendarEvent(evaluation);
 
+    DateTime start = TimetableService.getStartTime(evaluation.term, evaluation.subject, evaluation.date.weekday);
+    DateTime end = TimetableService.getEndTime(evaluation.term, evaluation.subject, evaluation.date.weekday);
+
     Event event = Event(
         calendarId,
         eventId: null, // TODO ein Event bearbeiten, statt es immer zu löschen und neu zu generieren
         title: "${evaluation.subject.shortName} ${evaluation.name}",
-        start: TZDateTime.from(evaluation.date, getLocation("Europe/Berlin")),
-        end: TZDateTime.from(evaluation.date, getLocation("Europe/Berlin")),
-        allDay: true
+        start: TZDateTime.from(evaluation.date.copyWith(hour: start.hour, minute: start.minute), getLocation("Europe/Berlin")),
+        end: TZDateTime.from(evaluation.date.copyWith(hour: end.hour, minute: end.minute), getLocation("Europe/Berlin")),
+        allDay: SettingsService.loadSettings().calendarFullDayEvents
     );
 
     var result = await _deviceCalendarPlugin.createOrUpdateEvent(event);
