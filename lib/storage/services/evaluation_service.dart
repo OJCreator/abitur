@@ -71,18 +71,22 @@ class EvaluationService {
     return evaluations;
   }
 
-  static Future<Evaluation> newEvaluation(Subject subject, Performance performance, int term, String name, DateTime date, int? note) async {
+  static Future<Evaluation> newEvaluation(Subject subject, Performance performance, int term, String name, List<EvaluationDate> evaluationDates) async {
 
-    Evaluation e = Evaluation(
-        subjectId: subject.id,
-        performanceId: performance.id,
-        term: term,
-        name: name
+    Evaluation newEvaluation = Evaluation(
+      subjectId: subject.id,
+      performanceId: performance.id,
+      term: term,
+      name: name,
+      evaluationDateIds: evaluationDates.map((it) => it.id).toList(),
     );
-    EvaluationDate evaluationDate = await EvaluationDateService.newEvaluationDate(e, date, note); // todo ??
-    e.evaluationDates = [evaluationDate];
-    await Storage.saveEvaluation(e);
-    return e;
+    await Storage.saveEvaluation(newEvaluation);
+
+    for (EvaluationDate e in evaluationDates) {
+      e.evaluation = newEvaluation;
+    }
+    await EvaluationDateService.saveAllEvaluationDates(evaluationDates);
+    return newEvaluation;
   }
 
   static Future<void> editEvaluation(Evaluation evaluation, {required Subject subject, required Performance performance, required int term, required String name, required List<EvaluationDate> evaluationDates}) async {
@@ -107,13 +111,25 @@ class EvaluationService {
 
   static int? calculateNote(Evaluation evaluation) {
     List<EvaluationDate> evaluationDates = evaluation.evaluationDates.where((it) => it.note != null).toList();
-    if (evaluationDates.isEmpty) return null;
     double weightTotal = evaluationDates.map((it) => it.weight).sum().toDouble();
+    if (weightTotal == 0) return null;
     double note = evaluationDates.map((it) => it.note! * it.weight).sum() / weightTotal;
     return roundNote(note);
   }
 
   static Future<void> buildFromJson(List<Map<String, dynamic>> jsonData) async {
+    deleteAllEvaluations(findAll());
+    // for (Map<String, dynamic> map in jsonData) {
+    //   print("Map 1:");
+    //   print(map);
+    //   EvaluationDate date = EvaluationDate(date: DateTime.parse(map["date"]), evaluationId: map["id"], weight: 1, note: map["note"]);
+    //   map["evaluationDateIds"] = [date.id].toList();
+    //   print("Map 2:");
+    //   print(map);
+    //   Evaluation e = Evaluation.fromJson(map);
+    //   await Storage.saveEvaluation(e);
+    //   await Storage.saveEvaluationDate(date);
+    // }
     List<Evaluation> evaluations = jsonData.map((e) => Evaluation.fromJson(e)).toList();
     for (Evaluation e in evaluations) {
       await Storage.saveEvaluation(e);

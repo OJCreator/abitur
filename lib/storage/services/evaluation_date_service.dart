@@ -98,4 +98,14 @@ class EvaluationDateService {
     await deleteEvaluationCalendarEvent(evaluationDate);
     await Storage.deleteEvaluationDate(evaluationDate);
   }
+
+  static Future<void> buildFromJson(List<Map<String, dynamic>> jsonData) async {
+
+    deleteAllEvaluationDates(findAll());
+
+    List<EvaluationDate> evaluationDates = jsonData.map((e) => EvaluationDate.fromJson(e)).toList();
+    for (EvaluationDate e in evaluationDates) {
+      await Storage.saveEvaluationDate(e);
+    }
+  }
 }

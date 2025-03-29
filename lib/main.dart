@@ -8,6 +8,7 @@ import 'package:abitur/utils/brightness_notifier.dart';
 import 'package:abitur/utils/seed_notifier.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/date_symbol_data_local.dart';
 
@@ -38,6 +39,14 @@ class MyApp extends StatelessWidget {
           builder: (BuildContext context, BrightnessNotifier value, Widget? child) {
             Brightness b = value.currentBrightness;
             return MaterialApp(
+              supportedLocales: [
+                Locale("de"),
+              ],
+              localizationsDelegates: [
+                GlobalMaterialLocalizations.delegate, // Lokalisierung für Material-Widgets
+                GlobalWidgetsLocalizations.delegate,  // Basis-Widgets-Lokalisierung
+                GlobalCupertinoLocalizations.delegate, // Lokalisierung für Cupertino-Widgets
+              ],
               title: "Abitur",
               theme: ThemeData(
                 colorScheme: ColorScheme.fromSeed(seedColor: seedValue.seed, brightness: b,),

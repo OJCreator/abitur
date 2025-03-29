@@ -128,6 +128,7 @@ class _PerformanceFormState extends State<PerformanceForm> {
                       widget.performances[i].weighting = value;
                       _updateWeighting(i);
                     },
+                    year2023: false,
                   ),
                 ],
               ),

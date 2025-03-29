@@ -32,30 +32,21 @@ class _EvaluationEditPageState extends State<EvaluationEditPage> {
 
   late Subject _selectedSubject;
   late Performance _selectedPerformance;
-  // late DateTime _selectedDate;
   late int _selectedTerm;
-  // late int _selectedNote;
 
   late List<EvaluationDate> _evaluationDates;
   late final List<EvaluationDate> _oldEvaluationDates;
-
-  // TODO am besten auf der EvaluationEditPage für jedes Date eine Card erstellen und wenn man die Note für eine bestimmte EvaluationDate eintragen will, dann bekommt sie einmal diesen Shimmer-Effekt
-
-  // late bool _giveNote;
 
   @override
   void initState() {
     _name.text = widget.evaluation.name;
     _selectedSubject = widget.evaluation.subject;
     _selectedPerformance = widget.evaluation.performance;
-    // _selectedDate = widget.evaluation.date;
     _selectedTerm = widget.evaluation.term;
-    // _selectedNote = widget.evaluation.note ?? 8;
 
     _evaluationDates = widget.evaluation.evaluationDates;
     _oldEvaluationDates = widget.evaluation.evaluationDates;
 
-    // _giveNote = widget.evaluation.note != null;
     super.initState();
   }
 
@@ -151,17 +142,6 @@ class _EvaluationEditPageState extends State<EvaluationEditPage> {
 
                   FormGap(),
 
-                  // DateInput(
-                  //   dateTime: _selectedDate,
-                  //   firstDate: SettingsService.firstDayOfSchool,
-                  //   lastDate: SettingsService.lastDayOfSchool,
-                  //   onSelected: (picked) {
-                  //     setState(() {
-                  //       _selectedDate = picked;
-                  //     });
-                  //   },
-                  // ),
-
                   FormGap(),
 
                   TermSelector(
@@ -176,30 +156,8 @@ class _EvaluationEditPageState extends State<EvaluationEditPage> {
 
                   FormGap(),
 
-                  // SwitchListTile(
-                  //   title: Text("Note eintragen"),
-                  //   value: _giveNote,
-                  //   onChanged: (newValue) {
-                  //     setState(() {
-                  //       _giveNote = !_giveNote;
-                  //     });
-                  //   },
-                  // ),
-                  //
-                  // Slider( // todo material3: https://m3.material.io/components/sliders/overview
-                  //   min: 0,
-                  //   max: 15,
-                  //   divisions: 15,
-                  //   value: _selectedNote.toDouble(),
-                  //   label: "$_selectedNote",
-                  //   onChanged: _giveNote ? (newValue) {
-                  //     setState(() {
-                  //       _selectedNote = newValue.toInt();
-                  //     });
-                  //   } : null,
-                  // ),
                   EvaluationDateForm(
-                    evaluation: widget.evaluation,
+                    evaluationId: widget.evaluation.id,
                     evaluationDates: widget.evaluation.evaluationDates,
                     onChanged: (newEvaluationDates) {
                       _evaluationDates = newEvaluationDates;

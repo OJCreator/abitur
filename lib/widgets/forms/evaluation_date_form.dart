@@ -1,18 +1,17 @@
 import 'package:flutter/material.dart';
 
-import '../../storage/entities/evaluation.dart';
 import '../../storage/entities/evaluation_date.dart';
 import '../../storage/services/settings_service.dart';
 import 'date_input.dart';
 
 class EvaluationDateForm extends StatefulWidget {
-  final Evaluation evaluation;
+  final String evaluationId;
   final List<EvaluationDate> evaluationDates;
   final Function(List<EvaluationDate>) onChanged;
 
   const EvaluationDateForm({
     super.key,
-    required this.evaluation,
+    required this.evaluationId,
     required this.evaluationDates,
     required this.onChanged,
   });
@@ -35,7 +34,7 @@ class _EvaluationDateFormState extends State<EvaluationDateForm> {
 
   void _addEvaluationDate() {
     setState(() {
-      final newEvaluationDate = EvaluationDate(date: DateTime.now(), evaluationId: widget.evaluation.id);
+      final newEvaluationDate = EvaluationDate(date: DateTime.now(), evaluationId: widget.evaluationId);
       widget.evaluationDates.add(newEvaluationDate);
       _giveNotes.add(false);
     });
@@ -87,21 +86,27 @@ class _EvaluationDateFormState extends State<EvaluationDateForm> {
                     ],
                   ),
 
-                  ListTile(
-                    title: Text("Gewichtung"),
-                  ),
-                  Slider(
-                    value: widget.evaluationDates[i].weight.toDouble(),
-                    min: 0,
-                    max: 3,
-                    divisions: 3,
-                    onChanged: (value) {
-                      setState(() {
-                        widget.evaluationDates[i].weight = value.round();
-                      });
-                      notifyChange();
-                    },
-                  ),
+                  if (widget.evaluationDates.length > 1)
+                    ListTile(
+                      title: Text("Gewichtung"),
+                    ),
+                  if (widget.evaluationDates.length > 1)
+                    Slider(
+                      value: widget.evaluationDates[i].weight.toDouble(),
+                      min: 0,
+                      max: 6,
+                      divisions: 6,
+                      label: "${widget.evaluationDates[i].weight}",
+                      onChanged: (value) {
+                        setState(() {
+                          widget.evaluationDates[i].weight = value.round();
+                        });
+                        notifyChange();
+                      },
+                      year2023: false,
+                    ),
+
+
                   SwitchListTile(
                     title: Text("Note eintragen"),
                     value: _giveNotes[i],
@@ -117,7 +122,7 @@ class _EvaluationDateFormState extends State<EvaluationDateForm> {
                     },
                   ),
 
-                  Slider( // todo material3: https://m3.material.io/components/sliders/overview
+                  Slider(
                     min: 0,
                     max: 15,
                     divisions: 15,
@@ -128,6 +133,7 @@ class _EvaluationDateFormState extends State<EvaluationDateForm> {
                         widget.evaluationDates[i].note = newValue.toInt();
                       });
                     } : null,
+                    year2023: false,
                   ),
                 ],
               ),

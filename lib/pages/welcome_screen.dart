@@ -13,6 +13,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../storage/services/evaluation_date_service.dart';
 import '../storage/services/subject_service.dart';
 
 class WelcomeScreen extends StatelessWidget {
@@ -79,6 +80,8 @@ class WelcomeScreen extends StatelessWidget {
         print("Extracted Subjects from JSON.");
         await EvaluationService.buildFromJson((jsonData["evaluations"] as List).map((e) => e as Map<String, dynamic>).toList());
         print("Extracted Evaluations from JSON.");
+        await EvaluationDateService.buildFromJson((jsonData["evaluationDates"] as List).map((e) => e as Map<String, dynamic>).toList());
+        print("Extracted EvaluationDates from JSON.");
         await SettingsService.buildFromJson(jsonData["settings"] as Map<String, dynamic>);
         print("Extracted Settings from JSON.");
         await TimetableService.buildSettingsFromJson(jsonData["timetableSettings"] as Map<String, dynamic>);

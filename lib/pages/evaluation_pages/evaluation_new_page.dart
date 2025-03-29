@@ -1,7 +1,7 @@
+import 'package:abitur/storage/entities/evaluation_date.dart';
 import 'package:abitur/storage/services/evaluation_service.dart';
 import 'package:abitur/storage/services/settings_service.dart';
 import 'package:abitur/storage/services/subject_service.dart';
-import 'package:abitur/widgets/forms/date_input.dart';
 import 'package:abitur/widgets/forms/performance_selector.dart';
 import 'package:abitur/widgets/forms/subject_dropdown.dart';
 import 'package:abitur/widgets/forms/term_selector.dart';
@@ -12,6 +12,7 @@ import '../../storage/entities/evaluation.dart';
 import '../../storage/entities/performance.dart';
 import '../../storage/entities/subject.dart';
 import '../../utils/brightness_notifier.dart';
+import '../../widgets/forms/evaluation_date_form.dart';
 import '../../widgets/forms/form_gap.dart';
 
 class EvaluationNewPage extends StatefulWidget {
@@ -40,24 +41,22 @@ class _EvaluationNewPageState extends State<EvaluationNewPage> {
 
   late Subject _selectedSubject;
 
-  late DateTime _selectedDateTime;
-
   int _term = 0;
 
+  List<EvaluationDate> _evaluationDates = List.empty(growable: true);
+
   late Performance _selectedPerformance;
-  bool _giveNote = false;
-  int _currentNote = 8;
 
   @override
   void initState() {
     _selectedSubject = widget.initialSubject;
     _selectedPerformance = _selectedSubject.performances.first;
-    _selectedDateTime = widget.initialDateTime;
     if (widget.initialTerm != null) {
       _term = widget.initialTerm!;
     } else {
       _setProbableTerm();
     }
+    _evaluationDates.add(EvaluationDate(date: widget.initialDateTime));
     super.initState();
   }
 
@@ -74,21 +73,11 @@ class _EvaluationNewPageState extends State<EvaluationNewPage> {
 
   void _setProbableTerm() {
     setState(() {
-      int probableTerm = SettingsService.probableTerm(_selectedDateTime);
+      int probableTerm = SettingsService.probableTerm(_evaluationDates.firstOrNull?.date ?? DateTime.now());
       if (_selectedSubject.terms.contains(probableTerm)) {
         _term = probableTerm;
       } else {
         _term = _selectedSubject.terms.first;
-      }
-    });
-  }
-
-  void _selectedDate(DateTime picked) {
-    int probableTerm = SettingsService.probableTerm(picked);
-    setState(() {
-      _selectedDateTime = picked;
-      if (_selectedSubject.terms.contains(probableTerm)) {
-        _term = probableTerm;
       }
     });
   }
@@ -149,15 +138,6 @@ class _EvaluationNewPageState extends State<EvaluationNewPage> {
 
                   FormGap(),
 
-                  DateInput(
-                    dateTime: _selectedDateTime,
-                    firstDate: SettingsService.firstDayOfSchool,
-                    lastDate: SettingsService.lastDayOfSchool,
-                    onSelected: _selectedDate,
-                  ),
-
-                  FormGap(),
-
                   TermSelector(
                     selectedTerm: _term,
                     terms: _selectedSubject.terms,
@@ -170,33 +150,13 @@ class _EvaluationNewPageState extends State<EvaluationNewPage> {
 
                   FormGap(),
 
-                  // EvaluationDateForm(
-                  //   evaluation: evaluation,
-                  //   evaluationDates: evaluationDates,
-                  //   onChanged: onChanged,
-                  // ),
-
-                  SwitchListTile(
-                    title: Text("Note eintragen"),
-                    value: _giveNote,
-                    onChanged: (newValue) {
-                      setState(() {
-                        _giveNote = !_giveNote;
-                      });
+                  EvaluationDateForm(
+                    evaluationId: "",
+                    evaluationDates: _evaluationDates,
+                    onChanged: (newEvaluationDates) {
+                      _evaluationDates = newEvaluationDates;
+                      _setProbableTerm();
                     },
-                  ),
-
-                  Slider(
-                    min: 0,
-                    max: 15,
-                    divisions: 15,
-                    value: _currentNote.toDouble(),
-                    label: "$_currentNote",
-                    onChanged: _giveNote ? (newValue) {
-                      setState(() {
-                        _currentNote = newValue.toInt();
-                      });
-                    } : null,
                   ),
                 ],
               ),
@@ -213,8 +173,7 @@ class _EvaluationNewPageState extends State<EvaluationNewPage> {
                 _selectedPerformance,
                 _term,
                 _name.text,
-                _selectedDateTime,
-                _giveNote ? _currentNote : null
+                _evaluationDates,
             );
             Navigator.pop(context, newEvaluation);
           },

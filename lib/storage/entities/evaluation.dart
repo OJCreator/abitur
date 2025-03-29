@@ -67,23 +67,13 @@ class Evaluation {
   };
 
   static Evaluation fromJson(Map<String, dynamic> json) {
-    // TODO
-    // return Evaluation(
-    //   subjectId: json["subjectId"],
-    //   performanceId: json["performanceId"],
-    //   term: json["term"],
-    //   name: json["name"],
-    //   date: DateTime.parse(json["date"]),
-    //   note: json["note"],
-    //   id: json["id"],
-    // );
     return Evaluation(
       subjectId: json["subjectId"],
       performanceId: json["performanceId"],
       term: json["term"],
       name: json["name"],
       id: json["id"],
-      evaluationDateIds: json["evaluationDateIds"] as List<String>,
+      evaluationDateIds: (json["evaluationDateIds"] as List).map((e) => e as String).toList(),
     );
   }
 

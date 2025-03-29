@@ -18,11 +18,13 @@ import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../storage/entities/evaluation.dart';
+import '../../storage/entities/evaluation_date.dart';
 import '../../storage/entities/performance.dart';
 import '../../storage/entities/settings.dart';
 import '../../storage/entities/subject.dart';
 import '../../storage/entities/timetable/timetable.dart';
 import '../../storage/entities/timetable/timetable_settings.dart';
+import '../../storage/services/evaluation_date_service.dart';
 import '../../utils/brightness_notifier.dart';
 
 class SettingsPage extends StatefulWidget {
@@ -126,6 +128,7 @@ class _SettingsPageState extends State<SettingsPage> {
   Future<void> _exportToJson() async {
 
     List<Evaluation> evaluations = EvaluationService.findAll();
+    List<EvaluationDate> evaluationDates = EvaluationDateService.findAll();
     List<Subject> subjects = SubjectService.findAll();
     List<Performance> performances = PerformanceService.findAll();
     Settings settings = SettingsService.loadSettings();
@@ -133,16 +136,17 @@ class _SettingsPageState extends State<SettingsPage> {
     List<Timetable> timetables = TimetableService.loadTimetables();
     List<TimetableEntry> timetableEntries = TimetableService.loadTimetableEntries();
 
-    String jsonContent = exportDataToJson(subjects, performances, evaluations, settings, timetableSettings, timetables, timetableEntries);
+    String jsonContent = exportDataToJson(subjects, performances, evaluations, evaluationDates, settings, timetableSettings, timetables, timetableEntries);
     File f = await _saveToFile("abitur_data", jsonContent);
     Share.shareXFiles([XFile(f.path)], text: "Hier sind die Abitur-Daten!");
   }
 
-  String exportDataToJson(List<Subject> subjects, List<Performance> performances, List<Evaluation> evaluations, Settings settings, TimetableSettings timetableSettings, List<Timetable> timetables, List<TimetableEntry> timetableEntries) {
+  String exportDataToJson(List<Subject> subjects, List<Performance> performances, List<Evaluation> evaluations, List<EvaluationDate> evaluationDates, Settings settings, TimetableSettings timetableSettings, List<Timetable> timetables, List<TimetableEntry> timetableEntries) {
     final Map<String, dynamic> data = {
       "subjects": subjects.map((s) => s.toJson()).toList(),
       "performances": performances.map((p) => p.toJson()).toList(),
       "evaluations": evaluations.map((e) => e.toJson()).toList(),
+      "evaluationDates": evaluationDates.map((e) => e.toJson()).toList(),
       "settings": settings.toJson(),
       "timetableSettings": timetableSettings.toJson(),
       "timetables": timetables.map((t) => t.toJson()).toList(),

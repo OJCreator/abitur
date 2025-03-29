@@ -29,6 +29,9 @@ class EvaluationDate {
   @HiveField(5)
   int weight;
 
+  @HiveField(5)
+  String description;
+
   EvaluationDate({
     required this.date,
     String evaluationId = "",
@@ -36,7 +39,30 @@ class EvaluationDate {
     this.note,
     this.calendarId,
     int? weight,
+    this.description = "",
   }) : id = id ?? Uuid.generate(),
         _evaluationId = evaluationId,
         weight = weight ?? 1;
+
+  Map<String, dynamic> toJson() => {
+    "id": id,
+    "evaluationId": _evaluationId,
+    "date": date.toString(),
+    "note": note,
+    "calendarId": calendarId,
+    "weight": weight,
+    "description": description,
+  };
+
+  static EvaluationDate fromJson(Map<String, dynamic> json) {
+    return EvaluationDate(
+      id: json["id"],
+      evaluationId: json["evaluationId"],
+      date: DateTime.parse(json["date"]),
+      note: json["note"],
+      calendarId: json["calendarId"],
+      weight: json["weight"],
+      description: json["description"],
+    );
+  }
 }

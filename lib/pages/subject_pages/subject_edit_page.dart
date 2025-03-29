@@ -147,6 +147,7 @@ class _SubjectEditPageState extends State<SubjectEditPage> {
                         _countingTerms = newValue.toInt();
                       });
                     },
+                    year2023: false,
                   ),
 
                   FormGap(),

@@ -43,7 +43,7 @@ class _EvaluationsPageState extends State<EvaluationsPage> {
 
   void searchEvaluations() {
     setState(() {
-      evaluationDates = EvaluationDateService.findAll().where((e) => e.date.isAfter(DateTime.now()) || e.note == null).toList();
+      evaluationDates = EvaluationDateService.findAll().where((e) => e.date.isAfter(DateTime.now()) || (e.note == null && e.weight > 0)).toList();
       evaluationDates.sort((a, b) => a.date.compareTo(b.date));
     });
   }
