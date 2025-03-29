@@ -1,0 +1,42 @@
+import 'package:abitur/utils/uuid.dart';
+import 'package:hive/hive.dart';
+
+import '../services/evaluation_service.dart';
+import 'evaluation.dart';
+
+part 'evaluation_date.g.dart';
+
+@HiveType(typeId: 7)
+class EvaluationDate {
+
+  @HiveField(0)
+  String id;
+
+  @HiveField(1)
+  String _evaluationId;
+  Evaluation get evaluation => EvaluationService.findById(_evaluationId) ?? Evaluation.empty();
+  set evaluation(Evaluation newEvaluation) => _evaluationId = newEvaluation.id;
+
+  @HiveField(2)
+  DateTime date;
+
+  @HiveField(3)
+  int? note;
+
+  @HiveField(4)
+  String? calendarId;
+
+  @HiveField(5)
+  int weight;
+
+  EvaluationDate({
+    required this.date,
+    String evaluationId = "",
+    String? id,
+    this.note,
+    this.calendarId,
+    int? weight,
+  }) : id = id ?? Uuid.generate(),
+        _evaluationId = evaluationId,
+        weight = weight ?? 1;
+}

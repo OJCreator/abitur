@@ -6,8 +6,10 @@ import 'package:abitur/utils/constants.dart';
 
 import '../../utils/pair.dart';
 import '../entities/evaluation.dart';
+import '../entities/evaluation_date.dart';
 import '../entities/performance.dart';
 import '../entities/subject.dart';
+import 'evaluation_date_service.dart';
 import 'evaluation_service.dart';
 import 'performance_service.dart';
 
@@ -90,23 +92,23 @@ class SubjectService {
 
   static List<Pair<DateTime, double>> getAverageHistory({Subject? filterBySubject}) {
 
-    List<Evaluation> evaluations;
+    List<EvaluationDate> evaluationsDates;
     if (filterBySubject == null) {
-      evaluations = EvaluationService.findAllGraded();
+      evaluationsDates = EvaluationDateService.findAllGraded();
     } else {
-      evaluations = EvaluationService.findAllGradedBySubject(filterBySubject);
+      evaluationsDates = EvaluationDateService.findAllGradedBySubject(filterBySubject);
     }
-    evaluations.sort((a, b) => a.date.compareTo(b.date));
+    evaluationsDates.sort((a, b) => a.date.compareTo(b.date));
 
     List<Pair<DateTime, double>> history = [];
     List<int> allGrades = [];
 
-    for (var evaluation in evaluations) {
+    for (var evaluation in evaluationsDates) {
       if (evaluation.note == null || evaluation.date.isAfter(DateTime.now())) {
         continue;
       }
 
-      allGrades.add(evaluation.note!);
+      allGrades.add(evaluation.note!); // TODO stimmt das?????
       double currentAverage = avg(allGrades)!;
       history.add(Pair(evaluation.date, currentAverage));
     }
@@ -136,7 +138,7 @@ class SubjectService {
       });
     });
     Iterable<Pair<double, double?>> weightAndNote = performancesAndNotes.mapToIterable((performance, value) {
-      Iterable<int> noteValues = value.map((note) => note.note!);
+      Iterable<int> noteValues = value.map((evaluation) => EvaluationService.calculateNote(evaluation)!);
       return Pair(performance.weighting, avg(noteValues));
     });
     double? average = weightedAvg(weightAndNote);

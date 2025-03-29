@@ -8,11 +8,11 @@ import 'package:abitur/widgets/forms/term_selector.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import '../storage/entities/evaluation.dart';
-import '../storage/entities/performance.dart';
-import '../storage/entities/subject.dart';
-import '../utils/brightness_notifier.dart';
-import '../widgets/forms/form_gap.dart';
+import '../../storage/entities/evaluation.dart';
+import '../../storage/entities/performance.dart';
+import '../../storage/entities/subject.dart';
+import '../../utils/brightness_notifier.dart';
+import '../../widgets/forms/form_gap.dart';
 
 class EvaluationNewPage extends StatefulWidget {
 
@@ -170,6 +170,12 @@ class _EvaluationNewPageState extends State<EvaluationNewPage> {
 
                   FormGap(),
 
+                  // EvaluationDateForm(
+                  //   evaluation: evaluation,
+                  //   evaluationDates: evaluationDates,
+                  //   onChanged: onChanged,
+                  // ),
+
                   SwitchListTile(
                     title: Text("Note eintragen"),
                     value: _giveNote,
@@ -180,7 +186,7 @@ class _EvaluationNewPageState extends State<EvaluationNewPage> {
                     },
                   ),
 
-                  Slider( // todo material3: https://m3.material.io/components/sliders/overview
+                  Slider(
                     min: 0,
                     max: 15,
                     divisions: 15,

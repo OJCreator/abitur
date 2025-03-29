@@ -6,6 +6,7 @@ import 'package:abitur/storage/services/timetable_service.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
 import 'entities/evaluation.dart';
+import 'entities/evaluation_date.dart';
 import 'entities/performance.dart';
 import 'entities/subject.dart';
 import 'entities/timetable/timetable_settings.dart';
@@ -13,6 +14,7 @@ import 'entities/timetable/timetable_settings.dart';
 class Storage {
 
   static late Box<Evaluation> _evaluationBox;
+  static late Box<EvaluationDate> _evaluationDateBox;
   static late Box<Performance> _performanceBox;
   static late Box<Subject> _subjectBox;
   static late Box<Settings> _settingsBox;
@@ -24,6 +26,7 @@ class Storage {
     await Hive.initFlutter();
 
     Hive.registerAdapter(EvaluationAdapter());
+    Hive.registerAdapter(EvaluationDateAdapter());
     Hive.registerAdapter(PerformanceAdapter());
     Hive.registerAdapter(SubjectAdapter());
     Hive.registerAdapter(SettingsAdapter());
@@ -32,6 +35,7 @@ class Storage {
     Hive.registerAdapter(TimetableEntryAdapter());
 
     _evaluationBox = await Hive.openBox<Evaluation>('evaluations');
+    _evaluationDateBox = await Hive.openBox<EvaluationDate>('evaluationDates');
     _performanceBox = await Hive.openBox<Performance>('performances');
     _subjectBox = await Hive.openBox<Subject>('subjects');
     _settingsBox = await Hive.openBox<Settings>('settings');
@@ -77,6 +81,24 @@ class Storage {
       return;
     }
     await _evaluationBox.deleteAt(index);
+  }
+
+  // EvaluationDates
+  static List<EvaluationDate> loadEvaluationDates() {
+    return _evaluationDateBox.values.toList();
+  }
+
+  static EvaluationDate loadEvaluationDate(String eId) {
+    return _evaluationDateBox.get(eId)!;
+  }
+
+  static Future<void> saveEvaluationDate(EvaluationDate e) async {
+    await _evaluationDateBox.delete(e.id);
+    await _evaluationDateBox.put(e.id, e);
+  }
+
+  static Future<void> deleteEvaluationDate(EvaluationDate e) async {
+    await _evaluationDateBox.delete(e.id);
   }
 
   // Subjects

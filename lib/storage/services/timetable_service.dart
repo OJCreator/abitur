@@ -135,7 +135,7 @@ class TimetableService {
   static DateTime getStartTime(int term, Subject subject, int weekday) {
     TimetableSettings timetableSettings = loadTimetableSettings();
     Timetable t = loadTimetable(term);
-    var firstHour = t.timetableEntryIds[weekday-1].indexWhere((it) => it != null && loadTimetableEntry(it).subjectId == subject.id);
+    var firstHour = t.timetableEntryIds.elementAtOrNull(weekday-1)?.indexWhere((it) => it != null && loadTimetableEntry(it).subjectId == subject.id) ?? -1;
     String from = timetableSettings.times.elementAtOrNull(firstHour)?.split(" - ").first ?? "23:50";
     DateFormat format = DateFormat("HH:mm");
     return format.parse(from);
@@ -144,7 +144,7 @@ class TimetableService {
   static DateTime getEndTime(int term, Subject subject, int weekday) {
     TimetableSettings timetableSettings = loadTimetableSettings();
     Timetable t = loadTimetable(term);
-    var lastHour = t.timetableEntryIds[weekday-1].lastIndexWhere((it) => it != null && loadTimetableEntry(it).subjectId == subject.id);
+    var lastHour = t.timetableEntryIds.elementAtOrNull(weekday-1)?.lastIndexWhere((it) => it != null && loadTimetableEntry(it).subjectId == subject.id) ?? -1;
     String from = timetableSettings.times.elementAtOrNull(lastHour)?.split(" - ")[1] ?? "23:55";
     DateFormat format = DateFormat("HH:mm");
     return format.parse(from);

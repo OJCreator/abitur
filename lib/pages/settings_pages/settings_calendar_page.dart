@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../storage/entities/settings.dart';
-import '../../storage/services/evaluation_service.dart';
+import '../../storage/services/evaluation_date_service.dart';
 import '../../storage/storage.dart';
 import '../../utils/calender_sync.dart';
 
@@ -38,7 +38,7 @@ class _SettingsCalendarPageState extends State<SettingsCalendarPage> {
                 if (!s.calendarSynchronisation) {
                   await deleteAllCalendarEvents();
                 } else {
-                  syncEvaluationCalendarEvents(EvaluationService.findAll());
+                  syncEvaluationCalendarEvents(EvaluationDateService.findAll());
                 }
               },
             ),

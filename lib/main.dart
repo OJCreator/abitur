@@ -1,6 +1,6 @@
-import 'package:abitur/pages/evaluations_page.dart';
+import 'package:abitur/pages/evaluation_pages/evaluations_page.dart';
 import 'package:abitur/pages/analytics_page.dart';
-import 'package:abitur/pages/subjects_page.dart';
+import 'package:abitur/pages/subject_pages/subjects_page.dart';
 import 'package:abitur/pages/welcome_screen.dart';
 import 'package:abitur/storage/services/settings_service.dart';
 import 'package:abitur/storage/storage.dart';

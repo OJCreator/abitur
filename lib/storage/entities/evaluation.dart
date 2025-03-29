@@ -5,6 +5,9 @@ import 'package:abitur/storage/services/subject_service.dart';
 import 'package:abitur/utils/uuid.dart';
 import 'package:hive/hive.dart';
 
+import '../services/evaluation_date_service.dart';
+import 'evaluation_date.dart';
+
 part 'evaluation.g.dart';
 
 @HiveType(typeId: 0)
@@ -26,33 +29,32 @@ class Evaluation {
   String name;
 
   @HiveField(4)
-  DateTime date;
-
-  @HiveField(5)
-  int? note;
-
-  @HiveField(6)
   String id;
 
-  @HiveField(7)
-  String? calendarId;
+  @HiveField(5)
+  List<String> _evaluationDateIds;
+  List<EvaluationDate> get evaluationDates => EvaluationDateService.findAllById(_evaluationDateIds);
+  set evaluationDates(List<EvaluationDate> newEvaluationDates) => _evaluationDateIds = newEvaluationDates.map((it) => it.id).toList();
 
   Evaluation({
     String subjectId = "",
     String performanceId = "",
+    List<String>? evaluationDateIds,
     required this.term,
     required this.name,
-    required this.date,
-    this.note,
     String? id,
-    this.calendarId,
   }) : id = id ?? Uuid.generate(),
         _subjectId = subjectId,
-        _performanceId = performanceId;
+        _performanceId = performanceId,
+        _evaluationDateIds = evaluationDateIds ?? List.empty();
+
+  static Evaluation empty() {
+    return Evaluation(term: 0, name: "");
+  }
 
   @override
   String toString() {
-    return "Evaluation#$id (Name: '$name', Note: $note)";
+    return "Evaluation#$id (Name: '$name')";
   }
 
   Map<String, dynamic> toJson() => {
@@ -60,20 +62,28 @@ class Evaluation {
     "performanceId": _performanceId,
     "term": term,
     "name": name,
-    "date": date.toString(),
-    "note": note,
     "id": id,
+    "evaluationDateIds": _evaluationDateIds,
   };
 
   static Evaluation fromJson(Map<String, dynamic> json) {
+    // TODO
+    // return Evaluation(
+    //   subjectId: json["subjectId"],
+    //   performanceId: json["performanceId"],
+    //   term: json["term"],
+    //   name: json["name"],
+    //   date: DateTime.parse(json["date"]),
+    //   note: json["note"],
+    //   id: json["id"],
+    // );
     return Evaluation(
       subjectId: json["subjectId"],
       performanceId: json["performanceId"],
       term: json["term"],
       name: json["name"],
-      date: DateTime.parse(json["date"]),
-      note: json["note"],
       id: json["id"],
+      evaluationDateIds: json["evaluationDateIds"] as List<String>,
     );
   }
 

@@ -1,15 +1,17 @@
-import 'package:abitur/pages/evaluation_edit_page.dart';
-import 'package:abitur/pages/evaluation_new_page.dart';
+import 'package:abitur/pages/evaluation_pages/evaluation_edit_page.dart';
+import 'package:abitur/pages/evaluation_pages/evaluation_new_page.dart';
 import 'package:abitur/storage/entities/evaluation.dart';
+import 'package:abitur/storage/entities/evaluation_date.dart';
 import 'package:abitur/storage/services/api_service.dart';
 import 'package:abitur/storage/services/evaluation_service.dart';
 import 'package:abitur/storage/services/subject_service.dart';
 import 'package:abitur/storage/storage.dart';
+import 'package:abitur/widgets/evaluation_date_list_tile.dart';
 import 'package:flutter/material.dart';
 import 'package:table_calendar/table_calendar.dart';
 
-import '../utils/constants.dart';
-import '../widgets/badge.dart';
+import '../../storage/services/evaluation_date_service.dart';
+import '../../utils/constants.dart';
 
 class EvaluationsPage extends StatefulWidget {
 
@@ -21,7 +23,7 @@ class EvaluationsPage extends StatefulWidget {
 
 class _EvaluationsPageState extends State<EvaluationsPage> {
 
-  List<Evaluation> evaluations = [];
+  List<EvaluationDate> evaluationDates = [];
   List<Holiday> holidays = [];
   DateTime focusedDay = DateTime.now();
 
@@ -41,8 +43,8 @@ class _EvaluationsPageState extends State<EvaluationsPage> {
 
   void searchEvaluations() {
     setState(() {
-      evaluations = EvaluationService.findAll().where((e) => e.date.isAfter(DateTime.now()) || e.note == null).toList();
-      evaluations.sort((a, b) => a.date.compareTo(b.date));
+      evaluationDates = EvaluationDateService.findAll().where((e) => e.date.isAfter(DateTime.now()) || e.note == null).toList();
+      evaluationDates.sort((a, b) => a.date.compareTo(b.date));
     });
   }
 
@@ -80,11 +82,11 @@ class _EvaluationsPageState extends State<EvaluationsPage> {
             },
             suggestionsBuilder: (context, controller) {
               String text = controller.text;
-              List<Evaluation> evaluations = EvaluationService.findAllByQuery(text);
+              List<EvaluationDate> results = EvaluationDateService.findAllByQuery(text);
 
-              return evaluations.map((e) {
+              return results.map((evaluationDate) {
                 return EvaluationListTile(
-                  evaluation: e,
+                  evaluationDate: evaluationDate,
                   enabled: false,
                   reloadEvaluations: () {},
                 );
@@ -152,8 +154,8 @@ class _EvaluationsPageState extends State<EvaluationsPage> {
               ),
             ),
             // Prüfungen
-            ...evaluations.map((evaluation) {
-              return EvaluationListTile(evaluation: evaluation, reloadEvaluations: searchEvaluations,);
+            ...evaluationDates.map((evaluationDate) {
+              return EvaluationListTile(evaluationDate: evaluationDate, reloadEvaluations: searchEvaluations,);
             }),
             SizedBox(height: 80,), // damit der FloatingActionButton nichts verdeckt
           ],
@@ -193,38 +195,23 @@ class _EvaluationsPageState extends State<EvaluationsPage> {
 
 class EvaluationListTile extends StatelessWidget {
 
-  final Evaluation evaluation;
+  final EvaluationDate evaluationDate;
   final Function reloadEvaluations;
   final bool showDate;
   final bool enabled;
 
-  const EvaluationListTile({super.key, required this.evaluation, required this.reloadEvaluations, this.showDate = true, this.enabled = true});
+  const EvaluationListTile({super.key, required this.evaluationDate, required this.reloadEvaluations, this.showDate = true, this.enabled = true});
 
   @override
   Widget build(BuildContext context) {
-    return ListTile(
-      title: Text(evaluation.name),
-      subtitle: showDate ? Text(evaluation.date.format()) : null,
-      trailing: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          SubjectBadge(subject: evaluation.subject),
-        ],
-      ),
-      leading: AspectRatio(
-        aspectRatio: 1,
-        child: Center(
-          child: Text(
-            evaluation.note?.toString() ?? "-",
-            style: TextStyle(fontSize: 20,),
-          ),
-        ),
-      ),
-      onTap: enabled ? () async { // Enabled umfunktionieren: -> Link zu Fach??
+    return EvaluationDateListTile(
+      evaluationDate: evaluationDate,
+      showDate: showDate,
+      onTap: enabled ? () async { // TODO Enabled umfunktionieren: -> Link zu Fach??
         await Navigator.push(
           context,
           MaterialPageRoute(builder: (context) {
-            return EvaluationEditPage(evaluation: evaluation);
+            return EvaluationEditPage(evaluation: evaluationDate.evaluation); // TODO Wohin soll man hier gelangen? Was soll man bearbeiten?
           }),
         );
 
@@ -246,7 +233,7 @@ class EvaluationDayDialog extends StatefulWidget {
 
 class _EvaluationDayDialogState extends State<EvaluationDayDialog> {
 
-  List<Evaluation> evaluationsOnSelectedDay = [];
+  List<EvaluationDate> evaluationsOnSelectedDay = [];
 
   @override
   void initState() {
@@ -277,7 +264,7 @@ class _EvaluationDayDialogState extends State<EvaluationDayDialog> {
 
   void _reloadEvaluations() {
     setState(() {
-      evaluationsOnSelectedDay = EvaluationService.findAllByDay(widget.day);
+      evaluationsOnSelectedDay = EvaluationDateService.findAllByDay(widget.day);
     });
   }
 
@@ -290,7 +277,7 @@ class _EvaluationDayDialogState extends State<EvaluationDayDialog> {
           mainAxisSize: MainAxisSize.min,
           children: evaluationsOnSelectedDay.map((e) {
             return EvaluationListTile(
-              evaluation: e,
+              evaluationDate: e,
               showDate: false,
               reloadEvaluations: () {
                 _reloadEvaluations();

@@ -1,19 +1,19 @@
 import 'dart:ui';
 
-import 'package:abitur/storage/services/evaluation_service.dart';
+import 'package:abitur/storage/entities/evaluation_date.dart';
 import 'package:abitur/storage/services/settings_service.dart';
 import 'package:abitur/storage/services/timetable_service.dart';
 import 'package:device_calendar/device_calendar.dart';
 
-import '../storage/entities/evaluation.dart';
+import '../storage/services/evaluation_date_service.dart';
 
 DeviceCalendarPlugin _deviceCalendarPlugin = DeviceCalendarPlugin();
 
-Future<void> syncEvaluationCalendarEvent(Evaluation evaluation) async {
-  return syncEvaluationCalendarEvents([evaluation]);
+Future<void> syncEvaluationCalendarEvent(EvaluationDate evaluationDate) async {
+  return syncEvaluationCalendarEvents([evaluationDate]);
 }
 
-Future<void> syncEvaluationCalendarEvents(List<Evaluation> evaluations) async {
+Future<void> syncEvaluationCalendarEvents(List<EvaluationDate> evaluationDates) async {
 
   if (!SettingsService.calendarSynchronisation()) {
     deleteAllCalendarEvents();
@@ -26,36 +26,37 @@ Future<void> syncEvaluationCalendarEvents(List<Evaluation> evaluations) async {
     return;
   }
 
-  for (Evaluation evaluation in evaluations) {
-    await deleteEvaluationCalendarEvent(evaluation);
+  for (EvaluationDate evaluationDate in evaluationDates) {
+    await deleteEvaluationCalendarEvent(evaluationDate);
 
-    DateTime start = TimetableService.getStartTime(evaluation.term, evaluation.subject, evaluation.date.weekday);
-    DateTime end = TimetableService.getEndTime(evaluation.term, evaluation.subject, evaluation.date.weekday);
+    DateTime start = TimetableService.getStartTime(evaluationDate.evaluation.term, evaluationDate.evaluation.subject, evaluationDate.date.weekday);
+    DateTime end = TimetableService.getEndTime(evaluationDate.evaluation.term, evaluationDate.evaluation.subject, evaluationDate.date.weekday);
 
     Event event = Event(
-        calendarId,
-        eventId: null, // TODO ein Event bearbeiten, statt es immer zu löschen und neu zu generieren
-        title: "${evaluation.subject.shortName} ${evaluation.name}",
-        start: TZDateTime.from(evaluation.date.copyWith(hour: start.hour, minute: start.minute), getLocation("Europe/Berlin")),
-        end: TZDateTime.from(evaluation.date.copyWith(hour: end.hour, minute: end.minute), getLocation("Europe/Berlin")),
-        allDay: SettingsService.loadSettings().calendarFullDayEvents
+      calendarId,
+      eventId: null, // TODO ein Event bearbeiten, statt es immer zu löschen und neu zu generieren
+      title: "${evaluationDate.evaluation.subject.shortName} ${evaluationDate.evaluation.name}",
+      start: TZDateTime.from(evaluationDate.date.copyWith(hour: start.hour, minute: start.minute), getLocation("Europe/Berlin")),
+      end: TZDateTime.from(evaluationDate.date.copyWith(hour: end.hour, minute: end.minute), getLocation("Europe/Berlin")),
+      allDay: SettingsService.loadSettings().calendarFullDayEvents,
+      description: "Note: ${evaluationDate.note ?? '-'}"
     );
 
     var result = await _deviceCalendarPlugin.createOrUpdateEvent(event);
 
-    await EvaluationService.setCalendarId(evaluation, calendarId: result?.data);
+    await EvaluationDateService.setCalendarId(evaluationDate, calendarId: result?.data);
   }
-  print("${evaluations.length} Prüfung(en) wurde(n) in den Kalender übernommen.");
+  print("${evaluationDates.length} Prüfung(en) wurde(n) in den Kalender übernommen.");
 }
 
-Future<void> deleteEvaluationCalendarEvent(Evaluation evaluation) async {
+Future<void> deleteEvaluationCalendarEvent(EvaluationDate evaluationDate) async {
 
   String calendarId = await getCalendarId();
   if (calendarId.isEmpty) {
     print("No valid calendar ID available. Maybe no calendar permission?");
     return;
   }
-  await _deviceCalendarPlugin.deleteEvent(calendarId, evaluation.calendarId);
+  await _deviceCalendarPlugin.deleteEvent(calendarId, evaluationDate.calendarId);
 }
 
 Future<void> deleteAllCalendarEvents() async {

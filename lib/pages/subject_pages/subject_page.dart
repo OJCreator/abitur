@@ -1,18 +1,18 @@
-import 'package:abitur/pages/evaluation_edit_page.dart';
-import 'package:abitur/pages/evaluation_new_page.dart';
-import 'package:abitur/pages/subject_edit_page.dart';
+import 'package:abitur/pages/evaluation_pages/evaluation_edit_page.dart';
+import 'package:abitur/pages/evaluation_pages/evaluation_new_page.dart';
+import 'package:abitur/pages/subject_pages/subject_edit_page.dart';
 import 'package:abitur/storage/services/evaluation_service.dart';
 import 'package:abitur/storage/services/settings_service.dart';
 import 'package:abitur/storage/services/subject_service.dart';
-import 'package:abitur/utils/constants.dart';
+import 'package:abitur/widgets/evaluation_list_tile.dart';
 import 'package:abitur/widgets/info_card.dart';
 import 'package:abitur/widgets/percent_indicator.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import '../storage/entities/evaluation.dart';
-import '../storage/entities/subject.dart';
-import '../utils/brightness_notifier.dart';
+import '../../storage/entities/evaluation.dart';
+import '../../storage/entities/subject.dart';
+import '../../utils/brightness_notifier.dart';
 
 class SubjectPage extends StatefulWidget {
 
@@ -209,7 +209,7 @@ class _TermViewState extends State<_TermView> {
   void _loadEvaluations() {
     setState(() {
       evaluations = EvaluationService.findAllBySubjectAndTerm(widget.subject, widget.term);
-      evaluations.sort((a, b) => a.date.compareTo(b.date));
+      evaluations.sort((a, b) => a.evaluationDates.first.date.compareTo(b.evaluationDates.first.date));
     });
   }
 
@@ -233,20 +233,8 @@ class _TermViewState extends State<_TermView> {
                 style: Theme.of(context).textTheme.titleMedium,
               ),
               ...evaluations.isNotEmpty ? evaluations.map((evaluation) {
-                return ListTile(
-                  title: Text(evaluation.name),
-                  subtitle: Text(evaluation.date.format()),
-                  trailing: AspectRatio(
-                    aspectRatio: 1,
-                    child: Center(
-                      child: Text(
-                        evaluation.note?.toString() ?? "-",
-                        style: TextStyle(
-                          fontSize: 20,
-                        ),
-                      ),
-                    ),
-                  ),
+                return EvaluationListTile(
+                  evaluation: evaluation,
                   onTap: () async {
                     await Navigator.push(
                       context,

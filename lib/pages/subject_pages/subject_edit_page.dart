@@ -10,8 +10,8 @@ import 'package:abitur/widgets/forms/terms_multiple_choice.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import '../storage/entities/subject.dart';
-import '../utils/brightness_notifier.dart';
+import '../../storage/entities/subject.dart';
+import '../../utils/brightness_notifier.dart';
 
 class SubjectEditPage extends StatefulWidget {
 

@@ -17,13 +17,13 @@ import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-import '../storage/entities/evaluation.dart';
-import '../storage/entities/performance.dart';
-import '../storage/entities/settings.dart';
-import '../storage/entities/subject.dart';
-import '../storage/entities/timetable/timetable.dart';
-import '../storage/entities/timetable/timetable_settings.dart';
-import '../utils/brightness_notifier.dart';
+import '../../storage/entities/evaluation.dart';
+import '../../storage/entities/performance.dart';
+import '../../storage/entities/settings.dart';
+import '../../storage/entities/subject.dart';
+import '../../storage/entities/timetable/timetable.dart';
+import '../../storage/entities/timetable/timetable_settings.dart';
+import '../../utils/brightness_notifier.dart';
 
 class SettingsPage extends StatefulWidget {
   const SettingsPage({super.key});

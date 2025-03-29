@@ -1,12 +1,12 @@
-import 'package:abitur/pages/subject_new_page.dart';
-import 'package:abitur/pages/subject_page.dart';
+import 'package:abitur/pages/subject_pages/subject_new_page.dart';
+import 'package:abitur/pages/subject_pages/subject_page.dart';
 import 'package:abitur/storage/services/settings_service.dart';
 import 'package:abitur/storage/services/subject_service.dart';
 import 'package:abitur/widgets/info_card.dart';
 import 'package:flutter/material.dart';
 
-import '../storage/entities/subject.dart';
-import '../widgets/badge.dart';
+import '../../storage/entities/subject.dart';
+import '../../widgets/badge.dart';
 
 class SubjectsPage extends StatefulWidget {
 

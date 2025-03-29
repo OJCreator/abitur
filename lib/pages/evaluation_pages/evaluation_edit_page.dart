@@ -1,18 +1,19 @@
-import 'package:abitur/storage/services/settings_service.dart';
+import 'package:abitur/storage/services/evaluation_date_service.dart';
 import 'package:abitur/utils/brightness_notifier.dart';
+import 'package:abitur/widgets/forms/evaluation_date_form.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import '../storage/entities/evaluation.dart';
-import '../storage/entities/performance.dart';
-import '../storage/entities/subject.dart';
-import '../storage/services/evaluation_service.dart';
-import '../storage/services/subject_service.dart';
-import '../widgets/forms/date_input.dart';
-import '../widgets/forms/performance_selector.dart';
-import '../widgets/forms/subject_dropdown.dart';
-import '../widgets/forms/term_selector.dart';
-import '../widgets/forms/form_gap.dart';
+import '../../storage/entities/evaluation.dart';
+import '../../storage/entities/evaluation_date.dart';
+import '../../storage/entities/performance.dart';
+import '../../storage/entities/subject.dart';
+import '../../storage/services/evaluation_service.dart';
+import '../../storage/services/subject_service.dart';
+import '../../widgets/forms/performance_selector.dart';
+import '../../widgets/forms/subject_dropdown.dart';
+import '../../widgets/forms/term_selector.dart';
+import '../../widgets/forms/form_gap.dart';
 
 class EvaluationEditPage extends StatefulWidget {
 
@@ -31,22 +32,30 @@ class _EvaluationEditPageState extends State<EvaluationEditPage> {
 
   late Subject _selectedSubject;
   late Performance _selectedPerformance;
-  late DateTime _selectedDate;
+  // late DateTime _selectedDate;
   late int _selectedTerm;
-  late int _selectedNote;
+  // late int _selectedNote;
 
-  late bool _giveNote;
+  late List<EvaluationDate> _evaluationDates;
+  late final List<EvaluationDate> _oldEvaluationDates;
+
+  // TODO am besten auf der EvaluationEditPage für jedes Date eine Card erstellen und wenn man die Note für eine bestimmte EvaluationDate eintragen will, dann bekommt sie einmal diesen Shimmer-Effekt
+
+  // late bool _giveNote;
 
   @override
   void initState() {
     _name.text = widget.evaluation.name;
     _selectedSubject = widget.evaluation.subject;
     _selectedPerformance = widget.evaluation.performance;
-    _selectedDate = widget.evaluation.date;
+    // _selectedDate = widget.evaluation.date;
     _selectedTerm = widget.evaluation.term;
-    _selectedNote = widget.evaluation.note ?? 8;
+    // _selectedNote = widget.evaluation.note ?? 8;
 
-    _giveNote = widget.evaluation.note != null;
+    _evaluationDates = widget.evaluation.evaluationDates;
+    _oldEvaluationDates = widget.evaluation.evaluationDates;
+
+    // _giveNote = widget.evaluation.note != null;
     super.initState();
   }
 
@@ -142,16 +151,16 @@ class _EvaluationEditPageState extends State<EvaluationEditPage> {
 
                   FormGap(),
 
-                  DateInput(
-                    dateTime: _selectedDate,
-                    firstDate: SettingsService.firstDayOfSchool,
-                    lastDate: SettingsService.lastDayOfSchool,
-                    onSelected: (picked) {
-                      setState(() {
-                        _selectedDate = picked;
-                      });
-                    },
-                  ),
+                  // DateInput(
+                  //   dateTime: _selectedDate,
+                  //   firstDate: SettingsService.firstDayOfSchool,
+                  //   lastDate: SettingsService.lastDayOfSchool,
+                  //   onSelected: (picked) {
+                  //     setState(() {
+                  //       _selectedDate = picked;
+                  //     });
+                  //   },
+                  // ),
 
                   FormGap(),
 
@@ -167,27 +176,34 @@ class _EvaluationEditPageState extends State<EvaluationEditPage> {
 
                   FormGap(),
 
-                  SwitchListTile(
-                    title: Text("Note eintragen"),
-                    value: _giveNote,
-                    onChanged: (newValue) {
-                      setState(() {
-                        _giveNote = !_giveNote;
-                      });
+                  // SwitchListTile(
+                  //   title: Text("Note eintragen"),
+                  //   value: _giveNote,
+                  //   onChanged: (newValue) {
+                  //     setState(() {
+                  //       _giveNote = !_giveNote;
+                  //     });
+                  //   },
+                  // ),
+                  //
+                  // Slider( // todo material3: https://m3.material.io/components/sliders/overview
+                  //   min: 0,
+                  //   max: 15,
+                  //   divisions: 15,
+                  //   value: _selectedNote.toDouble(),
+                  //   label: "$_selectedNote",
+                  //   onChanged: _giveNote ? (newValue) {
+                  //     setState(() {
+                  //       _selectedNote = newValue.toInt();
+                  //     });
+                  //   } : null,
+                  // ),
+                  EvaluationDateForm(
+                    evaluation: widget.evaluation,
+                    evaluationDates: widget.evaluation.evaluationDates,
+                    onChanged: (newEvaluationDates) {
+                      _evaluationDates = newEvaluationDates;
                     },
-                  ),
-
-                  Slider( // todo material3: https://m3.material.io/components/sliders/overview
-                    min: 0,
-                    max: 15,
-                    divisions: 15,
-                    value: _selectedNote.toDouble(),
-                    label: "$_selectedNote",
-                    onChanged: _giveNote ? (newValue) {
-                      setState(() {
-                        _selectedNote = newValue.toInt();
-                      });
-                    } : null,
                   ),
                 ],
               ),
@@ -205,9 +221,12 @@ class _EvaluationEditPageState extends State<EvaluationEditPage> {
               performance: _selectedPerformance,
               term: _selectedTerm,
               name: _name.text,
-              date: _selectedDate,
-              note: _giveNote ? _selectedNote : null,
+              evaluationDates: _evaluationDates
+              // date: _selectedDate,
+              // note: _giveNote ? _selectedNote : null,
             );
+            await EvaluationDateService.deleteAllEvaluationDates(_oldEvaluationDates.where((e) => !_evaluationDates.contains(e)).toList());
+            await EvaluationDateService.saveAllEvaluationDates(_evaluationDates);
             Navigator.pop(context);
           },
           label: Text("Speichern"),

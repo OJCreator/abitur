@@ -1,21 +1,29 @@
 import 'package:abitur/storage/entities/evaluation.dart';
+import 'package:abitur/storage/services/evaluation_date_service.dart';
 import 'package:abitur/storage/storage.dart';
-import 'package:abitur/utils/calender_sync.dart';
 import 'package:abitur/utils/constants.dart';
 
+import '../entities/evaluation_date.dart';
 import '../entities/performance.dart';
 import '../entities/subject.dart';
 
 class EvaluationService {
 
-
   static List<Evaluation> findAll() {
     List<Evaluation> evaluations = Storage.loadEvaluations();
-    evaluations.sort((a,b) => a.date.compareTo(b.date));
+    evaluations.sort((a,b) => a.evaluationDates.first.date.compareTo(b.evaluationDates.first.date));
     return evaluations;
   }
+  static Evaluation? findById(String evaluationId) {
+    for (var evaluation in findAll()) {
+      if (evaluation.id == evaluationId) {
+        return evaluation;
+      }
+    }
+    return null;
+  }
   static List<Evaluation> findAllByDay(DateTime day) {
-    return findAll().where((e) => e.date.isOnSameDay(day)).toList();
+    return EvaluationDateService.findAllByDay(day).map((it) => it.evaluation).toSet().toList();
   }
   static List<Evaluation> findAllByQuery(String text) {
     List<String> queries = text.toLowerCase().split(" ");
@@ -25,7 +33,7 @@ class EvaluationService {
       e.name.toLowerCase().contains(query) ||
           e.subject.name.toLowerCase().contains(query) ||
           e.subject.shortName.toLowerCase().contains(query) ||
-          (e.note != null && e.note.toString() == query)
+          (calculateNote(e)?.toString() == query)
       );
     }).toList();
   }
@@ -35,12 +43,12 @@ class EvaluationService {
   }
   static List<Evaluation> findAllGraded() {
     List<Evaluation> evaluations = EvaluationService.findAll();
-    List<Evaluation> gradedEvaluations =  evaluations.where((e) => e.note != null).toList();
+    List<Evaluation> gradedEvaluations =  evaluations.where((e) => calculateNote(e) != null).toList();
     return gradedEvaluations;
   }
   static List<Evaluation> findAllGradedBySubject(Subject s) {
     List<Evaluation> evaluationsOfSubject = EvaluationService.findAllBySubject(s);
-    List<Evaluation> gradedEvaluations =  evaluationsOfSubject.where((e) => e.note != null).toList();
+    List<Evaluation> gradedEvaluations = evaluationsOfSubject.where((e) => calculateNote(e) != null).toList();
     return gradedEvaluations;
   }
   static List<Evaluation> findAllGradedBySubjectAndTerm(Subject s, int term) {
@@ -69,36 +77,25 @@ class EvaluationService {
         subjectId: subject.id,
         performanceId: performance.id,
         term: term,
-        name: name,
-        date: date,
-        note: note
+        name: name
     );
+    EvaluationDate evaluationDate = await EvaluationDateService.newEvaluationDate(e, date, note); // todo ??
+    e.evaluationDates = [evaluationDate];
     await Storage.saveEvaluation(e);
-    await syncEvaluationCalendarEvent(e);
     return e;
   }
 
-  static Future<void> editEvaluation(Evaluation evaluation, {required Subject subject, required Performance performance, required int term, required String name, required DateTime date, int? note}) async {
+  static Future<void> editEvaluation(Evaluation evaluation, {required Subject subject, required Performance performance, required int term, required String name, required List<EvaluationDate> evaluationDates}) async {
     evaluation.subject = subject;
     evaluation.performance = performance;
     evaluation.term = term;
     evaluation.name = name;
-    evaluation.date = date;
-    evaluation.note = note;
-    await Storage.saveEvaluation(evaluation);
-    await syncEvaluationCalendarEvent(evaluation);
-  }
-
-  static Future<void> setCalendarId(Evaluation evaluation, {required String? calendarId}) async {
-    if (calendarId == null) {
-      return;
-    }
-    evaluation.calendarId = calendarId;
+    evaluation.evaluationDates = evaluationDates;
     await Storage.saveEvaluation(evaluation);
   }
 
   static Future<void> deleteEvaluation(Evaluation evaluation) async {
-    await deleteEvaluationCalendarEvent(evaluation);
+    await EvaluationDateService.deleteAllEvaluationDates(evaluation.evaluationDates);
     await Storage.deleteEvaluation(evaluation);
   }
 
@@ -106,6 +103,14 @@ class EvaluationService {
     for (var e in evaluations) {
       deleteEvaluation(e);
     }
+  }
+
+  static int? calculateNote(Evaluation evaluation) {
+    List<EvaluationDate> evaluationDates = evaluation.evaluationDates.where((it) => it.note != null).toList();
+    if (evaluationDates.isEmpty) return null;
+    double weightTotal = evaluationDates.map((it) => it.weight).sum().toDouble();
+    double note = evaluationDates.map((it) => it.note! * it.weight).sum() / weightTotal;
+    return roundNote(note);
   }
 
   static Future<void> buildFromJson(List<Map<String, dynamic>> jsonData) async {

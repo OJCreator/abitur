@@ -1,4 +1,4 @@
-import 'package:abitur/pages/settings_page.dart';
+import 'package:abitur/pages/settings_pages/settings_page.dart';
 import 'package:abitur/storage/services/subject_service.dart';
 import 'package:abitur/widgets/analytics/average_analytics.dart';
 import 'package:abitur/widgets/analytics/subjects_analytics.dart';
