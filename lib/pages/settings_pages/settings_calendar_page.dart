@@ -1,5 +1,7 @@
+import 'package:abitur/storage/services/evaluation_type_service.dart';
 import 'package:flutter/material.dart';
 
+import '../../storage/entities/evaluation_type.dart';
 import '../../storage/entities/settings.dart';
 import '../../storage/services/evaluation_date_service.dart';
 import '../../storage/storage.dart';
@@ -49,36 +51,18 @@ class _SettingsCalendarPageState extends State<SettingsCalendarPage> {
                 style: Theme.of(context).textTheme.titleSmall,
               ),
             ),
-            SwitchListTile(
-              title: Text("Tests"),
-              value: s.calendarSynchronisation,
-              onChanged: s.calendarSynchronisation ? (v) async {
-                // setState(() {
-                //   s.calendarSynchronisation = !s.calendarSynchronisation;
-                // });
-                // Storage.saveSettings(s);
-                // if (!s.calendarSynchronisation) {
-                //   await deleteAllCalendarEvents();
-                // } else {
-                //   syncEvaluationCalendarEvents(EvaluationService.findAll());
-                // }
-              } : null,
-            ),
-            SwitchListTile(
-              title: Text("Klausuren"),
-              value: s.calendarSynchronisation,
-              onChanged: s.calendarSynchronisation ? (v) async {
-                // setState(() {
-                //   s.calendarSynchronisation = !s.calendarSynchronisation;
-                // });
-                // Storage.saveSettings(s);
-                // if (!s.calendarSynchronisation) {
-                //   await deleteAllCalendarEvents();
-                // } else {
-                //   syncEvaluationCalendarEvents(EvaluationService.findAll());
-                // }
-              } : null,
-            ),
+            for (EvaluationType evaluationType in EvaluationTypeService.findAll())
+              SwitchListTile(
+                title: Text(evaluationType.name),
+                value: evaluationType.showInCalendar,
+                onChanged: s.calendarSynchronisation ? (v) async {
+                  setState(() {
+                    EvaluationTypeService.editEvaluationType(evaluationType, showInCalendar: !evaluationType.showInCalendar);
+                  });
+                  Storage.saveSettings(s);
+                  syncEvaluationCalendarEvents(EvaluationDateService.findAll());
+                } : null,
+              ),
             Divider(),
             ListTile(
               title: Text(

@@ -1,6 +1,9 @@
+import 'package:abitur/storage/entities/evaluation_type.dart';
 import 'package:abitur/storage/services/evaluation_date_service.dart';
+import 'package:abitur/storage/services/evaluation_type_service.dart';
 import 'package:abitur/utils/brightness_notifier.dart';
 import 'package:abitur/widgets/forms/evaluation_date_form.dart';
+import 'package:abitur/widgets/forms/evaluation_type_dropdown.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -30,6 +33,7 @@ class _EvaluationEditPageState extends State<EvaluationEditPage> {
   final _formKey = GlobalKey<FormState>();
   final TextEditingController _name = TextEditingController();
 
+  late EvaluationType _selectedEvaluationType;
   late Subject _selectedSubject;
   late Performance _selectedPerformance;
   late int _selectedTerm;
@@ -40,6 +44,8 @@ class _EvaluationEditPageState extends State<EvaluationEditPage> {
   @override
   void initState() {
     _name.text = widget.evaluation.name;
+
+    _selectedEvaluationType = widget.evaluation.evaluationType;
     _selectedSubject = widget.evaluation.subject;
     _selectedPerformance = widget.evaluation.performance;
     _selectedTerm = widget.evaluation.term;
@@ -114,6 +120,21 @@ class _EvaluationEditPageState extends State<EvaluationEditPage> {
 
                   FormGap(),
 
+                  EvaluationTypeDropdown(
+                    evaluationTypes: EvaluationTypeService.findAll(),
+                    selectedEvaluationType: _selectedEvaluationType,
+                    onSelected: (e) {
+                      if (e == null) {
+                        return;
+                      }
+                      setState(() {
+                        _selectedEvaluationType = e;
+                      });
+                    },
+                  ),
+
+                  FormGap(),
+
                   SubjectDropdown(
                     subjects: SubjectService.findAllGradable(),
                     selectedSubject: _selectedSubject,
@@ -179,9 +200,8 @@ class _EvaluationEditPageState extends State<EvaluationEditPage> {
               performance: _selectedPerformance,
               term: _selectedTerm,
               name: _name.text,
-              evaluationDates: _evaluationDates
-              // date: _selectedDate,
-              // note: _giveNote ? _selectedNote : null,
+              evaluationDates: _evaluationDates,
+              evaluationType: _selectedEvaluationType,
             );
             await EvaluationDateService.deleteAllEvaluationDates(_oldEvaluationDates.where((e) => !_evaluationDates.contains(e)).toList());
             await EvaluationDateService.saveAllEvaluationDates(_evaluationDates);

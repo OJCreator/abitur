@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:abitur/main.dart';
 import 'package:abitur/pages/setup_pages/setup_land_page.dart';
 import 'package:abitur/storage/services/evaluation_service.dart';
+import 'package:abitur/storage/services/evaluation_type_service.dart';
 import 'package:abitur/storage/services/performance_service.dart';
 import 'package:abitur/storage/services/settings_service.dart';
 import 'package:abitur/storage/services/timetable_service.dart';
@@ -82,6 +83,8 @@ class WelcomeScreen extends StatelessWidget {
         print("Extracted Evaluations from JSON.");
         await EvaluationDateService.buildFromJson((jsonData["evaluationDates"] as List).map((e) => e as Map<String, dynamic>).toList());
         print("Extracted EvaluationDates from JSON.");
+        await EvaluationTypeService.buildFromJson((jsonData["evaluationTypes"] as List).map((e) => e as Map<String, dynamic>).toList());
+        print("Extracted EvaluationTypes from JSON.");
         await SettingsService.buildFromJson(jsonData["settings"] as Map<String, dynamic>);
         print("Extracted Settings from JSON.");
         await TimetableService.buildSettingsFromJson(jsonData["timetableSettings"] as Map<String, dynamic>);

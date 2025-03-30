@@ -1,4 +1,5 @@
 import 'package:abitur/storage/entities/evaluation.dart';
+import 'package:abitur/storage/entities/evaluation_type.dart';
 import 'package:abitur/storage/services/evaluation_date_service.dart';
 import 'package:abitur/storage/storage.dart';
 import 'package:abitur/utils/constants.dart';
@@ -71,7 +72,7 @@ class EvaluationService {
     return evaluations;
   }
 
-  static Future<Evaluation> newEvaluation(Subject subject, Performance performance, int term, String name, List<EvaluationDate> evaluationDates) async {
+  static Future<Evaluation> newEvaluation(Subject subject, Performance performance, int term, String name, List<EvaluationDate> evaluationDates, EvaluationType evaluationType) async {
 
     Evaluation newEvaluation = Evaluation(
       subjectId: subject.id,
@@ -79,6 +80,7 @@ class EvaluationService {
       term: term,
       name: name,
       evaluationDateIds: evaluationDates.map((it) => it.id).toList(),
+      evaluationTypeId: evaluationType.id,
     );
     await Storage.saveEvaluation(newEvaluation);
 
@@ -89,12 +91,13 @@ class EvaluationService {
     return newEvaluation;
   }
 
-  static Future<void> editEvaluation(Evaluation evaluation, {required Subject subject, required Performance performance, required int term, required String name, required List<EvaluationDate> evaluationDates}) async {
+  static Future<void> editEvaluation(Evaluation evaluation, {required Subject subject, required Performance performance, required int term, required String name, required List<EvaluationDate> evaluationDates, required EvaluationType evaluationType}) async {
     evaluation.subject = subject;
     evaluation.performance = performance;
     evaluation.term = term;
     evaluation.name = name;
     evaluation.evaluationDates = evaluationDates;
+    evaluation.evaluationType = evaluationType;
     await Storage.saveEvaluation(evaluation);
   }
 
@@ -119,17 +122,6 @@ class EvaluationService {
 
   static Future<void> buildFromJson(List<Map<String, dynamic>> jsonData) async {
     deleteAllEvaluations(findAll());
-    // for (Map<String, dynamic> map in jsonData) {
-    //   print("Map 1:");
-    //   print(map);
-    //   EvaluationDate date = EvaluationDate(date: DateTime.parse(map["date"]), evaluationId: map["id"], weight: 1, note: map["note"]);
-    //   map["evaluationDateIds"] = [date.id].toList();
-    //   print("Map 2:");
-    //   print(map);
-    //   Evaluation e = Evaluation.fromJson(map);
-    //   await Storage.saveEvaluation(e);
-    //   await Storage.saveEvaluationDate(date);
-    // }
     List<Evaluation> evaluations = jsonData.map((e) => Evaluation.fromJson(e)).toList();
     for (Evaluation e in evaluations) {
       await Storage.saveEvaluation(e);

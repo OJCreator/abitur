@@ -1,7 +1,10 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:abitur/pages/settings_pages/settings_appearance_page.dart';
 import 'package:abitur/pages/settings_pages/settings_calendar_page.dart';
+import 'package:abitur/pages/settings_pages/settings_evaluation_types_page.dart';
+import 'package:abitur/storage/entities/evaluation_type.dart';
 import 'package:abitur/storage/entities/timetable/timetable_entry.dart';
 import 'package:abitur/storage/services/evaluation_service.dart';
 import 'package:abitur/storage/services/performance_service.dart';
@@ -10,10 +13,8 @@ import 'package:abitur/storage/services/subject_service.dart';
 import 'package:abitur/storage/services/timetable_service.dart';
 import 'package:abitur/storage/storage.dart';
 import 'package:abitur/utils/constants.dart';
-import 'package:abitur/widgets/color_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -25,7 +26,7 @@ import '../../storage/entities/subject.dart';
 import '../../storage/entities/timetable/timetable.dart';
 import '../../storage/entities/timetable/timetable_settings.dart';
 import '../../storage/services/evaluation_date_service.dart';
-import '../../utils/brightness_notifier.dart';
+import '../../storage/services/evaluation_type_service.dart';
 
 class SettingsPage extends StatefulWidget {
   const SettingsPage({super.key});
@@ -61,34 +62,23 @@ class _SettingsPageState extends State<SettingsPage> {
               },
             ),
             ListTile(
-              trailing: CircleAvatar(
-                backgroundColor: s.accentColor,
-              ),
-              title: Text("Akzentfarbe wählen"),
-              onTap: () async {
-                Color? newAccentColor = await showDialog(context: context, builder: (context) {
-                  return ColorDialog(
-                    initialColor: s.accentColor,
-                    title: "Akzentfarbe wählen",
-                  );
-                });
-                if (newAccentColor == null) {
-                  return;
-                }
-                setState(() {
-                  SettingsService.setAccentColor(context, newAccentColor);
-                });
+              title: Text("Erscheinungsbild"),
+              onTap: () {
+                Navigator.of(context).push(
+                    MaterialPageRoute(builder: (context) {
+                      return SettingsAppearancePage();
+                    })
+                );
               },
             ),
-            SwitchListTile(
-              title: Text("Light Mode"),
-              value: s.lightMode,
-              onChanged: (v) {
-                setState(() {
-                  s.lightMode = !s.lightMode;
-                });
-                Provider.of<BrightnessNotifier>(context, listen: false).setBrightness(s.lightMode);
-                Storage.saveSettings(s);
+            ListTile(
+              title: Text("Prüfungskategorien"),
+              onTap: () {
+                Navigator.of(context).push(
+                    MaterialPageRoute(builder: (context) {
+                      return SettingsEvaluationTypesPage();
+                    })
+                );
               },
             ),
             ListTile(
@@ -129,6 +119,7 @@ class _SettingsPageState extends State<SettingsPage> {
 
     List<Evaluation> evaluations = EvaluationService.findAll();
     List<EvaluationDate> evaluationDates = EvaluationDateService.findAll();
+    List<EvaluationType> evaluationTypes = EvaluationTypeService.findAll();
     List<Subject> subjects = SubjectService.findAll();
     List<Performance> performances = PerformanceService.findAll();
     Settings settings = SettingsService.loadSettings();
@@ -136,17 +127,18 @@ class _SettingsPageState extends State<SettingsPage> {
     List<Timetable> timetables = TimetableService.loadTimetables();
     List<TimetableEntry> timetableEntries = TimetableService.loadTimetableEntries();
 
-    String jsonContent = exportDataToJson(subjects, performances, evaluations, evaluationDates, settings, timetableSettings, timetables, timetableEntries);
+    String jsonContent = exportDataToJson(subjects, performances, evaluations, evaluationDates, evaluationTypes, settings, timetableSettings, timetables, timetableEntries);
     File f = await _saveToFile("abitur_data", jsonContent);
     Share.shareXFiles([XFile(f.path)], text: "Hier sind die Abitur-Daten!");
   }
 
-  String exportDataToJson(List<Subject> subjects, List<Performance> performances, List<Evaluation> evaluations, List<EvaluationDate> evaluationDates, Settings settings, TimetableSettings timetableSettings, List<Timetable> timetables, List<TimetableEntry> timetableEntries) {
+  String exportDataToJson(List<Subject> subjects, List<Performance> performances, List<Evaluation> evaluations, List<EvaluationDate> evaluationDates, List<EvaluationType> evaluationTypes, Settings settings, TimetableSettings timetableSettings, List<Timetable> timetables, List<TimetableEntry> timetableEntries) {
     final Map<String, dynamic> data = {
       "subjects": subjects.map((s) => s.toJson()).toList(),
       "performances": performances.map((p) => p.toJson()).toList(),
       "evaluations": evaluations.map((e) => e.toJson()).toList(),
       "evaluationDates": evaluationDates.map((e) => e.toJson()).toList(),
+      "evaluationTypes": evaluationTypes.map((e) => e.toJson()).toList(),
       "settings": settings.toJson(),
       "timetableSettings": timetableSettings.toJson(),
       "timetables": timetables.map((t) => t.toJson()).toList(),

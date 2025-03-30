@@ -1,4 +1,5 @@
 import 'package:abitur/storage/entities/evaluation_date.dart';
+import 'package:abitur/storage/entities/evaluation_type.dart';
 import 'package:abitur/storage/services/evaluation_service.dart';
 import 'package:abitur/storage/services/settings_service.dart';
 import 'package:abitur/storage/services/subject_service.dart';
@@ -11,8 +12,10 @@ import 'package:provider/provider.dart';
 import '../../storage/entities/evaluation.dart';
 import '../../storage/entities/performance.dart';
 import '../../storage/entities/subject.dart';
+import '../../storage/services/evaluation_type_service.dart';
 import '../../utils/brightness_notifier.dart';
 import '../../widgets/forms/evaluation_date_form.dart';
+import '../../widgets/forms/evaluation_type_dropdown.dart';
 import '../../widgets/forms/form_gap.dart';
 
 class EvaluationNewPage extends StatefulWidget {
@@ -40,6 +43,7 @@ class _EvaluationNewPageState extends State<EvaluationNewPage> {
   final TextEditingController _name = TextEditingController();
 
   late Subject _selectedSubject;
+  late EvaluationType _selectedEvaluationType;
 
   int _term = 0;
 
@@ -51,6 +55,7 @@ class _EvaluationNewPageState extends State<EvaluationNewPage> {
   void initState() {
     _selectedSubject = widget.initialSubject;
     _selectedPerformance = _selectedSubject.performances.first;
+    _selectedEvaluationType = EvaluationTypeService.findAll().first;
     if (widget.initialTerm != null) {
       _term = widget.initialTerm!;
     } else {
@@ -118,6 +123,21 @@ class _EvaluationNewPageState extends State<EvaluationNewPage> {
 
                   FormGap(),
 
+                  EvaluationTypeDropdown(
+                    evaluationTypes: EvaluationTypeService.findAll(),
+                    selectedEvaluationType: _selectedEvaluationType,
+                    onSelected: (e) {
+                      if (e == null) {
+                        return;
+                      }
+                      setState(() {
+                        _selectedEvaluationType = e;
+                      });
+                    },
+                  ),
+
+                  FormGap(),
+
                   SubjectDropdown(
                     subjects: SubjectService.findAllGradable(),
                     selectedSubject: _selectedSubject,
@@ -169,11 +189,12 @@ class _EvaluationNewPageState extends State<EvaluationNewPage> {
               return;
             }
             Evaluation newEvaluation = await EvaluationService.newEvaluation(
-                _selectedSubject,
-                _selectedPerformance,
-                _term,
-                _name.text,
-                _evaluationDates,
+              _selectedSubject,
+              _selectedPerformance,
+              _term,
+              _name.text,
+              _evaluationDates,
+              _selectedEvaluationType,
             );
             Navigator.pop(context, newEvaluation);
           },

@@ -29,7 +29,7 @@ class EvaluationDate {
   @HiveField(5)
   int weight;
 
-  @HiveField(5)
+  @HiveField(6)
   String description;
 
   EvaluationDate({
@@ -43,6 +43,10 @@ class EvaluationDate {
   }) : id = id ?? Uuid.generate(),
         _evaluationId = evaluationId,
         weight = weight ?? 1;
+
+  static EvaluationDate empty() {
+    return EvaluationDate(date: DateTime.now());
+  }
 
   Map<String, dynamic> toJson() => {
     "id": id,

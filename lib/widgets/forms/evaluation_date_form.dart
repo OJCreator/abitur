@@ -1,3 +1,4 @@
+import 'package:abitur/widgets/forms/form_gap.dart';
 import 'package:flutter/material.dart';
 
 import '../../storage/entities/evaluation_date.dart';
@@ -22,12 +23,15 @@ class EvaluationDateForm extends StatefulWidget {
 
 class _EvaluationDateFormState extends State<EvaluationDateForm> {
 
+  final List<TextEditingController> _descriptionController = List.empty(growable: true);
   final List<bool> _giveNotes = List.empty(growable: true);
 
   @override
   void initState() {
     for (EvaluationDate date in widget.evaluationDates) {
       _giveNotes.add(date.note != null);
+      _descriptionController.add(TextEditingController());
+      _descriptionController.last.text = date.description;
     }
     super.initState();
   }
@@ -37,6 +41,7 @@ class _EvaluationDateFormState extends State<EvaluationDateForm> {
       final newEvaluationDate = EvaluationDate(date: DateTime.now(), evaluationId: widget.evaluationId);
       widget.evaluationDates.add(newEvaluationDate);
       _giveNotes.add(false);
+      _descriptionController.add(TextEditingController());
     });
     notifyChange();
   }
@@ -78,6 +83,7 @@ class _EvaluationDateFormState extends State<EvaluationDateForm> {
                           setState(() {
                             widget.evaluationDates.removeAt(i);
                             _giveNotes.removeAt(i);
+                            _descriptionController.removeAt(i);
                           });
                           notifyChange();
                         },
@@ -134,6 +140,19 @@ class _EvaluationDateFormState extends State<EvaluationDateForm> {
                       });
                     } : null,
                     year2023: false,
+                  ),
+
+                  FormGap(),
+
+                  TextFormField(
+                    controller: _descriptionController[i],
+                    decoration: InputDecoration(
+                      labelText: "Notizen",
+                      border: OutlineInputBorder(),
+                    ),
+                    onChanged: (newValue) {
+                      widget.evaluationDates[i].description = newValue;
+                    },
                   ),
                 ],
               ),

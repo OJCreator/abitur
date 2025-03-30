@@ -1,7 +1,9 @@
+import 'package:abitur/storage/entities/evaluation_type.dart';
 import 'package:abitur/storage/entities/settings.dart';
 import 'package:abitur/storage/entities/timetable/timetable.dart';
 import 'package:abitur/storage/entities/timetable/timetable_entry.dart';
 import 'package:abitur/storage/services/evaluation_service.dart';
+import 'package:abitur/storage/services/evaluation_type_service.dart';
 import 'package:abitur/storage/services/timetable_service.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
@@ -15,6 +17,7 @@ class Storage {
 
   static late Box<Evaluation> _evaluationBox;
   static late Box<EvaluationDate> _evaluationDateBox;
+  static late Box<EvaluationType> _evaluationTypeBox;
   static late Box<Performance> _performanceBox;
   static late Box<Subject> _subjectBox;
   static late Box<Settings> _settingsBox;
@@ -27,6 +30,7 @@ class Storage {
 
     Hive.registerAdapter(EvaluationAdapter());
     Hive.registerAdapter(EvaluationDateAdapter());
+    Hive.registerAdapter(EvaluationTypeAdapter());
     Hive.registerAdapter(PerformanceAdapter());
     Hive.registerAdapter(SubjectAdapter());
     Hive.registerAdapter(SettingsAdapter());
@@ -36,6 +40,7 @@ class Storage {
 
     _evaluationBox = await Hive.openBox<Evaluation>('evaluations');
     _evaluationDateBox = await Hive.openBox<EvaluationDate>('evaluationDates');
+    _evaluationTypeBox = await Hive.openBox<EvaluationType>('evaluationTypes');
     _performanceBox = await Hive.openBox<Performance>('performances');
     _subjectBox = await Hive.openBox<Subject>('subjects');
     _settingsBox = await Hive.openBox<Settings>('settings');
@@ -48,14 +53,21 @@ class Storage {
 
   static void initialValues() {
     TimetableSettings s = TimetableService.loadTimetableSettings();
-    if (s.timetables.length == 4) {
-      return;
+    if (s.timetables.isEmpty) {
+      List<Timetable> timetables = List.generate(4, (i) => Timetable());
+      s.timetables = timetables.map((it) => it.id).toList();
+      saveTimetableSettings(s);
+      for (Timetable t in timetables) {
+        Storage.saveTimetable(t);
+      }
     }
-    List<Timetable> timetables = List.generate(4, (i) => Timetable());
-    s.timetables = timetables.map((it) => it.id).toList();
-    saveTimetableSettings(s);
-    for (Timetable t in timetables) {
-      Storage.saveTimetable(t);
+
+    List<EvaluationType> evaluationTypes = EvaluationTypeService.findAll();
+    if (evaluationTypes.isEmpty) {
+      EvaluationTypeService.newEvaluationType("Klausur", true);
+      EvaluationTypeService.newEvaluationType("Test", true);
+      EvaluationTypeService.newEvaluationType("Referat", true);
+      EvaluationTypeService.newEvaluationType("Mündliche Note", false);
     }
   }
 
@@ -89,6 +101,10 @@ class Storage {
   }
 
   static EvaluationDate loadEvaluationDate(String eId) {
+    if (!_evaluationDateBox.containsKey(eId)) {
+      print("Fehler: EvaluationDate#$eId konnte nicht gefinden werden.");
+      return EvaluationDate.empty();
+    }
     return _evaluationDateBox.get(eId)!;
   }
 
@@ -99,6 +115,24 @@ class Storage {
 
   static Future<void> deleteEvaluationDate(EvaluationDate e) async {
     await _evaluationDateBox.delete(e.id);
+  }
+
+  // EvaluationTypes
+  static List<EvaluationType> loadEvaluationTypes() {
+    return _evaluationTypeBox.values.toList();
+  }
+
+  static EvaluationType loadEvaluationType(String eId) {
+    return _evaluationTypeBox.get(eId)!;
+  }
+
+  static Future<void> saveEvaluationType(EvaluationType e) async {
+    await _evaluationTypeBox.delete(e.id);
+    await _evaluationTypeBox.put(e.id, e);
+  }
+
+  static Future<void> deleteEvaluationType(EvaluationType e) async {
+    await _evaluationTypeBox.delete(e.id);
   }
 
   // Subjects

@@ -1,3 +1,4 @@
+import 'dart:math';
 import 'dart:ui';
 
 import 'package:abitur/storage/entities/evaluation_date.dart';
@@ -26,6 +27,11 @@ Future<void> syncEvaluationCalendarEvents(List<EvaluationDate> evaluationDates) 
     return;
   }
 
+  List<EvaluationDate> evaluationDatesNotForCalendar = evaluationDates.where((it) => !it.evaluation.evaluationType.showInCalendar).toList();
+  evaluationDates.removeWhere((it) => !it.evaluation.evaluationType.showInCalendar);
+
+  deleteAllEvaluationCalendarEvents(evaluationDatesNotForCalendar);
+
   for (EvaluationDate evaluationDate in evaluationDates) {
     await deleteEvaluationCalendarEvent(evaluationDate);
 
@@ -35,11 +41,11 @@ Future<void> syncEvaluationCalendarEvents(List<EvaluationDate> evaluationDates) 
     Event event = Event(
       calendarId,
       eventId: null, // TODO ein Event bearbeiten, statt es immer zu löschen und neu zu generieren
-      title: "${evaluationDate.evaluation.subject.shortName} ${evaluationDate.evaluation.name}",
+      title: "${evaluationDate.evaluation.subject.name} ${evaluationDate.evaluation.name}",
       start: TZDateTime.from(evaluationDate.date.copyWith(hour: start.hour, minute: start.minute), getLocation("Europe/Berlin")),
       end: TZDateTime.from(evaluationDate.date.copyWith(hour: end.hour, minute: end.minute), getLocation("Europe/Berlin")),
       allDay: SettingsService.loadSettings().calendarFullDayEvents,
-      description: "Note: ${evaluationDate.note ?? '-'}"
+      description: evaluationDate.description
     );
 
     var result = await _deviceCalendarPlugin.createOrUpdateEvent(event);
@@ -47,6 +53,13 @@ Future<void> syncEvaluationCalendarEvents(List<EvaluationDate> evaluationDates) 
     await EvaluationDateService.setCalendarId(evaluationDate, calendarId: result?.data);
   }
   print("${evaluationDates.length} Prüfung(en) wurde(n) in den Kalender übernommen.");
+}
+
+Future<void> deleteAllEvaluationCalendarEvents(List<EvaluationDate> evaluationDates) async {
+
+  for (EvaluationDate it in evaluationDates) {
+    deleteEvaluationCalendarEvent(it);
+  }
 }
 
 Future<void> deleteEvaluationCalendarEvent(EvaluationDate evaluationDate) async {

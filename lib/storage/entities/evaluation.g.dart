@@ -23,13 +23,14 @@ class EvaluationAdapter extends TypeAdapter<Evaluation> {
     )
       .._subjectId = fields[0] as String
       .._performanceId = fields[1] as String
-      .._evaluationDateIds = (fields[5] as List).cast<String>();
+      .._evaluationDateIds = (fields[5] as List).cast<String>()
+      .._evaluationTypeId = fields[6] as String;
   }
 
   @override
   void write(BinaryWriter writer, Evaluation obj) {
     writer
-      ..writeByte(6)
+      ..writeByte(7)
       ..writeByte(0)
       ..write(obj._subjectId)
       ..writeByte(1)
@@ -41,7 +42,9 @@ class EvaluationAdapter extends TypeAdapter<Evaluation> {
       ..writeByte(4)
       ..write(obj.id)
       ..writeByte(5)
-      ..write(obj._evaluationDateIds);
+      ..write(obj._evaluationDateIds)
+      ..writeByte(6)
+      ..write(obj._evaluationTypeId);
   }
 
   @override

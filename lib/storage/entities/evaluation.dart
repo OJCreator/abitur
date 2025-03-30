@@ -1,3 +1,4 @@
+import 'package:abitur/storage/entities/evaluation_type.dart';
 import 'package:abitur/storage/entities/performance.dart';
 import 'package:abitur/storage/entities/subject.dart';
 import 'package:abitur/storage/services/performance_service.dart';
@@ -6,6 +7,7 @@ import 'package:abitur/utils/uuid.dart';
 import 'package:hive/hive.dart';
 
 import '../services/evaluation_date_service.dart';
+import '../services/evaluation_type_service.dart';
 import 'evaluation_date.dart';
 
 part 'evaluation.g.dart';
@@ -36,14 +38,21 @@ class Evaluation {
   List<EvaluationDate> get evaluationDates => EvaluationDateService.findAllById(_evaluationDateIds);
   set evaluationDates(List<EvaluationDate> newEvaluationDates) => _evaluationDateIds = newEvaluationDates.map((it) => it.id).toList();
 
+  @HiveField(6)
+  String _evaluationTypeId;
+  EvaluationType get evaluationType => EvaluationTypeService.findById(_evaluationTypeId) ?? EvaluationType.empty();
+  set evaluationType(EvaluationType newEvaluationType) => _evaluationTypeId = newEvaluationType.id;
+
   Evaluation({
     String subjectId = "",
     String performanceId = "",
+    String evaluationTypeId = "",
     List<String>? evaluationDateIds,
     required this.term,
     required this.name,
     String? id,
   }) : id = id ?? Uuid.generate(),
+        _evaluationTypeId = evaluationTypeId,
         _subjectId = subjectId,
         _performanceId = performanceId,
         _evaluationDateIds = evaluationDateIds ?? List.empty();
@@ -64,6 +73,7 @@ class Evaluation {
     "name": name,
     "id": id,
     "evaluationDateIds": _evaluationDateIds,
+    "evaluationTypeId": _evaluationTypeId,
   };
 
   static Evaluation fromJson(Map<String, dynamic> json) {
@@ -74,6 +84,7 @@ class Evaluation {
       name: json["name"],
       id: json["id"],
       evaluationDateIds: (json["evaluationDateIds"] as List).map((e) => e as String).toList(),
+      evaluationTypeId: json["evaluationTypeId"],
     );
   }
 

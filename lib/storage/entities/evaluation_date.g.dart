@@ -22,13 +22,14 @@ class EvaluationDateAdapter extends TypeAdapter<EvaluationDate> {
       note: fields[3] as int?,
       calendarId: fields[4] as String?,
       weight: fields[5] as int?,
+      description: fields[6] as String,
     ).._evaluationId = fields[1] as String;
   }
 
   @override
   void write(BinaryWriter writer, EvaluationDate obj) {
     writer
-      ..writeByte(6)
+      ..writeByte(7)
       ..writeByte(0)
       ..write(obj.id)
       ..writeByte(1)
@@ -40,7 +41,9 @@ class EvaluationDateAdapter extends TypeAdapter<EvaluationDate> {
       ..writeByte(4)
       ..write(obj.calendarId)
       ..writeByte(5)
-      ..write(obj.weight);
+      ..write(obj.weight)
+      ..writeByte(6)
+      ..write(obj.description);
   }
 
   @override
