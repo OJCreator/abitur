@@ -72,8 +72,8 @@ class Storage {
       EvaluationTypeService.newEvaluationType("Mündliche Note", false);
     }
 
-    Subject seminar = SubjectService.findAll().firstWhere((s) => s.subjectType == SubjectType.seminar);
-    if (seminar.graduationEvaluation == null) {
+    List<Subject> seminarWithoutGraduationEvaluation = SubjectService.findAll().where((s) => s.subjectType == SubjectType.seminar && s.graduationEvaluation == null).toList();
+    for (Subject seminar in seminarWithoutGraduationEvaluation) {
       SubjectService.setGraduationEvaluation(seminar, graduation: true);
     }
   }
@@ -109,7 +109,7 @@ class Storage {
 
   static EvaluationDate loadEvaluationDate(String eId) {
     if (!_evaluationDateBox.containsKey(eId)) {
-      print("Fehler: EvaluationDate#$eId konnte nicht gefinden werden.");
+      //print("Fehler: EvaluationDate#$eId konnte nicht gefinden werden.");
       return EvaluationDate.empty();
     }
     return _evaluationDateBox.get(eId)!;

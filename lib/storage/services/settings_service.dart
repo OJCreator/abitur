@@ -1,6 +1,6 @@
 import 'package:abitur/storage/entities/settings.dart';
+import 'package:abitur/storage/services/calendar_service.dart';
 import 'package:abitur/storage/storage.dart';
-import 'package:abitur/utils/calender_sync.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:provider/provider.dart';
 
@@ -24,7 +24,6 @@ class SettingsService {
   }
 
   static int probableTerm(DateTime date) {
-    int graduationYear = loadSettings().graduationYear.year;
     if (date.isAfter(firstDayOfTerm4)) {
       return 3;
     }
@@ -58,7 +57,7 @@ class SettingsService {
     Provider.of<SeedNotifier>(context, listen: false).seed = newAccentColor;
     await Storage.saveSettings(s);
 
-    await changeCalendarColor(newAccentColor);
+    await CalendarService.changeCalendarColor(newAccentColor);
   }
 
   static bool choseGraduationSubjectsTime() {

@@ -1,6 +1,6 @@
+import 'package:abitur/storage/services/calendar_service.dart';
 import 'package:abitur/utils/constants.dart';
 
-import '../../utils/calender_sync.dart';
 import '../entities/evaluation.dart';
 import '../entities/evaluation_date.dart';
 import '../entities/subject.dart';
@@ -54,14 +54,14 @@ class EvaluationDateService {
       weight: 1,
     );
     await Storage.saveEvaluationDate(e);
-    await syncEvaluationCalendarEvent(e);
+    await CalendarService.syncEvaluationCalendarEvent(e);
     return e;
   }
 
   static Future<void> saveEvaluationDate(EvaluationDate evaluationDate) async {
 
     await Storage.saveEvaluationDate(evaluationDate);
-    await syncEvaluationCalendarEvent(evaluationDate);
+    await CalendarService.syncEvaluationCalendarEvent(evaluationDate);
   }
 
   static Future<void> saveAllEvaluationDates(List<EvaluationDate> evaluationDates) async {
@@ -76,7 +76,7 @@ class EvaluationDateService {
     evaluationDate.note = note;
     evaluationDate.weight = weight;
     await Storage.saveEvaluationDate(evaluationDate);
-    await syncEvaluationCalendarEvent(evaluationDate);
+    await CalendarService.syncEvaluationCalendarEvent(evaluationDate);
   }
 
 
@@ -95,7 +95,7 @@ class EvaluationDateService {
   }
 
   static Future<void> deleteEvaluationDate(EvaluationDate evaluationDate) async {
-    await deleteEvaluationCalendarEvent(evaluationDate);
+    await CalendarService.deleteEvaluationCalendarEvent(evaluationDate);
     await Storage.deleteEvaluationDate(evaluationDate);
   }
 

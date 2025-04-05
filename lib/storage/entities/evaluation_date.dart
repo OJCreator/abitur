@@ -63,7 +63,7 @@ class EvaluationDate {
     return EvaluationDate(
       id: json["id"],
       evaluationId: json["evaluationId"],
-      date: DateTime.parse(json["date"]),
+      date: json["date"] == "null" ? null : DateTime.parse(json["date"]),
       note: json["note"],
       calendarId: json["calendarId"],
       weight: json["weight"],

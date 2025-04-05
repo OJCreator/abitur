@@ -1,11 +1,10 @@
+import 'package:abitur/storage/services/calendar_service.dart';
 import 'package:abitur/storage/services/evaluation_type_service.dart';
 import 'package:flutter/material.dart';
 
 import '../../storage/entities/evaluation_type.dart';
 import '../../storage/entities/settings.dart';
-import '../../storage/services/evaluation_date_service.dart';
 import '../../storage/storage.dart';
-import '../../utils/calender_sync.dart';
 
 class SettingsCalendarPage extends StatefulWidget {
   const SettingsCalendarPage({super.key});
@@ -38,9 +37,9 @@ class _SettingsCalendarPageState extends State<SettingsCalendarPage> {
                 });
                 Storage.saveSettings(s);
                 if (!s.calendarSynchronisation) {
-                  await deleteAllCalendarEvents();
+                  await CalendarService.deleteAllCalendarEvents();
                 } else {
-                  syncEvaluationCalendarEvents(EvaluationDateService.findAll());
+                  CalendarService.syncAllEvaluationCalendarEvents();
                 }
               },
             ),
@@ -60,7 +59,7 @@ class _SettingsCalendarPageState extends State<SettingsCalendarPage> {
                     EvaluationTypeService.editEvaluationType(evaluationType, showInCalendar: !evaluationType.showInCalendar);
                   });
                   Storage.saveSettings(s);
-                  syncEvaluationCalendarEvents(EvaluationDateService.findAll());
+                  CalendarService.syncAllEvaluationCalendarEvents();
                 } : null,
               ),
             Divider(),
@@ -79,6 +78,7 @@ class _SettingsCalendarPageState extends State<SettingsCalendarPage> {
                   s.calendarFullDayEvents = !s.calendarFullDayEvents;
                 });
                 Storage.saveSettings(s);
+                CalendarService.syncAllEvaluationCalendarEvents();
                 // todo neu zeichnen
               } : null,
             ),

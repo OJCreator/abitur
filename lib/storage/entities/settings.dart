@@ -17,7 +17,7 @@ class Settings {
 
   @HiveField(2)
   int _accentColor;
-  set accentColor(Color newAccentColor) => _accentColor = newAccentColor.value;
+  set accentColor(Color newAccentColor) => _accentColor = newAccentColor.toARGB32();
   Color get accentColor => Color(_accentColor);
 
   @HiveField(3)
@@ -42,7 +42,7 @@ class Settings {
     this.viewedWelcomeScreen = false,
     this.calendarSynchronisation = true,
     this.calendarFullDayEvents = false,
-  }) : _accentColor = accentColor.value,
+  }) : _accentColor = accentColor.toARGB32(),
         _land = land.code;
 
   Map<String, dynamic> toJson() => {

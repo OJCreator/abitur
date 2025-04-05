@@ -25,7 +25,7 @@ class Subject {
 
   @HiveField(3)
   int _color;
-  set color(Color newColor) => _color = newColor.value;
+  set color(Color newColor) => _color = newColor.toARGB32();
   Color get color => Color(_color);
 
   @HiveField(4)
@@ -65,7 +65,7 @@ class Subject {
     List<String> performanceIds = const [],
     String? id,
     String? graduationEvaluationId,
-  }) : _color = color.value,
+  }) : _color = color.toARGB32(),
         id = id ?? Uuid.generate(),
         _subjectType = subjectType.code,
         _terms = terms?.toList() ?? [0,1,2,3],
