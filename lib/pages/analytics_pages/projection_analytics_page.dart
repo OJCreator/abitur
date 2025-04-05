@@ -1,6 +1,5 @@
 import 'package:abitur/pages/analytics_pages/projection_change_graduation_subjects_page.dart';
 import 'package:abitur/storage/services/projection_service.dart';
-import 'package:abitur/storage/services/settings_service.dart';
 import 'package:abitur/storage/services/subject_service.dart';
 import 'package:abitur/utils/constants.dart';
 import 'package:abitur/widgets/analytics/note_projection.dart';
@@ -25,7 +24,7 @@ class _ProjectionAnalyticsPageState extends State<ProjectionAnalyticsPage> {
   double overallAvg = SubjectService.getCurrentAverage() ?? 15;
 
   late Map<Subject, List<TermNoteDto>> data;
-  List<Subject?> graduationSubjects = SettingsService.graduationSubjects();
+  List<Subject?> graduationSubjects = SubjectService.graduationSubjects();
 
   late int resultBlock1;
   late int resultBlock2;
@@ -43,7 +42,7 @@ class _ProjectionAnalyticsPageState extends State<ProjectionAnalyticsPage> {
 
     setState(() {
       resultBlock2 = ProjectionService.resultBlock2();
-      graduationSubjects = SettingsService.graduationSubjects();
+      graduationSubjects = SubjectService.graduationSubjects();
     });
   }
 

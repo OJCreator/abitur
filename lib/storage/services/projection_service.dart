@@ -1,6 +1,5 @@
 import 'dart:math';
 
-import 'package:abitur/storage/services/settings_service.dart';
 import 'package:abitur/storage/services/subject_service.dart';
 
 import '../../utils/constants.dart';
@@ -19,7 +18,7 @@ class ProjectionService {
     return termNotes.where((note) => note.counting && note.note != null).sumBy((note) => note.note!).toInt();
   }
   static int resultBlock2() {
-    List<Subject> abiSubjects = SettingsService.graduationSubjects().whereType<Subject>().toList();
+    List<Subject> abiSubjects = SubjectService.graduationSubjects().whereType<Subject>().toList();
     Iterable<int> examNotes = abiSubjects.map((s) => roundNote(SubjectService.getAverage(s) ?? overallAvg)!); // TODO Was wenn schon geschrieben?
     return examNotes.sum().toInt() * 4;
   }
@@ -36,7 +35,7 @@ class ProjectionService {
 
     // Optionsregel (schlechteste Note aus Nicht-Abiturfach gegen noch nicht zählende Note tauschen)
     List<Subject> subjectsWithOneNoteCounting = subjects.where((s) => s != wSeminar).where((s) => map[s]!.countWhere((n) => n.counting) == 1).toList();
-    List<TermNoteDto> notesWithOptionRulePossible = allTermNotes.where((note) => !SettingsService.isGraduationSubject(note.subject) && note.note != null && !subjectsWithOneNoteCounting.contains(note.subject)).toList();
+    List<TermNoteDto> notesWithOptionRulePossible = allTermNotes.where((note) => !SubjectService.isGraduationSubject(note.subject) && note.note != null && !subjectsWithOneNoteCounting.contains(note.subject)).toList();
     notesWithOptionRulePossible.sort((a,b) => a.note!.compareTo(b.note!));
     notesWithOptionRulePossible.firstOrNull?.counting = false;
 
@@ -72,7 +71,7 @@ class ProjectionService {
   static List<TermNoteDto> _buildTermNoteDtos(Subject s) {
 
     List<int?> notes = List.generate(4, (term) => _calcTermAverage(s, term));
-    List<int> countingTerms = notes.findNLargestIndices(SettingsService.graduationSubjects().contains(s) ? 4 : s.countingTermAmount);
+    List<int> countingTerms = notes.findNLargestIndices(SubjectService.graduationSubjects().contains(s) ? 4 : s.countingTermAmount);
 
     return List.generate(4, (term) {
       if (!s.terms.contains(term)) {

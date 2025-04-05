@@ -6,28 +6,34 @@ import 'package:abitur/utils/constants.dart';
 import 'package:hive/hive.dart';
 
 import '../../utils/uuid.dart';
+import '../services/evaluation_service.dart';
+import 'evaluation.dart';
 
 part 'subject.g.dart';
 
 @HiveType(typeId: 2)
 class Subject {
+
   @HiveField(0)
-  String name;
+  String id;
 
   @HiveField(1)
-  String shortName;
+  String name;
 
   @HiveField(2)
+  String shortName;
+
+  @HiveField(3)
   int _color;
   set color(Color newColor) => _color = newColor.value;
   Color get color => Color(_color);
 
-  @HiveField(3)
+  @HiveField(4)
   String _subjectType;
   SubjectType get subjectType => SubjectType.fromCode(_subjectType);
   set subjectType(SubjectType newSubjectType) => _subjectType = newSubjectType.code;
 
-  @HiveField(4)
+  @HiveField(5)
   List<int> _terms;
 
   Set<int> get terms => _terms.toSet();
@@ -36,16 +42,18 @@ class Subject {
     _terms.sort((a,b) => a.compareTo(b));
   }
 
-  @HiveField(5)
+  @HiveField(6)
   int countingTermAmount;
 
-  @HiveField(6)
+  @HiveField(7)
   List<String> _performanceIds;
   set performances(List<Performance> newPerformances) => _performanceIds = newPerformances.map((p) => p.id).toList();
   List<Performance> get performances => _performanceIds.map((p) => PerformanceService.findById(p)!).toList();
 
-  @HiveField(7)
-  String id;
+  @HiveField(8)
+  String? _graduationEvaluationId;
+  Evaluation? get graduationEvaluation => _graduationEvaluationId == null ? null : EvaluationService.findById(_graduationEvaluationId!);
+  set graduationEvaluation(Evaluation? e) => _graduationEvaluationId = e?.id;
 
   Subject({
     required this.name,
@@ -56,11 +64,13 @@ class Subject {
     required this.countingTermAmount,
     List<String> performanceIds = const [],
     String? id,
+    String? graduationEvaluationId,
   }) : _color = color.value,
         id = id ?? Uuid.generate(),
         _subjectType = subjectType.code,
         _terms = terms?.toList() ?? [0,1,2,3],
-        _performanceIds = performanceIds;
+        _performanceIds = performanceIds,
+        _graduationEvaluationId = graduationEvaluationId;
 
   static Subject empty() {
     return Subject(name: "-", shortName: "", countingTermAmount: 0);
@@ -80,6 +90,7 @@ class Subject {
     "countingTermAmount": countingTermAmount,
     "performanceIds": _performanceIds,
     "id": id,
+    "graduationEvaluationId": _graduationEvaluationId,
   };
 
   static Subject fromJson(Map<String, dynamic> json) {
@@ -92,6 +103,7 @@ class Subject {
       countingTermAmount: json["countingTermAmount"] as int,
       performanceIds: (json["performanceIds"] as List).map((e) => e as String).toList(),
       id: json["id"],
+      graduationEvaluationId: json["graduationEvaluationId"]
     );
   }
 

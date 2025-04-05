@@ -12,6 +12,7 @@ import 'package:provider/provider.dart';
 
 import '../../storage/entities/subject.dart';
 import '../../utils/brightness_notifier.dart';
+import '../../widgets/confirm_dialog.dart';
 
 class SubjectEditPage extends StatefulWidget {
 
@@ -51,23 +52,11 @@ class _SubjectEditPageState extends State<SubjectEditPage> {
       barrierDismissible: false,
       context: context,
       builder: (context) {
-        return AlertDialog(
-          title: Text(evaluationAmount > 1 ? "Verlust von $evaluationAmount Prüfungen" : "Verlust einer Prüfung"),
-          content: Text("${evaluationAmount > 1 ? "$evaluationAmount Prüfungen gehen" : "Eine Prüfung geht"} mit dieser Aktion verloren, da ${evaluationAmount>1 ? "ihre Halbjahre entfernt werden" : "ihr Halbjahr entfernt wird"}. Bist du dir dessen bewusst?"),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.pop(context, true);
-              },
-              child: Text("Fortfahren"),
-            ),
-            TextButton(
-              onPressed: () {
-                Navigator.pop(context, false);
-              },
-              child: Text("Abbrechen"),
-            ),
-          ],
+        return ConfirmDialog(
+          title: evaluationAmount > 1 ? "Verlust von $evaluationAmount Prüfungen" : "Verlust einer Prüfung",
+          message: "${evaluationAmount > 1 ? "$evaluationAmount Prüfungen gehen" : "Eine Prüfung geht"} mit dieser Aktion verloren, da ${evaluationAmount>1 ? "ihre Halbjahre entfernt werden" : "ihr Halbjahr entfernt wird"}. Bist du dir dessen bewusst?",
+          confirmText: "Fortfahren",
+          onConfirm: () async {},
         );
       },
     );

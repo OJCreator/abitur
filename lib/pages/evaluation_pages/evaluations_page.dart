@@ -1,5 +1,6 @@
 import 'package:abitur/pages/evaluation_pages/evaluation_edit_page.dart';
 import 'package:abitur/pages/evaluation_pages/evaluation_new_page.dart';
+import 'package:abitur/pages/subject_pages/subject_page.dart';
 import 'package:abitur/storage/entities/evaluation.dart';
 import 'package:abitur/storage/entities/evaluation_date.dart';
 import 'package:abitur/storage/services/api_service.dart';
@@ -43,8 +44,8 @@ class _EvaluationsPageState extends State<EvaluationsPage> {
 
   void searchEvaluations() {
     setState(() {
-      evaluationDates = EvaluationDateService.findAll().where((e) => e.date.isAfter(DateTime.now()) || (e.note == null && e.weight > 0)).toList();
-      evaluationDates.sort((a, b) => a.date.compareTo(b.date));
+      evaluationDates = EvaluationDateService.findAll().where((e) => e.date != null && (e.date!.isAfter(DateTime.now()) || (e.note == null && e.weight > 0))).toList();
+      evaluationDates.sort((a, b) => a.compareTo(b));
     });
   }
 
@@ -208,12 +209,23 @@ class EvaluationListTile extends StatelessWidget {
       evaluationDate: evaluationDate,
       showDate: showDate,
       onTap: enabled ? () async { // TODO Enabled umfunktionieren: -> Link zu Fach??
-        await Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) {
-            return EvaluationEditPage(evaluation: evaluationDate.evaluation); // TODO Wohin soll man hier gelangen? Was soll man bearbeiten?
-          }),
-        );
+        Evaluation e = evaluationDate.evaluation;
+        if (e.subject.graduationEvaluation == e) {
+          await Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) {
+              return SubjectPage(subject: e.subject, openGraduationPage: true,);
+            }),
+          );
+        } else {
+          await Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) {
+              return EvaluationEditPage(evaluation: evaluationDate
+                  .evaluation); // TODO Wohin soll man hier gelangen? Was soll man bearbeiten?
+            }),
+          );
+        }
 
         reloadEvaluations();
       } : null,

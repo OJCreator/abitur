@@ -92,7 +92,10 @@ extension IntExtension on int {
 }
 extension DateExtension on DateTime {
   String format() {
-    return "${_weekday()}, $day.$month";
+    if (year == DateTime.now().year) {
+      return "${_weekday()}, $day.$month";
+    }
+    return "${_weekday()}, $day.$month.$year";
   }
   String formatYear() {
     return "$year";

@@ -1,3 +1,4 @@
+import 'package:abitur/pages/subject_pages/subject_chose_graduation_page.dart';
 import 'package:abitur/pages/subject_pages/subject_new_page.dart';
 import 'package:abitur/pages/subject_pages/subject_page.dart';
 import 'package:abitur/storage/services/settings_service.dart';
@@ -43,39 +44,58 @@ class _SubjectsPageState extends State<SubjectsPage> {
       ),
       body: SingleChildScrollView(
         child: Column(
-          children: subjects.isNotEmpty ? subjects.map((subject) {
-            return ListTile(
-              title: Text(subject.name),
-              subtitle: Text(subject.subjectType.name),
-              onTap: () async {
-                await Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) {
-                    return SubjectPage(subject: subject);
-                  }),
-                );
-                _reloadSubjects();
-              },
-              leading: Container(
-                margin: const EdgeInsets.only(left: 10),
-                width: 8,
-                decoration: BoxDecoration(
-                  color: subject.color,
-                  borderRadius: BorderRadius.circular(5),
+          children: [
+            if (subjects.isEmpty)
+              Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: InfoCard("Es gibt noch keine Fächer.")
+              ),
+            if (SettingsService.choseGraduationSubjectsTime())
+              Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: InfoCard(
+                    "Es wird Zeit, deine Abiturfächer zu wählen.",
+                    action: "Wählen",
+                    onAction: () async {
+                      await Navigator.push(context,
+                        MaterialPageRoute(
+                          builder: (context) {
+                            return SubjectChoseGraduationPage();
+                          },
+                          fullscreenDialog: true,
+                      ));
+                      _reloadSubjects();
+                    },
+                  )
+              ),
+            for (Subject subject in subjects)
+              ListTile(
+                title: Text(subject.name),
+                subtitle: Text(subject.subjectType.name),
+                onTap: () async {
+                  await Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) {
+                      return SubjectPage(subject: subject);
+                    }),
+                  );
+                  _reloadSubjects();
+                },
+                leading: Container(
+                  margin: const EdgeInsets.only(left: 10),
+                  width: 8,
+                  decoration: BoxDecoration(
+                    color: subject.color,
+                    borderRadius: BorderRadius.circular(5),
+                  ),
+                ),
+                trailing: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    if (SubjectService.graduationSubjects().contains(subject)) GraduationBadge(),
+                  ],
                 ),
               ),
-              trailing: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  if (SettingsService.graduationSubjects().contains(subject)) GraduationBadge(),
-                ],
-              ),
-            );
-          }).toList() : [
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: InfoCard("Es gibt noch keine Fächer.")
-            ),
           ],
         ),
       ),

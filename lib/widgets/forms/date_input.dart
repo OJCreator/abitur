@@ -1,27 +1,31 @@
+import 'package:abitur/storage/services/settings_service.dart';
 import 'package:abitur/utils/constants.dart';
 import 'package:flutter/material.dart';
 
-import '../../storage/storage.dart';
-
 class DateInput extends StatelessWidget {
 
-  final DateTime dateTime;
+  final DateTime? dateTime;
   final DateTime firstDate;
   final DateTime lastDate;
-  final Function(DateTime selected) onSelected;
+  final Function(DateTime selected)? onSelected;
 
   final TextEditingController _date = TextEditingController();
 
   DateInput({
     required this.dateTime,
-    required this.firstDate,
-    required this.lastDate,
-    required this.onSelected,
+    this.onSelected,
+    DateTime? firstDate,
+    DateTime? lastDate,
     super.key,
-  });
+  }) :
+        firstDate = firstDate ?? SettingsService.firstDayOfSchool,
+        lastDate = lastDate ?? SettingsService.lastDayOfSchool;
 
 
   Future<void> _selectDate(BuildContext context) async {
+    if (onSelected == null) {
+      return;
+    }
     final DateTime? picked = await showDatePicker(
       context: context,
       firstDate: firstDate,
@@ -31,12 +35,12 @@ class DateInput extends StatelessWidget {
     if (picked == null) {
       return;
     }
-    onSelected(picked);
+    onSelected!(picked);
   }
 
   @override
   Widget build(BuildContext context) {
-    _date.text = dateTime.format();
+    _date.text = dateTime?.format() ?? "Kein Datum gewählt";
     return
       TextFormField(
         controller: _date,
@@ -46,6 +50,7 @@ class DateInput extends StatelessWidget {
           labelText: "Datum",
           border: OutlineInputBorder(),
         ),
+        enabled: onSelected != null,
         onTap: () {
           _selectDate(context);
         },

@@ -16,7 +16,7 @@ class EvaluationDateListTile extends StatelessWidget {
   Widget build(BuildContext context) {
     return ListTile(
       title: Text(evaluationDate.evaluation.name),
-      subtitle: showDate ? Text(evaluationDate.date.format()) : null,
+      subtitle: showDate ? Text(evaluationDate.date?.format() ?? "Kein Datum") : null,
       trailing: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [

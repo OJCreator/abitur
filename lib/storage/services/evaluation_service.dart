@@ -12,7 +12,7 @@ class EvaluationService {
 
   static List<Evaluation> findAll() {
     List<Evaluation> evaluations = Storage.loadEvaluations();
-    evaluations.sort((a,b) => a.evaluationDates.first.date.compareTo(b.evaluationDates.first.date));
+    evaluations.sort((a,b) => a.evaluationDates.first.compareTo(b.evaluationDates.first));
     return evaluations;
   }
   static Evaluation? findById(String evaluationId) {
@@ -74,13 +74,23 @@ class EvaluationService {
 
   static Future<Evaluation> newEvaluation(Subject subject, Performance performance, int term, String name, List<EvaluationDate> evaluationDates, EvaluationType evaluationType) async {
 
+    return _createNewEvaluation(subject, performance, term, name, evaluationDates, evaluationType);
+  }
+  static Future<Evaluation> newGraduationEvaluation(Subject subject) {
+    String name = subject.subjectType == SubjectType.seminar ? "Seminararbeit" : "Abitur";
+    EvaluationDate e = EvaluationDate(date: null);
+    return _createNewEvaluation(subject, null, 5, name, [e], null);
+  }
+
+  static Future<Evaluation> _createNewEvaluation(Subject subject, Performance? performance, int term, String name, List<EvaluationDate> evaluationDates, EvaluationType? evaluationType) async {
+
     Evaluation newEvaluation = Evaluation(
       subjectId: subject.id,
-      performanceId: performance.id,
+      performanceId: "",
       term: term,
       name: name,
       evaluationDateIds: evaluationDates.map((it) => it.id).toList(),
-      evaluationTypeId: evaluationType.id,
+      evaluationTypeId: "",
     );
     await Storage.saveEvaluation(newEvaluation);
 

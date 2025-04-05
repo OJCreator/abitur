@@ -17,9 +17,9 @@ class PerformanceAdapter extends TypeAdapter<Performance> {
       for (int i = 0; i < numOfFields; i++) reader.readByte(): reader.read(),
     };
     return Performance(
-      name: fields[0] as String,
-      weighting: fields[1] as double,
-      id: fields[2] as String?,
+      name: fields[1] as String,
+      weighting: fields[2] as double,
+      id: fields[0] as String?,
     );
   }
 
@@ -28,11 +28,11 @@ class PerformanceAdapter extends TypeAdapter<Performance> {
     writer
       ..writeByte(3)
       ..writeByte(0)
-      ..write(obj.name)
+      ..write(obj.id)
       ..writeByte(1)
-      ..write(obj.weighting)
+      ..write(obj.name)
       ..writeByte(2)
-      ..write(obj.id);
+      ..write(obj.weighting);
   }
 
   @override

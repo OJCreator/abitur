@@ -4,6 +4,7 @@ import 'package:abitur/storage/entities/timetable/timetable.dart';
 import 'package:abitur/storage/entities/timetable/timetable_entry.dart';
 import 'package:abitur/storage/services/evaluation_service.dart';
 import 'package:abitur/storage/services/evaluation_type_service.dart';
+import 'package:abitur/storage/services/subject_service.dart';
 import 'package:abitur/storage/services/timetable_service.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
@@ -49,6 +50,7 @@ class Storage {
     _timetableEntryBox = await Hive.openBox<TimetableEntry>('timetableEntries');
 
     initialValues();
+    // TODO überprüfen, ob es Objekte mit IDs gibt, auf die kein anderes Objekt verweist => Warnung!
   }
 
   static void initialValues() {
@@ -68,6 +70,11 @@ class Storage {
       EvaluationTypeService.newEvaluationType("Test", true);
       EvaluationTypeService.newEvaluationType("Referat", true);
       EvaluationTypeService.newEvaluationType("Mündliche Note", false);
+    }
+
+    Subject seminar = SubjectService.findAll().firstWhere((s) => s.subjectType == SubjectType.seminar);
+    if (seminar.graduationEvaluation == null) {
+      SubjectService.setGraduationEvaluation(seminar, graduation: true);
     }
   }
 

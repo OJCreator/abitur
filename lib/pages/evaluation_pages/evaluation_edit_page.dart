@@ -13,6 +13,7 @@ import '../../storage/entities/performance.dart';
 import '../../storage/entities/subject.dart';
 import '../../storage/services/evaluation_service.dart';
 import '../../storage/services/subject_service.dart';
+import '../../widgets/confirm_dialog.dart';
 import '../../widgets/forms/performance_selector.dart';
 import '../../widgets/forms/subject_dropdown.dart';
 import '../../widgets/forms/term_selector.dart';
@@ -74,24 +75,13 @@ class _EvaluationEditPageState extends State<EvaluationEditPage> {
                 bool confirmed = await showDialog(
                   context: context,
                   builder: (context) {
-                    return AlertDialog(
-                      title: Text("Wirklich löschen?"),
-                      content: Text("Die Prüfung wird gelöscht und kann nicht wiederhergestellt werden."),
-                      actions: [
-                        TextButton(
-                          onPressed: () async {
-                            await EvaluationService.deleteEvaluation(widget.evaluation);
-                            Navigator.pop(context, true);
-                          },
-                          child: Text("Löschen"),
-                        ),
-                        TextButton(
-                          onPressed: () {
-                            Navigator.pop(context, false);
-                          },
-                          child: Text("Abbrechen"),
-                        ),
-                      ],
+                    return ConfirmDialog(
+                      title: "Wirklich löschen?",
+                      message: "Die Prüfung wird gelöscht und kann nicht wiederhergestellt werden.",
+                      confirmText: "Löschen",
+                      onConfirm: () async {
+                        await EvaluationService.deleteEvaluation(widget.evaluation);
+                      },
                     );
                   },
                 );

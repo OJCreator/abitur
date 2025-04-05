@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import '../../storage/entities/evaluation_type.dart';
 import '../../storage/entities/settings.dart';
 import '../../storage/storage.dart';
+import '../../widgets/confirm_dialog.dart';
 
 class SettingsEvaluationTypesPage extends StatefulWidget {
   const SettingsEvaluationTypesPage({super.key});
@@ -40,20 +41,14 @@ class _SettingsEvaluationTypesPageState extends State<SettingsEvaluationTypesPag
                 confirmDismiss: (direction) async {
                   bool? shouldDelete = await showDialog(
                     context: context,
-                    builder: (context) => AlertDialog(
-                      title: Text("Wirklich löschen?"),
-                      content: Text("Möchtest du die Prüfungskategorie \"${evaluationType.name}\" wirklich löschen?"),
-                      actions: [
-                        FilledButton.tonal(
-                          onPressed: () => Navigator.pop(context, false),
-                          child: Text("Abbrechen"),
-                        ),
-                        TextButton(
-                          onPressed: () => Navigator.pop(context, true),
-                          child: Text("Löschen"),
-                        ),
-                      ],
-                    ),
+                    builder: (context) {
+                      return ConfirmDialog(
+                        title: "Wirklich löschen?",
+                        message: "Möchtest du die Prüfungskategorie \"${evaluationType.name}\" wirklich löschen?",
+                        confirmText: "Löschen",
+                        onConfirm: () {},
+                      );
+                    }
                   );
 
                   if (shouldDelete == true) {
@@ -61,6 +56,7 @@ class _SettingsEvaluationTypesPageState extends State<SettingsEvaluationTypesPag
                       EvaluationTypeService.deleteEvaluationType(evaluationType);
                     });
                   }
+                  return null;
                 },
                 child: ListTile(
                   title: Text(evaluationType.name),

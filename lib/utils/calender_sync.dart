@@ -28,22 +28,22 @@ Future<void> syncEvaluationCalendarEvents(List<EvaluationDate> evaluationDates) 
   }
 
   List<EvaluationDate> evaluationDatesNotForCalendar = evaluationDates.where((it) => !it.evaluation.evaluationType.showInCalendar).toList();
-  evaluationDates.removeWhere((it) => !it.evaluation.evaluationType.showInCalendar);
+  evaluationDates.removeWhere((it) => !it.evaluation.evaluationType.showInCalendar || it.date == null);
 
   deleteAllEvaluationCalendarEvents(evaluationDatesNotForCalendar);
 
   for (EvaluationDate evaluationDate in evaluationDates) {
     await deleteEvaluationCalendarEvent(evaluationDate);
 
-    DateTime start = TimetableService.getStartTime(evaluationDate.evaluation.term, evaluationDate.evaluation.subject, evaluationDate.date.weekday);
-    DateTime end = TimetableService.getEndTime(evaluationDate.evaluation.term, evaluationDate.evaluation.subject, evaluationDate.date.weekday);
+    DateTime start = TimetableService.getStartTime(evaluationDate.evaluation.term, evaluationDate.evaluation.subject, evaluationDate.date!.weekday);
+    DateTime end = TimetableService.getEndTime(evaluationDate.evaluation.term, evaluationDate.evaluation.subject, evaluationDate.date!.weekday);
 
     Event event = Event(
       calendarId,
       eventId: null, // TODO ein Event bearbeiten, statt es immer zu löschen und neu zu generieren
       title: "${evaluationDate.evaluation.subject.name} ${evaluationDate.evaluation.name}",
-      start: TZDateTime.from(evaluationDate.date.copyWith(hour: start.hour, minute: start.minute), getLocation("Europe/Berlin")),
-      end: TZDateTime.from(evaluationDate.date.copyWith(hour: end.hour, minute: end.minute), getLocation("Europe/Berlin")),
+      start: TZDateTime.from(evaluationDate.date!.copyWith(hour: start.hour, minute: start.minute), getLocation("Europe/Berlin")),
+      end: TZDateTime.from(evaluationDate.date!.copyWith(hour: end.hour, minute: end.minute), getLocation("Europe/Berlin")),
       allDay: SettingsService.loadSettings().calendarFullDayEvents,
       description: evaluationDate.description
     );

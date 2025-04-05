@@ -8,13 +8,13 @@ part 'performance.g.dart';
 class Performance {
 
   @HiveField(0)
-  String name;
+  String id;
 
   @HiveField(1)
-  double weighting;
+  String name;
 
   @HiveField(2)
-  String id;
+  double weighting;
 
   Performance({
     required this.name,
@@ -27,16 +27,16 @@ class Performance {
   }
 
   Map<String, dynamic> toJson() => {
+    "id": id,
     "name": name,
     "weighting": weighting,
-    "id": id,
   };
 
   static Performance fromJson(Map<String, dynamic> json) {
     return Performance(
+      id: json["id"],
       name: json["name"],
       weighting: json["weighting"],
-      id: json["id"],
     );
   }
 

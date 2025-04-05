@@ -17,37 +17,40 @@ class SubjectAdapter extends TypeAdapter<Subject> {
       for (int i = 0; i < numOfFields; i++) reader.readByte(): reader.read(),
     };
     return Subject(
-      name: fields[0] as String,
-      shortName: fields[1] as String,
-      countingTermAmount: fields[5] as int,
-      id: fields[7] as String?,
+      name: fields[1] as String,
+      shortName: fields[2] as String,
+      countingTermAmount: fields[6] as int,
+      id: fields[0] as String?,
     )
-      .._color = fields[2] as int
-      .._subjectType = fields[3] as String
-      .._terms = (fields[4] as List).cast<int>()
-      .._performanceIds = (fields[6] as List).cast<String>();
+      .._color = fields[3] as int
+      .._subjectType = fields[4] as String
+      .._terms = (fields[5] as List).cast<int>()
+      .._performanceIds = (fields[7] as List).cast<String>()
+      .._graduationEvaluationId = fields[8] as String?;
   }
 
   @override
   void write(BinaryWriter writer, Subject obj) {
     writer
-      ..writeByte(8)
+      ..writeByte(9)
       ..writeByte(0)
-      ..write(obj.name)
+      ..write(obj.id)
       ..writeByte(1)
-      ..write(obj.shortName)
+      ..write(obj.name)
       ..writeByte(2)
-      ..write(obj._color)
+      ..write(obj.shortName)
       ..writeByte(3)
-      ..write(obj._subjectType)
+      ..write(obj._color)
       ..writeByte(4)
-      ..write(obj._terms)
+      ..write(obj._subjectType)
       ..writeByte(5)
-      ..write(obj.countingTermAmount)
+      ..write(obj._terms)
       ..writeByte(6)
-      ..write(obj._performanceIds)
+      ..write(obj.countingTermAmount)
       ..writeByte(7)
-      ..write(obj.id);
+      ..write(obj._performanceIds)
+      ..writeByte(8)
+      ..write(obj._graduationEvaluationId);
   }
 
   @override

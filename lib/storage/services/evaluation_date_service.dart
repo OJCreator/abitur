@@ -10,14 +10,14 @@ class EvaluationDateService {
 
   static List<EvaluationDate> findAll() {
     List<EvaluationDate> evaluations = Storage.loadEvaluationDates();
-    evaluations.sort((a,b) => a.date.compareTo(b.date));
+    evaluations.sort((a,b) => a.compareTo(b));
     return evaluations;
   }
   static List<EvaluationDate> findAllById(List<String> ids) {
     return ids.map((id) => Storage.loadEvaluationDate(id)).toList();
   }
   static List<EvaluationDate> findAllByDay(DateTime day) {
-    return findAll().where((e) => e.date.isOnSameDay(day)).toList();
+    return findAll().where((e) => e.date?.isOnSameDay(day) ?? false).toList();
   }
   static List<EvaluationDate> findAllGraded() {
     List<EvaluationDate> evaluations = findAll();
@@ -71,7 +71,7 @@ class EvaluationDateService {
     }
   }
 
-  static Future<void> editEvaluationDate(EvaluationDate evaluationDate, {required DateTime date, int? note, required int weight}) async {
+  static Future<void> editEvaluationDate(EvaluationDate evaluationDate, {required DateTime? date, required int? note, required int weight}) async {
     evaluationDate.date = date;
     evaluationDate.note = note;
     evaluationDate.weight = weight;

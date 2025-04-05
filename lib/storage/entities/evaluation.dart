@@ -14,34 +14,35 @@ part 'evaluation.g.dart';
 
 @HiveType(typeId: 0)
 class Evaluation {
+
   @HiveField(0)
+  String id;
+
+  @HiveField(1)
+  String name;
+
+  @HiveField(2)
   String _subjectId;
   Subject get subject => SubjectService.findById(_subjectId) ?? Subject.empty();
   set subject(Subject newSubject) => _subjectId = newSubject.id;
 
-  @HiveField(1)
+  @HiveField(3)
   String _performanceId;
   Performance get performance => PerformanceService.findById(_performanceId) ?? Performance.empty();
   set performance(Performance newPerformance) => _performanceId = newPerformance.id;
 
-  @HiveField(2)
+  @HiveField(4)
   int term;
 
-  @HiveField(3)
-  String name;
-
-  @HiveField(4)
-  String id;
-
   @HiveField(5)
-  List<String> _evaluationDateIds;
-  List<EvaluationDate> get evaluationDates => EvaluationDateService.findAllById(_evaluationDateIds);
-  set evaluationDates(List<EvaluationDate> newEvaluationDates) => _evaluationDateIds = newEvaluationDates.map((it) => it.id).toList();
-
-  @HiveField(6)
   String _evaluationTypeId;
   EvaluationType get evaluationType => EvaluationTypeService.findById(_evaluationTypeId) ?? EvaluationType.empty();
   set evaluationType(EvaluationType newEvaluationType) => _evaluationTypeId = newEvaluationType.id;
+
+  @HiveField(6)
+  List<String> _evaluationDateIds;
+  List<EvaluationDate> get evaluationDates => EvaluationDateService.findAllById(_evaluationDateIds);
+  set evaluationDates(List<EvaluationDate> newEvaluationDates) => _evaluationDateIds = newEvaluationDates.map((it) => it.id).toList();
 
   Evaluation({
     String subjectId = "",
@@ -67,24 +68,24 @@ class Evaluation {
   }
 
   Map<String, dynamic> toJson() => {
+    "id": id,
+    "name": name,
     "subjectId": _subjectId,
     "performanceId": _performanceId,
     "term": term,
-    "name": name,
-    "id": id,
-    "evaluationDateIds": _evaluationDateIds,
     "evaluationTypeId": _evaluationTypeId,
+    "evaluationDateIds": _evaluationDateIds,
   };
 
   static Evaluation fromJson(Map<String, dynamic> json) {
     return Evaluation(
+      id: json["id"],
+      name: json["name"],
       subjectId: json["subjectId"],
       performanceId: json["performanceId"],
       term: json["term"],
-      name: json["name"],
-      id: json["id"],
-      evaluationDateIds: (json["evaluationDateIds"] as List).map((e) => e as String).toList(),
       evaluationTypeId: json["evaluationTypeId"],
+      evaluationDateIds: (json["evaluationDateIds"] as List).map((e) => e as String).toList(),
     );
   }
 

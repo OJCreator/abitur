@@ -1,6 +1,4 @@
 import 'package:abitur/storage/entities/settings.dart';
-import 'package:abitur/storage/entities/subject.dart';
-import 'package:abitur/storage/services/subject_service.dart';
 import 'package:abitur/storage/storage.dart';
 import 'package:abitur/utils/calender_sync.dart';
 import 'package:flutter/cupertino.dart';
@@ -11,6 +9,10 @@ import '../../utils/seed_notifier.dart';
 class SettingsService {
 
   static DateTime get firstDayOfSchool => DateTime(loadSettings().graduationYear.year - 2, 8, 1);
+  static DateTime get firstDayOfTerm2 => DateTime(loadSettings().graduationYear.year - 1, 2, 15);
+  static DateTime get firstDayOfTerm3 => DateTime(loadSettings().graduationYear.year - 1, 8, 1);
+  static DateTime get firstDayOfTerm4 => DateTime(loadSettings().graduationYear.year, 2, 1);
+  static DateTime get dayToChoseGraduationSubjects => DateTime(loadSettings().graduationYear.year-1, 3, 1); // TODO für die Hochrechnung ist eigentlich besser früher, man kann ja noch updaten...
   static DateTime get lastDayOfSchool =>  DateTime(loadSettings().graduationYear.year, 7, 31);
 
   static Settings loadSettings() {
@@ -23,13 +25,13 @@ class SettingsService {
 
   static int probableTerm(DateTime date) {
     int graduationYear = loadSettings().graduationYear.year;
-    if (date.isAfter(DateTime(graduationYear, 2))) {
+    if (date.isAfter(firstDayOfTerm4)) {
       return 3;
     }
-    if (date.isAfter(DateTime(graduationYear-1, 8))) {
+    if (date.isAfter(firstDayOfTerm3)) {
       return 2;
     }
-    if (date.isAfter(DateTime(graduationYear-1, 2))) {
+    if (date.isAfter(firstDayOfTerm2)) {
       return 1;
     }
     return 0;
@@ -46,24 +48,6 @@ class SettingsService {
     await Storage.saveSettings(s);
   }
 
-  static List<Subject?> graduationSubjects() {
-    List<Subject?> graduationSubjects = loadSettings().graduationSubjectsIds.map((it) => SubjectService.findById(it)).toList();
-    return graduationSubjects;
-  }
-
-  static bool isGraduationSubject(Subject subject) {
-    return graduationSubjects().contains(subject);
-  }
-
-  static Future<void> setGraduationSubjects(List<Subject?> subjects) async {
-    if (subjects.contains(null)) {
-      throw Exception("Subjects dürfen nicht null sein!");
-    }
-    Settings s = loadSettings();
-    s.graduationSubjectsIds = subjects.map((it) => it?.id ?? "").toList();
-    await Storage.saveSettings(s);
-  }
-
   static bool calendarSynchronisation() {
     return loadSettings().calendarSynchronisation;
   }
@@ -75,5 +59,9 @@ class SettingsService {
     await Storage.saveSettings(s);
 
     await changeCalendarColor(newAccentColor);
+  }
+
+  static bool choseGraduationSubjectsTime() {
+    return DateTime.now().isAfter(dayToChoseGraduationSubjects);
   }
 }

@@ -6,11 +6,15 @@ import 'package:abitur/storage/services/settings_service.dart';
 import 'package:abitur/storage/storage.dart';
 import 'package:abitur/utils/brightness_notifier.dart';
 import 'package:abitur/utils/seed_notifier.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/date_symbol_data_local.dart';
+
+// TODO Feature: Wochenübersicht bis Abitur
+// TODO Feature: Seminararbeit irgendwie anders behandeln
+// TODO Feature: Ferien offline
+// TODO Feature: Abiturdaten fetchen und eintragen
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();

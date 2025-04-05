@@ -31,8 +31,8 @@ class EvaluationListTile extends StatelessWidget {
   }
 
   String timeString() {
-    String firstDate = evaluation.evaluationDates.first.date.format();
-    String lastDate = evaluation.evaluationDates.last.date.format();
+    String firstDate = evaluation.evaluationDates.first.date!.format();
+    String lastDate = evaluation.evaluationDates.last.date!.format();
     if (firstDate == lastDate) {
       return firstDate;
     }

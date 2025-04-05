@@ -1,3 +1,4 @@
+import 'package:abitur/storage/services/settings_service.dart';
 import 'package:abitur/utils/uuid.dart';
 import 'package:hive/hive.dart';
 
@@ -18,7 +19,7 @@ class EvaluationDate {
   set evaluation(Evaluation newEvaluation) => _evaluationId = newEvaluation.id;
 
   @HiveField(2)
-  DateTime date;
+  DateTime? date;
 
   @HiveField(3)
   int? note;
@@ -68,5 +69,9 @@ class EvaluationDate {
       weight: json["weight"],
       description: json["description"],
     );
+  }
+
+  int compareTo(EvaluationDate other) {
+    return (date ?? SettingsService.lastDayOfSchool).compareTo(other.date ?? SettingsService.lastDayOfSchool);
   }
 }

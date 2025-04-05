@@ -28,13 +28,10 @@ class Settings {
   @HiveField(4)
   bool viewedWelcomeScreen;
 
-  @HiveField(5)
-  List<String> graduationSubjectsIds;
-
   // Kalender
-  @HiveField(6)
+  @HiveField(5)
   bool calendarSynchronisation; // TODO -> Nur Klausuren und Tests, Zeiten anpassen (nach Stundenplan), Namensgebung
-  @HiveField(7)
+  @HiveField(6)
   bool calendarFullDayEvents;
 
   Settings({
@@ -43,19 +40,16 @@ class Settings {
     Land land = Land.by,
     Color accentColor = primaryColor,
     this.viewedWelcomeScreen = false,
-    List<String>? graduationSubjectsIds,
     this.calendarSynchronisation = true,
     this.calendarFullDayEvents = false,
   }) : _accentColor = accentColor.value,
-        _land = land.code,
-        graduationSubjectsIds = graduationSubjectsIds?.toList() ?? [];
+        _land = land.code;
 
   Map<String, dynamic> toJson() => {
     "graduationYear": graduationYear.toString(),
     "lightMode": lightMode,
     "accentColor": _accentColor,
     "land": _land,
-    "graduationSubjectsIds": graduationSubjectsIds,
     "calendarSynchronisation": calendarSynchronisation,
     "calendarFullDayEvents": calendarFullDayEvents,
   };
@@ -66,7 +60,6 @@ class Settings {
       lightMode: json["lightMode"],
       land: Land.fromCode(json["land"]),
       accentColor: Color(json["accentColor"]),
-      graduationSubjectsIds: (json["graduationSubjectsIds"] as List).map((e) => e as String).toList(),
       calendarSynchronisation: json["calendarSynchronisation"] ?? true,
       calendarFullDayEvents: json["calendarFullDayEvents"] ?? false,
     );

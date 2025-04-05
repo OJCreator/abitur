@@ -1,10 +1,15 @@
 import 'package:abitur/pages/evaluation_pages/evaluation_edit_page.dart';
 import 'package:abitur/pages/evaluation_pages/evaluation_new_page.dart';
+import 'package:abitur/pages/subject_pages/subject/subject_edit_graduation_evaluation_dialog.dart';
 import 'package:abitur/pages/subject_pages/subject_edit_page.dart';
+import 'package:abitur/storage/entities/evaluation_date.dart';
 import 'package:abitur/storage/services/evaluation_service.dart';
 import 'package:abitur/storage/services/settings_service.dart';
 import 'package:abitur/storage/services/subject_service.dart';
+import 'package:abitur/widgets/confirm_dialog.dart';
 import 'package:abitur/widgets/evaluation_list_tile.dart';
+import 'package:abitur/widgets/forms/date_input.dart';
+import 'package:abitur/widgets/forms/form_gap.dart';
 import 'package:abitur/widgets/info_card.dart';
 import 'package:abitur/widgets/percent_indicator.dart';
 import 'package:flutter/material.dart';
@@ -17,8 +22,9 @@ import '../../utils/brightness_notifier.dart';
 class SubjectPage extends StatefulWidget {
 
   final Subject subject;
+  final bool openGraduationPage;
 
-  const SubjectPage({super.key, required this.subject});
+  const SubjectPage({super.key, required this.subject, this.openGraduationPage = false});
 
   @override
   State<SubjectPage> createState() => _SubjectPageState();
@@ -27,6 +33,8 @@ class SubjectPage extends StatefulWidget {
 class _SubjectPageState extends State<SubjectPage> with SingleTickerProviderStateMixin {
 
   late Subject subject;
+  Evaluation? graduationEvaluation;
+  bool giveGraduationNote = false;
 
   late TabController _tabController;
   late List<GlobalKey<_TermViewState>> _tabKeys;
@@ -39,8 +47,21 @@ class _SubjectPageState extends State<SubjectPage> with SingleTickerProviderStat
     if (!subject.terms.contains(currentTerm)) {
       currentTerm = 0;
     }
-    _tabController = TabController(length: subject.terms.length, vsync: this, initialIndex: currentTerm);
-    _tabKeys = subject.terms.map((e) =>  GlobalKey<_TermViewState>()).toList();
+    if (widget.openGraduationPage && (SubjectService.isGraduationSubject(subject) || subject.subjectType == SubjectType.seminar)) {
+      currentTerm = subject.terms.length;
+    }
+    _tabKeys = subject.terms.map((e) => GlobalKey<_TermViewState>()).toList();
+    int tabLength = subject.terms.length;
+    if (SubjectService.isGraduationSubject(subject) || subject.subjectType == SubjectType.seminar) {
+      tabLength++;
+      _tabKeys.add(GlobalKey<_TermViewState>());
+      graduationEvaluation = subject.graduationEvaluation;
+      giveGraduationNote = graduationEvaluation!.evaluationDates.first.note != null;
+    }
+    _tabController = TabController(length: tabLength, vsync: this, initialIndex: currentTerm);
+    _tabController.addListener(() {
+      setState(() {});
+    });
 
     super.initState();
   }
@@ -66,24 +87,13 @@ class _SubjectPageState extends State<SubjectPage> with SingleTickerProviderStat
     bool deletedSubject = await showDialog(
       context: context,
       builder: (context) {
-        return AlertDialog(
-          title: Text("Wirklich löschen?"),
-          content: Text("Das Fach wird inklusive aller eingetragenen Prüfungen und den Einträgen im Stundenplan gelöscht und kann nicht wiederhergestellt werden."),
-          actions: [
-            TextButton(
-              onPressed: () async {
-                await SubjectService.deleteSubject(subject);
-                Navigator.pop(context, true);
-              },
-              child: Text("Löschen"),
-            ),
-            TextButton(
-              onPressed: () {
-                Navigator.pop(context, false);
-              },
-              child: Text("Abbrechen"),
-            ),
-          ],
+        return ConfirmDialog(
+          title: "Wirklich löschen?",
+          message: "Das Fach wird inklusive aller eingetragenen Prüfungen und den Einträgen im Stundenplan gelöscht und kann nicht wiederhergestellt werden.",
+          confirmText: "Löschen",
+          onConfirm: () async {
+            await SubjectService.deleteSubject(subject);
+          },
         );
       },
     );
@@ -107,6 +117,14 @@ class _SubjectPageState extends State<SubjectPage> with SingleTickerProviderStat
       return;
     }
     _tabKeys[_tabController.index].currentState!._loadEvaluations();
+  }
+
+  Future<void> _editGraduationWorkData() async {
+    await showDialog(context: context, builder: (context) {
+      return SubjectEditGraduationEvaluationDialog(graduationEvaluationDate: graduationEvaluation!.evaluationDates.first);
+    });
+
+    setState(() {});
   }
 
   @override
@@ -145,27 +163,54 @@ class _SubjectPageState extends State<SubjectPage> with SingleTickerProviderStat
           ],
           bottom: TabBar(
             controller: _tabController,
-            tabs: subject.terms.map((term) {
-              return Tab(
-                text: "${term + 1}. Halbjahr",
-              );
-            }).toList(),
+            tabs: [
+              for (int term in subject.terms)
+                Tab(
+                  text: "${term + 1}. Halbjahr",
+                ),
+              if (SubjectService.isGraduationSubject(subject))
+                Tab(
+                  text: "Abitur",
+                ),
+              if (subject.subjectType == SubjectType.seminar)
+                Tab(
+                  text: "Seminararbeit",
+                ),
+            ],
           ),
         ),
         body: TabBarView(
           controller: _tabController,
-          children: subject.terms.toList().asMap().entries.map((entry) {
-            return _TermView(
-              subject: subject,
-              term: entry.value,
-              key: _tabKeys[entry.key]
-            );
-          }).toList(),
+          children: [
+            for (MapEntry<int, int> entry in subject.terms.toList().asMap().entries)
+              _TermView(
+                subject: subject,
+                term: entry.value,
+                key: _tabKeys[entry.key],
+              ),
+            if (SubjectService.isGraduationSubject(subject))
+              _GraduationWorkTermView(
+                subject: subject,
+                graduationEvaluationDate: graduationEvaluation?.evaluationDates.first,
+                key: _tabKeys.last,
+              ),
+            if (subject.subjectType == SubjectType.seminar)
+              _GraduationWorkTermView(
+                subject: subject,
+                graduationEvaluationDate: graduationEvaluation?.evaluationDates.first,
+                key: _tabKeys.last,
+              ),
+          ],
         ),
-        floatingActionButton: FloatingActionButton(
+        floatingActionButton: _tabController.index < subject.terms.length ? FloatingActionButton(
           child: Icon(Icons.add),
           onPressed: () {
             _newEvaluation(context);
+          },
+        ) : FloatingActionButton(
+          child: Icon(Icons.edit),
+          onPressed: () {
+            _editGraduationWorkData();
           },
         ),
       ),
@@ -209,7 +254,7 @@ class _TermViewState extends State<_TermView> {
   void _loadEvaluations() {
     setState(() {
       evaluations = EvaluationService.findAllBySubjectAndTerm(widget.subject, widget.term);
-      evaluations.sort((a, b) => a.evaluationDates.first.date.compareTo(b.evaluationDates.first.date));
+      evaluations.sort((a, b) => a.evaluationDates.first.compareTo(b.evaluationDates.first));
     });
   }
 
@@ -232,8 +277,10 @@ class _TermViewState extends State<_TermView> {
                 "Noten:",
                 style: Theme.of(context).textTheme.titleMedium,
               ),
-              ...evaluations.isNotEmpty ? evaluations.map((evaluation) {
-                return EvaluationListTile(
+              if (evaluations.isEmpty)
+                InfoCard("In diesem Halbjahr gibt es noch keine Noten."),
+              for (Evaluation evaluation in evaluations)
+                EvaluationListTile(
                   evaluation: evaluation,
                   onTap: () async {
                     await Navigator.push(
@@ -246,10 +293,41 @@ class _TermViewState extends State<_TermView> {
                       evaluations = EvaluationService.findAllBySubjectAndTerm(widget.subject, widget.term);
                     });
                   },
-                );
-              }) : [
-                InfoCard("In diesem Halbjahr gibt es noch keine Noten.")
-              ]
+                ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _GraduationWorkTermView extends StatelessWidget {
+  
+  final Subject subject;
+  final EvaluationDate? graduationEvaluationDate;
+  
+  const _GraduationWorkTermView({super.key, required this.subject, required this.graduationEvaluationDate});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Container(
+        padding: const EdgeInsets.all(8),
+        child: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Center(
+                  child: PercentIndicator(value: graduationEvaluationDate?.note?.toDouble(), color: subject.color),
+                ),
+              ),
+              FormGap(),
+              DateInput(
+                dateTime: graduationEvaluationDate?.date,
+              ),
             ],
           ),
         ),

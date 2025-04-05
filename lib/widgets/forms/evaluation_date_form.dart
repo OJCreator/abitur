@@ -2,7 +2,6 @@ import 'package:abitur/widgets/forms/form_gap.dart';
 import 'package:flutter/material.dart';
 
 import '../../storage/entities/evaluation_date.dart';
-import '../../storage/services/settings_service.dart';
 import 'date_input.dart';
 
 class EvaluationDateForm extends StatefulWidget {
@@ -64,9 +63,7 @@ class _EvaluationDateFormState extends State<EvaluationDateForm> {
                     children: [
                       Flexible(
                         child: DateInput(
-                          dateTime: widget.evaluationDates[i].date,
-                          firstDate: SettingsService.firstDayOfSchool,
-                          lastDate: SettingsService.lastDayOfSchool,
+                          dateTime: widget.evaluationDates[i].date!,
                           onSelected: (picked) {
                             setState(() {
                               widget.evaluationDates[i].date = picked;

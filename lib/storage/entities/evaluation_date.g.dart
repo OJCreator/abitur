@@ -17,7 +17,7 @@ class EvaluationDateAdapter extends TypeAdapter<EvaluationDate> {
       for (int i = 0; i < numOfFields; i++) reader.readByte(): reader.read(),
     };
     return EvaluationDate(
-      date: fields[2] as DateTime,
+      date: fields[2] as DateTime?,
       id: fields[0] as String?,
       note: fields[3] as int?,
       calendarId: fields[4] as String?,

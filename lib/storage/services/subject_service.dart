@@ -26,6 +26,11 @@ class SubjectService {
       color: color,
     );
     await Storage.saveSubject(s);
+
+    if (subjectType == SubjectType.seminar) {
+      setGraduationEvaluation(s, graduation: true);
+    }
+
     return s;
   }
 
@@ -98,19 +103,19 @@ class SubjectService {
     } else {
       evaluationsDates = EvaluationDateService.findAllGradedBySubject(filterBySubject);
     }
-    evaluationsDates.sort((a, b) => a.date.compareTo(b.date));
+    evaluationsDates.sort((a, b) => a.compareTo(b));
 
     List<Pair<DateTime, double>> history = [];
     List<int> allGrades = [];
 
     for (var evaluation in evaluationsDates) {
-      if (evaluation.note == null || evaluation.date.isAfter(DateTime.now())) {
+      if (evaluation.note == null || evaluation.date!.isAfter(DateTime.now())) {
         continue;
       }
 
       allGrades.add(evaluation.note!); // TODO stimmt das?????
       double currentAverage = avg(allGrades)!;
-      history.add(Pair(evaluation.date, currentAverage));
+      history.add(Pair(evaluation.date!, currentAverage));
     }
 
     return history;
@@ -143,6 +148,47 @@ class SubjectService {
     });
     double? average = weightedAvg(weightAndNote);
     return average;
+  }
+
+  static Future<void> setGraduationSubjects(List<Subject?> subjects) async {
+    if (subjects.contains(null)) {
+      throw Exception("Subjects dürfen nicht null sein!");
+    }
+    if (subjects.any((s) => s!.subjectType == SubjectType.seminar)) {
+      throw Exception("Subjects dürfen kein Seminarfach sein!");
+    }
+    for (Subject subjectToRemove in graduationSubjects().where((s) => !subjects.contains(s))) {
+      if (subjectToRemove.subjectType != SubjectType.seminar) {
+        await setGraduationEvaluation(subjectToRemove, graduation: false);
+      }
+    }
+    for (Subject? s in subjects) {
+      await setGraduationEvaluation(s!, graduation: true);
+    }
+  }
+
+  static Future<void> setGraduationEvaluation(Subject s, {bool graduation = true}) async {
+    if (!graduation && s.graduationEvaluation != null && s.subjectType != SubjectType.seminar) {
+      EvaluationService.deleteEvaluation(s.graduationEvaluation!);
+      s.graduationEvaluation = null;
+      Storage.saveSubject(s);
+    } else if (graduation && s.graduationEvaluation == null) {
+      Evaluation e = await EvaluationService.newGraduationEvaluation(s);
+      s.graduationEvaluation = e;
+      Storage.saveSubject(s);
+    }
+  }
+
+  static bool isGraduationSubject(Subject subject) {
+    return subject.graduationEvaluation != null && subject.subjectType != SubjectType.seminar;
+  }
+
+  static List<Subject> graduationSubjects() {
+    return findAll().where((s) => s.graduationEvaluation != null).toList();
+  }
+
+  static List<Evaluation> graduationEvaluations() {
+    return graduationSubjects().map((s) => s.graduationEvaluation!).toList();
   }
 
   static Future<void> buildFromJson(List<Map<String, dynamic>> jsonData) async {
