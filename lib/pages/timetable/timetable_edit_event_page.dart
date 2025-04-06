@@ -39,7 +39,7 @@ class _TimetableEditEventPageState extends State<TimetableEditEventPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("${widget.day.weekday()}, ${widget.hour+1}. Stunde"),
+        title: Text("${(widget.day+1).weekday()}, ${widget.hour+1}. Stunde"),
         leading: IconButton(
           icon: const Icon(Icons.close),
           onPressed: () {

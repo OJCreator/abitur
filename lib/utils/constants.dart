@@ -80,52 +80,29 @@ extension ColorExtension on Color {
 extension IntExtension on int {
   String weekday() {
     switch (this) {
-      case 0: return "Montag";
-      case 1: return "Dienstag";
-      case 2: return "Mittwoch";
-      case 3: return "Donnerstag";
-      case 4: return "Freitag";
-      case 5: return "Samstag";
+      case 1: return "Montag";
+      case 2: return "Dienstag";
+      case 3: return "Mittwoch";
+      case 4: return "Donnerstag";
+      case 5: return "Freitag";
+      case 6: return "Samstag";
       default: return "Sonntag";
     }
   }
 }
-extension DateExtension on DateTime {
-  String format() {
-    if (year == DateTime.now().year) {
-      return "${_weekday()}, $day.$month";
-    }
-    return "${_weekday()}, $day.$month.$year";
-  }
-  String formatYear() {
-    return "$year";
-  }
 
-  bool isOnSameDay(DateTime other) {
-    return year == other.year && month == other.month && day == other.day;
-  }
-
-  String _weekday() {
-    switch (weekday) {
-      case 1: return "Mo";
-      case 2: return "Di";
-      case 3: return "Mi";
-      case 4: return "Do";
-      case 5: return "Fr";
-      case 6: return "Sa";
-      default: return "So";
-    }
-  }
-}
 double? avg(Iterable<int?> values) {
-  Iterable<int> v = values.skipWhile((i) => i == null).cast<int>();
+  Iterable<int> v = values.where((i) => i != null).cast<int>();
   if (v.isEmpty) {
     return null;
   }
   int sum = v.reduce((a, b) => a + b);
-  return sum / values.length;
+  return sum / v.length;
 }
 int? roundNote(double? average) {
+  if (average != null && average < 1.0) {
+    return 0;
+  }
   return average?.round();
 }
 double abiturAvg(int points) {
@@ -227,18 +204,28 @@ Color getContrastingTextColor(Color backgroundColor) {
 
   return luminance > 0.5 ? Colors.black : Colors.white;
 }
-
-// LIST EXTENSIONS
-extension SafeAccess<T> on List<T> {
-  T? elementAtOrNull(int index) {
-    if (index < 0 || index >= length) {
-      return null;
+// EXTENSIONS
+extension DateExtension on DateTime {
+  String format() {
+    if (year == DateTime.now().year) {
+      return "${weekday.weekday()}, $day.$month";
     }
-    return this[index];
+    return "${weekday.weekday()}, $day.$month.$year";
+  }
+  String formatYear() {
+    return "$year";
+  }
+
+  bool isOnSameDay(DateTime other) {
+    return year == other.year && month == other.month && day == other.day;
   }
 }
-extension SafeSetList<T> on List<T?> {
+// LIST EXTENSIONS
+extension NullableListExtensions<T> on List<T?> {
   void setSafe(int index, T? value) {
+    if (index < 0) {
+      return;
+    }
     if (index >= length) {
       addAll(List<T?>.filled(index - length + 1, null));
     }
@@ -246,6 +233,12 @@ extension SafeSetList<T> on List<T?> {
   }
 }
 extension ListExtensions<T> on List<T> {
+  T? elementAtOrNull(int index) {
+    if (index < 0 || index >= length) {
+      return null;
+    }
+    return this[index];
+  }
   List<int> indicesOf(T value) {
     List<int> indices = [];
     for (int i = 0; i < length; i++) {
@@ -263,6 +256,14 @@ extension ListExtensions<T> on List<T> {
       }
     }
     return indices;
+  }
+  /// Zählt die Elemente, die der Bedingung [test] entsprechen.
+  int countWhere(bool Function(T element) test) {
+    return where(test).length;
+  }
+  /// Summiert die Werte, die durch die Transformationsfunktion [selector] bestimmt werden.
+  num sumBy(num Function(T element) selector) {
+    return fold(0, (previousValue, element) => previousValue + selector(element));
   }
 }
 extension FindNLargestIndices on List<int?> {
@@ -298,21 +299,9 @@ extension ExpandToList<E> on Iterable<Iterable<E>> {
   /// Kombiniert verschachtelte Listen zu einer flachen Liste.
   List<E> expandToList() => expand((list) => list).toList();
 }
-extension CountWhere<E> on Iterable<E> {
-  /// Zählt die Elemente, die der Bedingung [test] entsprechen.
-  int countWhere(bool Function(E element) test) {
-    return where(test).length;
-  }
-}
-extension SumBy<E> on Iterable<E> {
-  /// Summiert die Werte, die durch die Transformationsfunktion [selector] bestimmt werden.
-  num sumBy(num Function(E element) selector) {
-    return fold(0, (previousValue, element) => previousValue + selector(element));
-  }
-}
 extension Sum<E> on Iterable<num> {
   /// Summiert die Werte einer Liste an Zahlen
   num sum() {
-    return sumBy((i) => i);
+    return toList().sumBy((i) => i);
   }
 }

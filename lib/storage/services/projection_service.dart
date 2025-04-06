@@ -1,5 +1,6 @@
 import 'dart:math';
 
+import 'package:abitur/storage/services/evaluation_service.dart';
 import 'package:abitur/storage/services/subject_service.dart';
 
 import '../../utils/constants.dart';
@@ -15,11 +16,19 @@ class ProjectionService {
 
   static int resultBlock1() {
     List<TermNoteDto> termNotes = buildProjectionOverviewInformation().values.expandToList();
-    return termNotes.where((note) => note.counting && note.note != null).sumBy((note) => note.note!).toInt();
+    return termNotes.where((note) => note.counting && note.note != null).toList().sumBy((note) => note.note!).toInt();
   }
   static int resultBlock2() {
     List<Subject> abiSubjects = SubjectService.graduationSubjects().whereType<Subject>().toList();
-    Iterable<int> examNotes = abiSubjects.map((s) => roundNote(SubjectService.getAverage(s) ?? overallAvg)!); // TODO Was wenn schon geschrieben?
+    Iterable<int> examNotes = abiSubjects.map((s) {
+      if (s.graduationEvaluation != null) {
+        int? note = EvaluationService.calculateNote(s.graduationEvaluation!);
+        if (note != null) {
+          return note;
+        }
+      }
+      return roundNote(SubjectService.getAverage(s) ?? overallAvg)!;
+    });
     return examNotes.sum().toInt() * 4;
   }
 
@@ -57,10 +66,10 @@ class ProjectionService {
 
     map[wSeminar] = _buildTermNoteDtos(wSeminar);
     Subject seminararbeit = Subject(name: "Seminararbeit", shortName: "Arbeit", countingTermAmount: 2, color: wSeminar.color);
-    int? seminararbeitNote = roundNote(SubjectService.getAverage(wSeminar) ?? overallAvg); // todo was wenn schon geschireben?
+    int? seminararbeitNote = wSeminar.graduationEvaluation?.evaluationDates.first.note;
     map[seminararbeit] = [
-      TermNoteDto(note: seminararbeitNote, projection: true, counting: true, subject: wSeminar),
-      TermNoteDto(note: seminararbeitNote, projection: true, counting: true, subject: wSeminar),
+      TermNoteDto(note: seminararbeitNote ?? subjectOverallAverage(wSeminar), projection: seminararbeitNote == null, counting: true, subject: wSeminar),
+      TermNoteDto(note: seminararbeitNote ?? subjectOverallAverage(wSeminar), projection: seminararbeitNote == null, counting: true, subject: wSeminar),
       TermNoteDto(note: null, projection: false, counting: false, subject: wSeminar),
       TermNoteDto(note: null, projection: false, counting: false, subject: wSeminar),
     ];
@@ -71,14 +80,14 @@ class ProjectionService {
   static List<TermNoteDto> _buildTermNoteDtos(Subject s) {
 
     List<int?> notes = List.generate(4, (term) => _calcTermAverage(s, term));
-    List<int> countingTerms = notes.findNLargestIndices(SubjectService.graduationSubjects().contains(s) ? 4 : s.countingTermAmount);
+    List<int> countingTerms = notes.findNLargestIndices(SubjectService.isGraduationSubject(s) ? 4 : s.countingTermAmount);
 
     return List.generate(4, (term) {
       if (!s.terms.contains(term)) {
         return TermNoteDto(note: null, projection: false, counting: false, subject: s);
       }
 
-      final termAverage = notes[term] ?? roundNote(SubjectService.getAverage(s) ?? overallAvg);
+      final termAverage = notes[term] ?? subjectOverallAverage(s);
       final projection = notes[term] == null;
 
       return TermNoteDto(
@@ -88,6 +97,20 @@ class ProjectionService {
         subject: s,
       );
     });
+  }
+
+  static TermNoteDto graduationProjection(Subject subject) {
+    int? note = (subject.graduationEvaluation != null) ? EvaluationService.calculateNote(subject.graduationEvaluation!) : null;
+    return TermNoteDto(
+      note: note ?? subjectOverallAverage(subject),
+      projection: note == null,
+      counting: true,
+      subject: subject,
+    );
+  }
+
+  static int subjectOverallAverage(Subject subject) {
+    return roundNote(SubjectService.getAverage(subject) ?? overallAvg)!;
   }
 
   static int? _calcTermAverage(Subject s, int term) {

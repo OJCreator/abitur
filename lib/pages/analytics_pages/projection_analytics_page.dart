@@ -1,7 +1,6 @@
 import 'package:abitur/pages/analytics_pages/projection_change_graduation_subjects_page.dart';
 import 'package:abitur/storage/services/projection_service.dart';
 import 'package:abitur/storage/services/subject_service.dart';
-import 'package:abitur/utils/constants.dart';
 import 'package:abitur/widgets/analytics/note_projection.dart';
 import 'package:abitur/widgets/forms/form_gap.dart';
 import 'package:abitur/widgets/info_card.dart';
@@ -165,10 +164,11 @@ class _ProjectionAnalyticsPageState extends State<ProjectionAnalyticsPage> {
                       if (col == 0) {
                         return SubjectTableLabel(subject: s);
                       }
+                      TermNoteDto dto = ProjectionService.graduationProjection(s);
                       return NoteProjection(
-                        background: true,
-                        note: roundNote(SubjectService.getAverage(s) ?? overallAvg).toString(),
-                        bold: false,
+                        background: dto.counting,
+                        note: dto.noteString,
+                        bold: !dto.projection,
                       );
                     })
                   );

@@ -109,7 +109,7 @@ class SubjectService {
     List<int> allGrades = [];
 
     for (var evaluation in evaluationsDates) {
-      if (evaluation.note == null || evaluation.date!.isAfter(DateTime.now())) {
+      if (evaluation.note == null || evaluation.date == null || evaluation.date!.isAfter(DateTime.now())) {
         continue;
       }
 
@@ -137,6 +137,10 @@ class SubjectService {
 
   static double? getAverageByTerm(Subject s, int term) {
     Iterable<Evaluation> evaluations = EvaluationService.findAllGradedBySubjectAndTerm(s, term);
+    if (!s.terms.contains(term)) {
+      print("BUD");
+      return null;
+    }
     Map<Performance, Iterable<Evaluation>> performancesAndNotes = s.performances.mapWith((performance) {
       return evaluations.where((note) {
         return note.performance == performance;
@@ -184,7 +188,7 @@ class SubjectService {
   }
 
   static List<Subject> graduationSubjects() {
-    return findAll().where((s) => s.graduationEvaluation != null).toList();
+    return findAll().where((s) => s.graduationEvaluation != null && s.subjectType != SubjectType.seminar).toList();
   }
 
   static List<Evaluation> graduationEvaluations() {
