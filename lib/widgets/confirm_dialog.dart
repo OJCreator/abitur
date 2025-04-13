@@ -25,7 +25,7 @@ class ConfirmDialog extends StatelessWidget {
       actions: [
         TextButton(
           onPressed: () async {
-            onConfirm();
+            await onConfirm();
             Navigator.pop(context, true);
           },
           child: Text(confirmText),

@@ -221,8 +221,7 @@ class EvaluationListTile extends StatelessWidget {
           await Navigator.push(
             context,
             MaterialPageRoute(builder: (context) {
-              return EvaluationEditPage(evaluation: evaluationDate
-                  .evaluation); // TODO Wohin soll man hier gelangen? Was soll man bearbeiten?
+              return EvaluationEditPage(evaluation: evaluationDate.evaluation);
             }),
           );
         }

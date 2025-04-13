@@ -51,6 +51,7 @@ class _SettingsPageState extends State<SettingsPage> {
           children: [
             ListTile(
               title: Text("Abijahrgang"),
+              leading: Icon(Icons.school),
               subtitle: Text(s.graduationYear.formatYear()),
               onTap: () {
                 showDialog(context: context, builder: (context) {
@@ -64,6 +65,7 @@ class _SettingsPageState extends State<SettingsPage> {
             ),
             ListTile(
               title: Text("Erscheinungsbild"),
+              leading: Icon(Icons.palette),
               onTap: () {
                 Navigator.of(context).push(
                     MaterialPageRoute(builder: (context) {
@@ -74,6 +76,7 @@ class _SettingsPageState extends State<SettingsPage> {
             ),
             ListTile(
               title: Text("Prüfungskategorien"),
+              leading: Icon(Icons.assignment),
               onTap: () {
                 Navigator.of(context).push(
                     MaterialPageRoute(builder: (context) {
@@ -84,6 +87,7 @@ class _SettingsPageState extends State<SettingsPage> {
             ),
             ListTile(
               title: Text("Kalender-Synchronisierung"),
+              leading: Icon(Icons.calendar_month),
               onTap: () {
                 Navigator.of(context).push(
                   MaterialPageRoute(builder: (context) {
@@ -94,6 +98,7 @@ class _SettingsPageState extends State<SettingsPage> {
             ),
             ListTile(
               title: Text("Benachrichtigungen"),
+              leading: Icon(Icons.notifications),
               onTap: () {
                 Navigator.of(context).push(
                   MaterialPageRoute(builder: (context) {
@@ -104,6 +109,7 @@ class _SettingsPageState extends State<SettingsPage> {
             ),
             ListTile(
               title: Text("Feedback"),
+              leading: Icon(Icons.mail),
               onTap: () async {
                 final email = Uri.encodeComponent("oj.creator@gmail.com");
                 final subject = Uri.encodeComponent("Kontakt (Abi-Planer)");
@@ -117,6 +123,7 @@ class _SettingsPageState extends State<SettingsPage> {
               },
             ),
             ListTile(
+              leading: Icon(Icons.data_object),
               title: Text("Daten exportieren (JSON)"),
               onTap: _exportToJson,
             ),

@@ -102,7 +102,7 @@ class _SubjectNewPageState extends State<SubjectNewPage> {
 
                   Text("Einzubringende Halbjahre:"),
 
-                  Slider( // todo material3: https://m3.material.io/components/sliders/overview
+                  Slider(
                     min: 0,
                     max: _terms.length.toDouble(),
                     divisions: _terms.length,

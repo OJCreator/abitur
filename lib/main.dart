@@ -15,9 +15,8 @@ import 'package:timezone/data/latest.dart';
 
 // TODO Feature: Wochenübersicht bis Abitur
 // TODO Feature: Startseite modular anpassbar
-// TODO Feature: Seminararbeit irgendwie anders behandeln
 // TODO Feature: Ferien offline
-// TODO Feature: Abiturdaten fetchen und eintragen
+// TODO Feature: Abiturdaten fetchen und eintragen (auch in den Handy-Kalender)
 
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 

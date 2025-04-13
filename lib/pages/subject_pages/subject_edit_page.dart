@@ -125,7 +125,7 @@ class _SubjectEditPageState extends State<SubjectEditPage> {
 
                   Text("Einzubringende Halbjahre:"),
 
-                  Slider( // todo material3: https://m3.material.io/components/sliders/overview
+                  Slider(
                     min: 0,
                     max: _selectedTerms.length.toDouble(),
                     divisions: _selectedTerms.length,
