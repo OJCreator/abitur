@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:abitur/pages/settings_pages/settings_appearance_page.dart';
 import 'package:abitur/pages/settings_pages/settings_calendar_page.dart';
 import 'package:abitur/pages/settings_pages/settings_evaluation_types_page.dart';
+import 'package:abitur/pages/settings_pages/settings_notifications_page.dart';
 import 'package:abitur/storage/entities/evaluation_type.dart';
 import 'package:abitur/storage/entities/timetable/timetable_entry.dart';
 import 'package:abitur/storage/services/evaluation_service.dart';
@@ -87,6 +88,16 @@ class _SettingsPageState extends State<SettingsPage> {
                 Navigator.of(context).push(
                   MaterialPageRoute(builder: (context) {
                     return SettingsCalendarPage();
+                  })
+                );
+              },
+            ),
+            ListTile(
+              title: Text("Benachrichtigungen"),
+              onTap: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(builder: (context) {
+                    return SettingsNotificationsPage();
                   })
                 );
               },

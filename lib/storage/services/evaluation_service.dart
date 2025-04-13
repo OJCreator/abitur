@@ -1,6 +1,7 @@
 import 'package:abitur/storage/entities/evaluation.dart';
 import 'package:abitur/storage/entities/evaluation_type.dart';
 import 'package:abitur/storage/services/evaluation_date_service.dart';
+import 'package:abitur/storage/services/notification_service.dart';
 import 'package:abitur/storage/storage.dart';
 import 'package:abitur/utils/constants.dart';
 
@@ -96,8 +97,11 @@ class EvaluationService {
 
     for (EvaluationDate e in evaluationDates) {
       e.evaluation = newEvaluation;
+
+      NotificationService.scheduleNotificationsForEvaluation(e);
     }
     await EvaluationDateService.saveAllEvaluationDates(evaluationDates);
+
     return newEvaluation;
   }
 

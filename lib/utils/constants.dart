@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:abitur/storage/storage.dart';
 import 'package:abitur/utils/pair.dart';
 import 'package:flutter/material.dart';
@@ -174,6 +176,14 @@ double abiturAvg(int points) {
   }
   return 6.0;
 }
+
+int uuidToInt(String uuid) {
+// Du kannst eine UUID in eine Zahl umwandeln, indem du z.B. den Hash-Code der UUID verwendest
+  var bytes = utf8.encode(uuid); // UUID in Bytes umwandeln
+  int hashCode = bytes.fold<int>(0, (prev, byte) => prev + byte); // Bytes zu einer Summe zusammenfassen
+  return hashCode;
+}
+
 double? weightedAvg(Iterable<Pair<double, double?>> weightAndValue) {
 
   if (weightAndValue.isEmpty) {

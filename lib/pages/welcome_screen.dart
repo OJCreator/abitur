@@ -3,8 +3,10 @@ import 'dart:io';
 
 import 'package:abitur/main.dart';
 import 'package:abitur/pages/setup_pages/setup_land_page.dart';
+import 'package:abitur/storage/services/calendar_service.dart';
 import 'package:abitur/storage/services/evaluation_service.dart';
 import 'package:abitur/storage/services/evaluation_type_service.dart';
+import 'package:abitur/storage/services/notification_service.dart';
 import 'package:abitur/storage/services/performance_service.dart';
 import 'package:abitur/storage/services/settings_service.dart';
 import 'package:abitur/storage/services/timetable_service.dart';
@@ -93,6 +95,10 @@ class WelcomeScreen extends StatelessWidget {
         print("Extracted Timetables from JSON.");
         await TimetableService.buildEntriesFromJson((jsonData["timetableEntries"] as List).map((e) => e as Map<String, dynamic>).toList());
         print("Extracted TimetableEntries from JSON.");
+
+        // Kalender und Notifications
+        await CalendarService.syncAllEvaluationCalendarEvents();
+        NotificationService.scheduleAllNotifications();
 
         SettingsService.markWelcomeScreenAsViewed();
 

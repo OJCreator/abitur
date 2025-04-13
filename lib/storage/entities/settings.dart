@@ -1,5 +1,6 @@
 import 'dart:ui';
 
+import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
 
 import '../../utils/constants.dart';
@@ -30,9 +31,23 @@ class Settings {
 
   // Kalender
   @HiveField(5)
-  bool calendarSynchronisation; // TODO -> Nur Klausuren und Tests, Zeiten anpassen (nach Stundenplan), Namensgebung
+  bool calendarSynchronisation; // TODO -> Zeiten anpassen (nach Stundenplan), Namensgebung
   @HiveField(6)
   bool calendarFullDayEvents;
+
+  // Benachrichtigungen
+  @HiveField(7)
+  bool evaluationReminder;
+  @HiveField(8)
+  int evaluationReminderTimeInMinutes;
+  TimeOfDay get evaluationReminderTime => TimeOfDay(hour: evaluationReminderTimeInMinutes~/60, minute: evaluationReminderTimeInMinutes%60);
+  @HiveField(9)
+  bool missingGradeReminder;
+  @HiveField(10)
+  int missingGradeReminderDelayDays;
+  @HiveField(11)
+  int missingGradeReminderTimeInMinutes;
+  TimeOfDay get missingGradeReminderTime => TimeOfDay(hour: missingGradeReminderTimeInMinutes~/60, minute: missingGradeReminderTimeInMinutes%60);
 
   Settings({
     required this.graduationYear,
@@ -42,6 +57,11 @@ class Settings {
     this.viewedWelcomeScreen = false,
     this.calendarSynchronisation = true,
     this.calendarFullDayEvents = false,
+    this.evaluationReminder = false,
+    this.evaluationReminderTimeInMinutes = 18*60,
+    this.missingGradeReminder = false,
+    this.missingGradeReminderDelayDays = 21,
+    this.missingGradeReminderTimeInMinutes = 15*60,
   }) : _accentColor = accentColor.toARGB32(),
         _land = land.code;
 
@@ -52,6 +72,11 @@ class Settings {
     "land": _land,
     "calendarSynchronisation": calendarSynchronisation,
     "calendarFullDayEvents": calendarFullDayEvents,
+    "evaluationReminder": evaluationReminder,
+    "evaluationReminderTimeInMinutes": evaluationReminderTimeInMinutes,
+    "missingGradeReminder": missingGradeReminder,
+    "missingGradeReminderDelayDays": missingGradeReminderDelayDays,
+    "missingGradeReminderTimeInMinutes": missingGradeReminderDelayDays,
   };
 
   static Settings fromJson(Map<String, dynamic> json) {
@@ -62,6 +87,11 @@ class Settings {
       accentColor: Color(json["accentColor"]),
       calendarSynchronisation: json["calendarSynchronisation"] ?? true,
       calendarFullDayEvents: json["calendarFullDayEvents"] ?? false,
+      evaluationReminder: json["evaluationReminder"] ?? false,
+      evaluationReminderTimeInMinutes: json["evaluationReminderTimeInMinutes"] ?? 18*60,
+      missingGradeReminder: json["missingGradeReminder"] ?? false,
+      missingGradeReminderDelayDays: json["missingGradeReminderDelayDays"] ?? 21,
+      missingGradeReminderTimeInMinutes: json["missingGradeReminderTimeInMinutes"] ?? 15*60,
     );
   }
 }

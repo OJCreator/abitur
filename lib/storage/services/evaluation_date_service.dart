@@ -1,4 +1,5 @@
 import 'package:abitur/storage/services/calendar_service.dart';
+import 'package:abitur/storage/services/notification_service.dart';
 import 'package:abitur/utils/constants.dart';
 
 import '../entities/evaluation.dart';
@@ -12,6 +13,9 @@ class EvaluationDateService {
     List<EvaluationDate> evaluations = Storage.loadEvaluationDates();
     evaluations.sort((a,b) => a.compareTo(b));
     return evaluations;
+  }
+  static EvaluationDate findById(String id) {
+    return Storage.loadEvaluationDate(id);
   }
   static List<EvaluationDate> findAllById(List<String> ids) {
     return ids.map((id) => Storage.loadEvaluationDate(id)).toList();
@@ -55,6 +59,7 @@ class EvaluationDateService {
     );
     await Storage.saveEvaluationDate(e);
     await CalendarService.syncEvaluationCalendarEvent(e);
+    NotificationService.scheduleNotificationsForEvaluation(e);
     return e;
   }
 
@@ -62,6 +67,7 @@ class EvaluationDateService {
 
     await Storage.saveEvaluationDate(evaluationDate);
     await CalendarService.syncEvaluationCalendarEvent(evaluationDate);
+    NotificationService.scheduleNotificationsForEvaluation(evaluationDate);
   }
 
   static Future<void> saveAllEvaluationDates(List<EvaluationDate> evaluationDates) async {
@@ -77,6 +83,7 @@ class EvaluationDateService {
     evaluationDate.weight = weight;
     await Storage.saveEvaluationDate(evaluationDate);
     await CalendarService.syncEvaluationCalendarEvent(evaluationDate);
+    NotificationService.scheduleNotificationsForEvaluation(evaluationDate);
   }
 
 
@@ -97,6 +104,7 @@ class EvaluationDateService {
   static Future<void> deleteEvaluationDate(EvaluationDate evaluationDate) async {
     await CalendarService.deleteEvaluationCalendarEvent(evaluationDate);
     await Storage.deleteEvaluationDate(evaluationDate);
+    NotificationService.cancelEvaluationNotifications(evaluationDate);
   }
 
   static Future<void> buildFromJson(List<Map<String, dynamic>> jsonData) async {
