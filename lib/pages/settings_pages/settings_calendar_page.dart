@@ -1,5 +1,6 @@
 import 'package:abitur/storage/services/calendar_service.dart';
 import 'package:abitur/storage/services/evaluation_type_service.dart';
+import 'package:abitur/widgets/section_heading_list_tile.dart';
 import 'package:flutter/material.dart';
 
 import '../../storage/entities/evaluation_type.dart';
@@ -44,12 +45,7 @@ class _SettingsCalendarPageState extends State<SettingsCalendarPage> {
               },
             ),
             Divider(),
-            ListTile(
-              title: Text(
-                "Prüfungskategorien im Kalender anzeigen",
-                style: Theme.of(context).textTheme.titleSmall,
-              ),
-            ),
+            SectionHeadingListTile(heading: "Prüfungskategorien im Kalender anzeigen"),
             for (EvaluationType evaluationType in EvaluationTypeService.findAll())
               SwitchListTile(
                 title: Text(evaluationType.name),
@@ -63,12 +59,7 @@ class _SettingsCalendarPageState extends State<SettingsCalendarPage> {
                 } : null,
               ),
             Divider(),
-            ListTile(
-              title: Text(
-                "Kalendereinstellungen",
-                style: Theme.of(context).textTheme.titleSmall,
-              ),
-            ),
+            SectionHeadingListTile(heading: "Kalendereinstellungen"),
             SwitchListTile(
               title: Text("Ganztagesereignis"),
               value: s.calendarFullDayEvents,

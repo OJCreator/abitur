@@ -153,6 +153,17 @@ testListExtensions() {
       expect([1,3].findNLargestIndices(4), equals([1,0]));
     });
   });
+  group('groupBy()', () {
+    test('Gruppieren nach Modulo', () {
+      expect([1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16].groupBy((p0) => p0%3,), equals({0: [3,6,9,12,15], 1: [1,4,7,10,13,16], 2: [2,5,8,11,14]}));
+    });
+    test('Leere Liste', () {
+      expect([].groupBy((p0) => true,), equals({}));
+    });
+    test('Null-Werte', () {
+      expect([1,null,null,3].groupBy((p0) => p0 == null ? null : 1,), equals({1: [1,3], null: [null, null]}));
+    });
+  });
   group('expandToList()', () {
     test('2 Listen', () {
       expect([[3,3,4],[2545,1,772]].expandToList(), equals([3,3,4,2545,1,772]));

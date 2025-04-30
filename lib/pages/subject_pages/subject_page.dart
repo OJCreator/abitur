@@ -3,9 +3,12 @@ import 'package:abitur/pages/evaluation_pages/evaluation_new_page.dart';
 import 'package:abitur/pages/subject_pages/subject/subject_edit_graduation_evaluation_dialog.dart';
 import 'package:abitur/pages/subject_pages/subject_edit_page.dart';
 import 'package:abitur/storage/entities/evaluation_date.dart';
+import 'package:abitur/storage/entities/performance.dart';
 import 'package:abitur/storage/services/evaluation_service.dart';
 import 'package:abitur/storage/services/settings_service.dart';
 import 'package:abitur/storage/services/subject_service.dart';
+import 'package:abitur/utils/constants.dart';
+import 'package:abitur/widgets/section_heading_list_tile.dart';
 import 'package:abitur/widgets/confirm_dialog.dart';
 import 'package:abitur/widgets/evaluation_list_tile.dart';
 import 'package:abitur/widgets/forms/date_input.dart';
@@ -235,7 +238,8 @@ class _TermView extends StatefulWidget {
 
 class _TermViewState extends State<_TermView> {
 
-  List<Evaluation> evaluations = [];
+  // List<Evaluation> evaluations = [];
+  Map<Performance, List<Evaluation>> evaluations = {};
 
   @override
   void didUpdateWidget(covariant _TermView oldWidget) {
@@ -253,8 +257,11 @@ class _TermViewState extends State<_TermView> {
 
   void _loadEvaluations() {
     setState(() {
-      evaluations = EvaluationService.findAllBySubjectAndTerm(widget.subject, widget.term);
-      evaluations.sort((a, b) => a.evaluationDates.first.compareTo(b.evaluationDates.first));
+      final allEvaluations = EvaluationService.findAllBySubjectAndTerm(widget.subject, widget.term);
+      evaluations = allEvaluations.groupBy((e) => e.performance);
+      for (List<Evaluation> list in evaluations.values) {
+        list.sort((a, b) => a.evaluationDates.first.compareTo(b.evaluationDates.first));
+      }
     });
   }
 
@@ -273,27 +280,32 @@ class _TermViewState extends State<_TermView> {
                   child: PercentIndicator(value: SubjectService.getAverageByTerm(widget.subject, widget.term), color: widget.subject.color),
                 ),
               ),
-              Text(
-                "Noten:",
-                style: Theme.of(context).textTheme.titleMedium,
+              ListTile(
+                title: Text(
+                  "Noten:",
+                  style: Theme.of(context).textTheme.titleMedium,
+                ),
               ),
               if (evaluations.isEmpty)
                 InfoCard("In diesem Halbjahr gibt es noch keine Noten."),
-              for (Evaluation evaluation in evaluations)
-                EvaluationListTile(
-                  evaluation: evaluation,
-                  onTap: () async {
-                    await Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) {
-                        return EvaluationEditPage(evaluation: evaluation);
-                      }),
-                    );
-                    setState(() {
-                      evaluations = EvaluationService.findAllBySubjectAndTerm(widget.subject, widget.term);
-                    });
-                  },
-                ),
+              for (final (i, p) in evaluations.keys.indexed) ...[
+                if (i > 0)
+                  Divider(),
+                SectionHeadingListTile(heading: p.name),
+                for (Evaluation e in evaluations[p]!)
+                  EvaluationListTile(
+                    evaluation: e,
+                    onTap: () async {
+                      await Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) {
+                          return EvaluationEditPage(evaluation: e);
+                        }),
+                      );
+                      _loadEvaluations();
+                    },
+                  ),
+              ],
             ],
           ),
         ),

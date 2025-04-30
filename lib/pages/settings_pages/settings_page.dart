@@ -64,6 +64,20 @@ class _SettingsPageState extends State<SettingsPage> {
               },
             ),
             ListTile(
+              title: Text("Bundesland"),
+              leading: Icon(Icons.location_on),
+              subtitle: Text(s.land.name),
+              onTap: () {
+                showDialog(context: context, builder: (context) {
+                  return AlertDialog(
+                    title: Text("Bundesland wechseln"),
+                    content: Placeholder(child: Text("\n\n\n\n\n\n\n"),),
+                    actions: [],
+                  );
+                });
+              },
+            ),
+            ListTile(
               title: Text("Erscheinungsbild"),
               leading: Icon(Icons.palette),
               onTap: () {

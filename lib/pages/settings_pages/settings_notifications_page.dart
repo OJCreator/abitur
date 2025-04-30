@@ -1,6 +1,7 @@
 import 'package:abitur/storage/entities/evaluation_date.dart';
 import 'package:abitur/storage/services/evaluation_date_service.dart';
 import 'package:abitur/storage/services/notification_service.dart';
+import 'package:abitur/widgets/section_heading_list_tile.dart';
 import 'package:flutter/material.dart';
 
 import '../../storage/entities/settings.dart';
@@ -28,12 +29,7 @@ class _SettingsNotificationsPageState extends State<SettingsNotificationsPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            ListTile(
-              title: Text(
-                "An Prüfungen erinnern",
-                style: Theme.of(context).textTheme.titleSmall,
-              ),
-            ),
+            SectionHeadingListTile(heading: "An Prüfungen erinnern"),
             SwitchListTile(
               title: Text("Benachrichtigung"),
               value: s.evaluationReminder,
@@ -69,12 +65,7 @@ class _SettingsNotificationsPageState extends State<SettingsNotificationsPage> {
               },
             ),
             Divider(),
-            ListTile(
-              title: Text(
-                "Bei fehlenden Noten erinnern",
-                style: Theme.of(context).textTheme.titleSmall,
-              ),
-            ),
+            SectionHeadingListTile(heading: "Bei fehlenden Noten erinnern"),
             SwitchListTile(
               title: Text("Benachrichtigung"),
               value: s.missingGradeReminder,

@@ -83,7 +83,7 @@ class NotificationService {
 
   // Private Scheduling Helpers
   static Future<void> _scheduleEvaluationReminder(EvaluationDate evaluationDate) async {
-    if (evaluationDate.date == null || evaluationDate.date!.isBefore(DateTime.now())) return;
+    if (evaluationDate.date == null) return;
     Settings s = SettingsService.loadSettings();
     if (!s.evaluationReminder) return;
     int reminderTime = s.evaluationReminderTimeInMinutes;
@@ -103,7 +103,7 @@ class NotificationService {
     );
   }
   static Future<void> _scheduleMissingGradeReminder(EvaluationDate evaluationDate) async {
-    if (evaluationDate.date == null) return;
+    if (evaluationDate.date == null || evaluationDate.note != null) return;
     Settings s = SettingsService.loadSettings();
     if (!s.missingGradeReminder) return;
     int delayDays = s.missingGradeReminderDelayDays;
@@ -136,6 +136,7 @@ class NotificationService {
     );
   }
   static Future<void> _schedule({int id = 0, required String title, String? body, required DateTime scheduled, String? payload, String? tag}) async {
+    print("Schedule Notification for ${scheduled.toString()} with title = $title");
     if (!_isInitialized) return;
     await _requestNotificationPermission();
     final TZDateTime tzScheduled = TZDateTime.from(scheduled, local);
@@ -206,7 +207,7 @@ class NotificationService {
     );
   }
   static DateTime _calculateScheduledTime(DateTime baseDate, {int dayOffset = 0, int minutes = 0}) {
-    return baseDate.copyWith(
+    return baseDate.add(Duration(days: dayOffset)).copyWith(
       hour: minutes ~/ 60,
       minute: minutes % 60,
       second: 0,

@@ -305,6 +305,16 @@ extension FindNLargestIndices on List<int?> {
     return result;
   }
 }
+extension GroupByList<S> on List<S> {
+  Map<T, List<S>> groupBy<T>(T Function(S) keyFunction) {
+    final map = <T, List<S>>{};
+    for (var element in this) {
+      final key = keyFunction(element);
+      map.putIfAbsent(key, () => []).add(element);
+    }
+    return map;
+  }
+}
 extension ExpandToList<E> on Iterable<Iterable<E>> {
   /// Kombiniert verschachtelte Listen zu einer flachen Liste.
   List<E> expandToList() => expand((list) => list).toList();

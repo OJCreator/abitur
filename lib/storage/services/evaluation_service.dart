@@ -87,11 +87,11 @@ class EvaluationService {
 
     Evaluation newEvaluation = Evaluation(
       subjectId: subject.id,
-      performanceId: "",
+      performanceId: performance?.id ?? "",
       term: term,
       name: name,
       evaluationDateIds: evaluationDates.map((it) => it.id).toList(),
-      evaluationTypeId: "",
+      evaluationTypeId: evaluationType?.id ?? "",
     );
     await Storage.saveEvaluation(newEvaluation);
 

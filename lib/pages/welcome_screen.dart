@@ -19,8 +19,16 @@ import 'package:provider/provider.dart';
 import '../storage/services/evaluation_date_service.dart';
 import '../storage/services/subject_service.dart';
 
-class WelcomeScreen extends StatelessWidget {
+class WelcomeScreen extends StatefulWidget {
   const WelcomeScreen({super.key});
+
+  @override
+  State<WelcomeScreen> createState() => _WelcomeScreenState();
+}
+
+class _WelcomeScreenState extends State<WelcomeScreen> {
+
+  bool loading = false;
 
   @override
   Widget build(BuildContext context) {
@@ -44,6 +52,9 @@ class WelcomeScreen extends StatelessWidget {
             SizedBox(height: 40),
             FilledButton(
               onPressed: () {
+                if (loading) {
+                  return;
+                }
                 Navigator.push(
                   context,
                   MaterialPageRoute(builder: (context) {
@@ -64,13 +75,22 @@ class WelcomeScreen extends StatelessWidget {
   }
 
   Future<void> _pickAndImportJson(BuildContext context) async {
+    if (loading) {
+      return;
+    }
     try {
+
       FilePickerResult? result = await FilePicker.platform.pickFiles(
         type: FileType.custom,
         allowedExtensions: ["json"],
       );
 
       if (result != null && result.files.single.path != null) {
+
+        setState(() {
+          loading = true;
+        });
+
         File file = File(result.files.single.path!);
         String fileContent = await file.readAsString();
 
@@ -114,6 +134,11 @@ class WelcomeScreen extends StatelessWidget {
         );
       }
     } catch (e) {
+
+      setState(() {
+        loading = false;
+      });
+
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text("Es gab einen Fehler beim Einlesen der Daten."),

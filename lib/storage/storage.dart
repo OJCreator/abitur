@@ -84,22 +84,12 @@ class Storage {
   }
 
   static Future<void> saveEvaluation(Evaluation e) async {
-    int index = loadEvaluations().indexOf(e);
-    if (index == -1) {
-      await _evaluationBox.add(e);
-    }
-    else {
-      await _evaluationBox.deleteAt(index);
-      await _evaluationBox.add(e);
-    }
+    await _evaluationBox.delete(e.id);
+    await _evaluationBox.put(e.id, e);
   }
 
   static Future<void> deleteEvaluation(Evaluation e) async {
-    int index = loadEvaluations().indexOf(e);
-    if (index == -1) {
-      return;
-    }
-    await _evaluationBox.deleteAt(index);
+    await _evaluationBox.delete(e.id);
   }
 
   // EvaluationDates
@@ -109,7 +99,7 @@ class Storage {
 
   static EvaluationDate loadEvaluationDate(String eId) {
     if (!_evaluationDateBox.containsKey(eId)) {
-      //print("Fehler: EvaluationDate#$eId konnte nicht gefinden werden.");
+      //print("Fehler: EvaluationDate#$eId konnte nicht gefunden werden.");
       return EvaluationDate.empty();
     }
     return _evaluationDateBox.get(eId)!;

@@ -33,8 +33,8 @@ class _SubjectNewPageState extends State<SubjectNewPage> {
   int _countingTerms = 4;
   SubjectType _subjectType = SubjectType.basic;
   List<Performance> _performances = [
-    Performance(name: "Klausur", weighting: 0.5),
-    Performance(name: "Mündliche Note", weighting: 0.5),
+    Performance(name: "Klausuren", weighting: 0.5),
+    Performance(name: "Kleine Noten", weighting: 0.5),
   ];
 
   @override
