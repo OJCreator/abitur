@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shortcuts xmlns:android="http://schemas.android.com/apk/res/android" >
+  <shortcut
+        android:enabled="true"
+        android:icon="@mipmap/ic_ssc_new_evaluation"
+        android:shortcutId="new_evaluation"
+        android:shortcutShortLabel="@string/ssc_new_evaluation">
+    <intent
+            android:action="android.intent.action.VIEW"
+            android:targetClass="com.OJCreator.abitur.MainActivity"
+            android:targetPackage="com.OJCreator.abitur"
+            android:data="newEvaluation"/>
+  </shortcut>
+</shortcuts>

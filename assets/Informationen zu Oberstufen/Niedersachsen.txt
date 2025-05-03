@@ -1,0 +1,31 @@
+Niedersachsen:
+- 2 Jahre Qualiphase
+- 5 Abifächer
+- Typen:
+  - Kernfächer (Deutsch, FS, Mathemathik)
+  - Schwerpunktfächer (2) sowas wie LK -> 5-Stündig
+  - Ergänzungsfächer alles andere
+  - Seminarfach wie W-Seminar
+  - Wahlfächer alles freiwillige (InE)
+
+Schwerpunkte:
+  - sprachlich:
+    - FS + FS
+    - FS + D
+  - mathematisch-naturwissenschaftlich:
+    - NatW + NatW
+    - NatW + M
+    - NatW + Inf
+    - M + Inf
+  - musisch-künstlerisch:
+    - Musik + D
+    - Musik + M
+    - Ku + D
+    - Ku + M
+  - gesellschaftswissenschaftlich:
+    - G + Pol-Wirt
+    - G + Erdk
+    - G + Reli
+    - G + Phil
+  - sportlich:
+    - Sp + NatW

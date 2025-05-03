@@ -13,6 +13,7 @@ import '../../storage/entities/evaluation.dart';
 import '../../storage/entities/performance.dart';
 import '../../storage/entities/subject.dart';
 import '../../storage/services/evaluation_type_service.dart';
+import '../../storage/services/timetable_service.dart';
 import '../../utils/brightness_notifier.dart';
 import '../../widgets/forms/evaluation_date_form.dart';
 import '../../widgets/forms/evaluation_type_dropdown.dart';
@@ -30,7 +31,7 @@ class EvaluationNewPage extends StatefulWidget {
     this.initialTerm,
     super.key,
   }) : initialDateTime = initialDateTime ?? DateTime.now(),
-        initialSubject = initialSubject ?? SubjectService.findAllGradable()[0];
+        initialSubject = initialSubject ?? TimetableService.findLatestGradableSubject();//SubjectService.findAllGradable()[0];
 
   @override
   State<EvaluationNewPage> createState() => _EvaluationNewPageState();

@@ -125,7 +125,7 @@ class NotificationService {
   }
 
   // Core Scheduling Functionality
-  static Future<void> _showInstantNotification({int id = 0, required String title, String? body}) async {
+  static Future<void> showInstantNotification({int id = 0, required String title, String? body}) async {
     if (!_isInitialized) return;
     await _requestNotificationPermission();
     return notificationsPlugin.show(

@@ -138,7 +138,6 @@ class SubjectService {
   static double? getAverageByTerm(Subject s, int term) {
     Iterable<Evaluation> evaluations = EvaluationService.findAllGradedBySubjectAndTerm(s, term);
     if (!s.terms.contains(term)) {
-      print("BUD");
       return null;
     }
     Map<Performance, Iterable<Evaluation>> performancesAndNotes = s.performances.mapWith((performance) {

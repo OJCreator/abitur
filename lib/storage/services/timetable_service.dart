@@ -1,6 +1,7 @@
 import 'package:abitur/storage/entities/timetable/timetable_entry.dart';
 import 'package:abitur/storage/entities/timetable/timetable_settings.dart';
 import 'package:abitur/storage/services/settings_service.dart';
+import 'package:abitur/storage/services/subject_service.dart';
 import 'package:abitur/storage/storage.dart';
 import 'package:abitur/utils/constants.dart';
 import 'package:intl/intl.dart';
@@ -167,5 +168,33 @@ class TimetableService {
     for (TimetableEntry t in entries) {
       await Storage.saveTimetableEntry(t);
     }
+  }
+
+  static Subject findLatestGradableSubject() {
+    int currentTerm = SettingsService.currentProbableTerm();
+    DateTime now = DateTime.now();
+    int weekday = now.weekday;
+    if (weekday > 5) {
+      return SubjectService.findAllGradable()[0];
+    }
+    DateFormat format = DateFormat("HH:mm");
+    int hour = loadTimetableSettings().times.lastIndexWhere((time) {
+      DateTime t = format.parse(time.split(" - ")[0]);
+      t = t.copyWith(year: now.year, month: now.month, day: now.day);
+      return t.isBefore(now);
+    });
+    Timetable t = loadTimetable(currentTerm);
+    List<String?> entries = t.timetableEntryIds[weekday];
+    while (hour > 0) {
+      if (hour < entries.length && entries[hour] != null) {
+        String entryId = entries[hour]!;
+        Subject s = loadTimetableEntry(entryId).subject;
+        if (s.subjectType != SubjectType.voluntary) {
+          return s;
+        }
+      }
+      hour--;
+    }
+    return SubjectService.findAllGradable()[0];
   }
 }
