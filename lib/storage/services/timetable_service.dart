@@ -173,8 +173,8 @@ class TimetableService {
   static Subject findLatestGradableSubject() {
     int currentTerm = SettingsService.currentProbableTerm();
     DateTime now = DateTime.now();
-    int weekday = now.weekday;
-    if (weekday > 5) {
+    int weekday = now.weekday-1;
+    if (weekday >= 5) {
       return SubjectService.findAllGradable()[0];
     }
     DateFormat format = DateFormat("HH:mm");
@@ -185,7 +185,7 @@ class TimetableService {
     });
     Timetable t = loadTimetable(currentTerm);
     List<String?> entries = t.timetableEntryIds[weekday];
-    while (hour > 0) {
+    while (hour >= 0) {
       if (hour < entries.length && entries[hour] != null) {
         String entryId = entries[hour]!;
         Subject s = loadTimetableEntry(entryId).subject;
