@@ -41,6 +41,28 @@ class _SubjectsPageState extends State<SubjectsPage> {
     return Scaffold(
       appBar: AppBar(
         title: Text("Fächer"),
+        actions: [
+          PopupMenuButton<String>(
+            onSelected: (value) async {
+              if (value == "selectGraduationSubjects") {
+                await Navigator.push(context,
+                    MaterialPageRoute(
+                      builder: (context) {
+                        return SubjectChoseGraduationPage();
+                      },
+                      fullscreenDialog: true,
+                    ));
+                _reloadSubjects();
+              }
+            },
+            itemBuilder: (BuildContext context) => [
+              PopupMenuItem(
+                value: "selectGraduationSubjects",
+                child: Text("Abiturfächer wählen"),
+              ),
+            ],
+          ),
+        ],
       ),
       body: SingleChildScrollView(
         child: Column(

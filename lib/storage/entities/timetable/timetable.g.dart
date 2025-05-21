@@ -20,7 +20,7 @@ class TimetableAdapter extends TypeAdapter<Timetable> {
       id: fields[0] as String?,
       timetableEntryIds: (fields[1] as List?)
           ?.map((dynamic e) => (e as List).cast<String?>())
-          .toList(),
+          ?.toList(),
     );
   }
 

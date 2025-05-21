@@ -11,8 +11,10 @@ import 'package:abitur/widgets/forms/terms_multiple_choice.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../exceptions/invalid_form_input_exception.dart';
 import '../../storage/entities/subject.dart';
 import '../../utils/brightness_notifier.dart';
+import '../../widgets/confirm_dialog.dart';
 
 class SubjectNewPage extends StatefulWidget {
 
@@ -139,18 +141,40 @@ class _SubjectNewPageState extends State<SubjectNewPage> {
               return;
             }
 
-            await PerformanceService.savePerformances(_performances);
+            try {
 
-            await SubjectService.newSubject(
-              _name.text,
-              _shortName.text,
-              _color,
-              _terms,
-              _countingTerms,
-              _subjectType,
-              _performances.map((p) => p.id).toList(),
-            );
-            Navigator.pop(context);
+              await SubjectService.newSubject(
+                _name.text,
+                _shortName.text,
+                _color,
+                _terms,
+                _countingTerms,
+                _subjectType,
+                _performances.map((p) => p.id).toList(),
+              );
+              await PerformanceService.savePerformances(_performances);
+
+              Navigator.pop(context);
+            } on InvalidFormException catch (e) {
+              await showDialog(
+                barrierDismissible: false,
+                context: context,
+                builder: (context) {
+                  return AlertDialog(
+                    title: Text("Es gab einen Fehler."),
+                    content: Text(e.message),
+                    actions: [
+                      TextButton(
+                        onPressed: () {
+                          Navigator.pop(context);
+                        },
+                        child: Text("Zurück"),
+                      ),
+                    ],
+                  );
+                },
+              );
+            }
           },
         ),
       ),

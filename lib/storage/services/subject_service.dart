@@ -1,5 +1,7 @@
 import 'dart:ui';
 
+import 'package:abitur/exceptions/invalid_form_input_exception.dart';
+import 'package:abitur/storage/services/settings_service.dart';
 import 'package:abitur/storage/services/timetable_service.dart';
 import 'package:abitur/storage/storage.dart';
 import 'package:abitur/utils/constants.dart';
@@ -8,6 +10,7 @@ import '../../utils/pair.dart';
 import '../entities/evaluation.dart';
 import '../entities/evaluation_date.dart';
 import '../entities/performance.dart';
+import '../entities/settings.dart';
 import '../entities/subject.dart';
 import 'evaluation_date_service.dart';
 import 'evaluation_service.dart';
@@ -16,6 +19,13 @@ import 'performance_service.dart';
 class SubjectService {
 
   static Future<Subject> newSubject(String name, String shortName, Color color, Set<int> terms, int countingTermAmount, SubjectType subjectType, List<String> performanceIds) async {
+
+    List<Subject> existingSubjects = findAll();
+    Land land = SettingsService.land;
+    if ([Land.bw, Land.by].contains(land) && subjectType == SubjectType.advanced && existingSubjects.countWhere((s) => s.subjectType == SubjectType.advanced) >= 3) {
+      throw InvalidFormException("Es gibt bereits 3 Fächer auf erhöhtem Anforderungsniveau. Du kannst keine weiteren hinzufügen.");
+    }
+
     Subject s = Subject(
       name: name,
       shortName: shortName,
@@ -27,6 +37,9 @@ class SubjectService {
     );
     await Storage.saveSubject(s);
 
+    if (land == Land.bw && subjectType == SubjectType.advanced) {
+      setGraduationEvaluation(s);
+    }
     if (subjectType == SubjectType.seminar) {
       setGraduationEvaluation(s, graduation: true);
     }
@@ -35,6 +48,12 @@ class SubjectService {
   }
 
   static Future<Subject> editSubject(Subject subject, {required String name, required String shortName, required Color color, required Set<int> terms, required int countingTermAmount, required SubjectType subjectType, required List<Performance> performances}) async {
+
+    List<Subject> existingSubjects = findAll().where((s) => s != subject).toList();
+    Land land = SettingsService.land;
+    if ([Land.bw, Land.by].contains(land) && subjectType == SubjectType.advanced && existingSubjects.countWhere((s) => s.subjectType == SubjectType.advanced) >= 3) {
+      throw InvalidFormException("Es gibt bereits 3 Fächer auf erhöhtem Anforderungsniveau. Du kannst keine weiteren hinzufügen.");
+    }
 
     await PerformanceService.savePerformances(performances);
     List<Performance> performancesToDelete = subject.performances.where((p) => !performances.contains(p)).toList();
@@ -48,6 +67,14 @@ class SubjectService {
     subject.subjectType = subjectType;
     subject.performances = performances;
     await Storage.saveSubject(subject);
+
+    if (land == Land.bw && subjectType == SubjectType.advanced) {
+      await setGraduationEvaluation(subject);
+    }
+    if (subjectType == SubjectType.seminar) {
+      await setGraduationEvaluation(subject, graduation: true);
+    }
+
     return subject;
   }
 

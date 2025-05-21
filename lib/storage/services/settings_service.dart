@@ -8,11 +8,13 @@ import '../../utils/seed_notifier.dart';
 
 class SettingsService {
 
+  static Land get land => loadSettings().land;
+
   static DateTime get firstDayOfSchool => DateTime(loadSettings().graduationYear.year - 2, 8, 1);
   static DateTime get firstDayOfTerm2 => DateTime(loadSettings().graduationYear.year - 1, 2, 15);
   static DateTime get firstDayOfTerm3 => DateTime(loadSettings().graduationYear.year - 1, 8, 1);
   static DateTime get firstDayOfTerm4 => DateTime(loadSettings().graduationYear.year, 2, 1);
-  static DateTime get dayToChoseGraduationSubjects => DateTime(loadSettings().graduationYear.year-1, 3, 1); // TODO für die Hochrechnung ist eigentlich besser früher, man kann ja noch updaten...
+  static DateTime get dayToChoseGraduationSubjects => DateTime(loadSettings().graduationYear.year, 3, 1); // TODO für die Hochrechnung ist eigentlich besser früher, man kann ja noch updaten... -> Idee: Wenn man auf Hochrechnung klickt ohne Abifächer ausgewählt zu haben, muss man die erst wählen.
   static DateTime get lastDayOfSchool =>  DateTime(loadSettings().graduationYear.year, 7, 31);
 
   static Settings loadSettings() {

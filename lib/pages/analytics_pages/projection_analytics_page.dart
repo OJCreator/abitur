@@ -114,6 +114,7 @@ class _ProjectionAnalyticsPageState extends State<ProjectionAnalyticsPage> {
                         background: termNoteDto.counting,
                         note: termNoteDto.noteString,
                         bold: !termNoteDto.projection,
+                        weight: termNoteDto.weight,
                       );
                     }),
                   );
@@ -169,6 +170,7 @@ class _ProjectionAnalyticsPageState extends State<ProjectionAnalyticsPage> {
                         background: dto.counting,
                         note: dto.noteString,
                         bold: !dto.projection,
+                        weight: 4,
                       );
                     })
                   );

@@ -5,6 +5,7 @@ import 'package:abitur/pages/subject_pages/subject_edit_page.dart';
 import 'package:abitur/storage/entities/evaluation_date.dart';
 import 'package:abitur/storage/entities/performance.dart';
 import 'package:abitur/storage/services/evaluation_service.dart';
+import 'package:abitur/storage/services/graduation_service.dart';
 import 'package:abitur/storage/services/settings_service.dart';
 import 'package:abitur/storage/services/subject_service.dart';
 import 'package:abitur/utils/constants.dart';
@@ -21,6 +22,8 @@ import 'package:provider/provider.dart';
 import '../../storage/entities/evaluation.dart';
 import '../../storage/entities/subject.dart';
 import '../../utils/brightness_notifier.dart';
+import '../../widgets/evaluation_date_list_tile.dart';
+import '../../widgets/graduation_date_list_tile.dart';
 
 class SubjectPage extends StatefulWidget {
 
@@ -122,24 +125,16 @@ class _SubjectPageState extends State<SubjectPage> with SingleTickerProviderStat
     _tabKeys[_tabController.index].currentState!._loadEvaluations();
   }
 
-  Future<void> _editGraduationWorkData() async {
-    await showDialog(context: context, builder: (context) {
-      return SubjectEditGraduationEvaluationDialog(graduationEvaluationDate: graduationEvaluation!.evaluationDates.first);
-    });
-
-    setState(() {});
-  }
-
   @override
   Widget build(BuildContext context) {
 
     Brightness b = Provider.of<BrightnessNotifier>(context).currentBrightness;
     return Theme(
-        data: ThemeData(
-          colorScheme: ColorScheme.fromSeed(seedColor: subject.color, brightness: b,),
-          useMaterial3: true,
-          brightness: b,
-        ),
+      data: ThemeData(
+        colorScheme: ColorScheme.fromSeed(seedColor: subject.color, brightness: b,),
+        useMaterial3: true,
+        brightness: b,
+      ),
       child: Scaffold(
         appBar: AppBar(
           title: Text(subject.name),
@@ -191,17 +186,14 @@ class _SubjectPageState extends State<SubjectPage> with SingleTickerProviderStat
                 term: entry.value,
                 key: _tabKeys[entry.key],
               ),
-            if (SubjectService.isGraduationSubject(subject))
+            if (graduationEvaluation != null)
               _GraduationWorkTermView(
                 subject: subject,
-                graduationEvaluationDate: graduationEvaluation?.evaluationDates.first,
+                graduationEvaluation: graduationEvaluation!,
                 key: _tabKeys.last,
-              ),
-            if (subject.subjectType == SubjectType.seminar)
-              _GraduationWorkTermView(
-                subject: subject,
-                graduationEvaluationDate: graduationEvaluation?.evaluationDates.first,
-                key: _tabKeys.last,
+                editEvaluationDate: (e) {
+                  _editGraduationWorkData(e);
+                },
               ),
           ],
         ),
@@ -213,11 +205,21 @@ class _SubjectPageState extends State<SubjectPage> with SingleTickerProviderStat
         ) : FloatingActionButton(
           child: Icon(Icons.edit),
           onPressed: () {
-            _editGraduationWorkData();
+            _editGraduationWorkData(graduationEvaluation!.evaluationDates.first);
           },
         ),
       ),
     );
+  }
+
+  Future<void> _editGraduationWorkData(EvaluationDate e) async {
+    await showDialog(context: context, barrierDismissible: false, builder: (context) {
+      return SubjectEditGraduationEvaluationDialog(
+        graduationEvaluationDate: e,
+      );
+    });
+
+    setState(() {});
   }
 }
 
@@ -314,13 +316,19 @@ class _TermViewState extends State<_TermView> {
   }
 }
 
-class _GraduationWorkTermView extends StatelessWidget {
+class _GraduationWorkTermView extends StatefulWidget {
   
   final Subject subject;
-  final EvaluationDate? graduationEvaluationDate;
+  final Evaluation graduationEvaluation;
+  final Function(EvaluationDate) editEvaluationDate;
   
-  const _GraduationWorkTermView({super.key, required this.subject, required this.graduationEvaluationDate});
+  const _GraduationWorkTermView({super.key, required this.subject, required this.graduationEvaluation, required this.editEvaluationDate});
 
+  @override
+  State<_GraduationWorkTermView> createState() => _GraduationWorkTermViewState();
+}
+
+class _GraduationWorkTermViewState extends State<_GraduationWorkTermView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -332,13 +340,46 @@ class _GraduationWorkTermView extends StatelessWidget {
             children: [
               Padding(
                 padding: const EdgeInsets.all(8.0),
-                child: Center(
-                  child: PercentIndicator(value: graduationEvaluationDate?.note?.toDouble(), color: subject.color),
+                child: Center( // TODO Wichtig: sh. Tabelle https://km.baden-wuerttemberg.de/fileadmin/redaktion/m-km/intern/PDF/Publikationen/Gymnasium/2025_Leitfaden_fuer_die_gymnasiale_Oberstufe_Abitur_2027.pdf Seite 14, nicht erst runden und dann mal 4, sondern erst mal 4 und dann runden!
+                  child: PercentIndicator(value: EvaluationService.calculateNote(widget.graduationEvaluation)?.toDouble(), color: widget.subject.color),
                 ),
               ),
               FormGap(),
-              DateInput(
-                dateTime: graduationEvaluationDate?.date,
+              if (widget.graduationEvaluation.evaluationDates.length == 1)
+                DateInput(
+                  dateTime: widget.graduationEvaluation.evaluationDates.first.date,
+                ),
+              if (widget.graduationEvaluation.evaluationDates.length > 1)
+                ...[
+                  for (EvaluationDate e in widget.graduationEvaluation.evaluationDates)
+                    GraduationDateListTile(
+                      evaluationDate: e,
+                      onTap: () async {
+                        widget.editEvaluationDate(e);
+                        // await Navigator.push(
+                        //   context,
+                        //   MaterialPageRoute(builder: (context) {
+                        //     return EvaluationEditPage(evaluation: e);
+                        //   }),
+                        // );
+                        // _loadEvaluations();
+                        // TODO die einzelnen EvaluationDates bearbeiten
+                      },
+                    ),
+                ],
+              FilledButton(
+                onPressed: () async {
+                  if (widget.graduationEvaluation.evaluationDates.length == 1) {
+                    print("Ho");
+                    await GraduationService.addSecondGraduationDate(widget.subject, 1, "Beschreibung");
+                  } else {
+                    await GraduationService.removeSecondGraduationDate(widget.subject);
+                  }
+                  setState(() {
+
+                  });
+                },
+                child: Text(widget.graduationEvaluation.evaluationDates.length > 1 ? "Ein Prüfungstermin" : "Zwei Prüfungstermine"),
               ),
             ],
           ),

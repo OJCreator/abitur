@@ -1,10 +1,13 @@
 import 'dart:math';
 
 import 'package:abitur/storage/services/evaluation_service.dart';
+import 'package:abitur/storage/services/settings_service.dart';
 import 'package:abitur/storage/services/subject_service.dart';
 
 import '../../utils/constants.dart';
+import '../entities/settings.dart';
 import '../entities/subject.dart';
+import 'graduation_service.dart';
 
 class ProjectionService {
 
@@ -16,7 +19,7 @@ class ProjectionService {
 
   static int resultBlock1() {
     List<TermNoteDto> termNotes = buildProjectionOverviewInformation().values.expandToList();
-    return termNotes.where((note) => note.counting && note.note != null).toList().sumBy((note) => note.note!).toInt();
+    return termNotes.where((note) => note.counting && note.note != null).toList().sumBy((note) => note.note! * note.weight).toInt();
   }
   static int resultBlock2() {
     List<Subject> abiSubjects = SubjectService.graduationSubjects().whereType<Subject>().toList();
@@ -34,15 +37,33 @@ class ProjectionService {
 
   static Map<Subject, List<TermNoteDto>> buildProjectionOverviewInformation() {
     List<Subject> subjects = SubjectService.findAllGradable();
+    Land land = SettingsService.land;
     Subject? wSeminar = subjects.where((it) => it.subjectType == SubjectType.seminar).firstOrNull;
 
     Map<Subject, List<TermNoteDto>> map = subjects.where((s) => s != wSeminar).toList().asMap().map((i, s) {
       return MapEntry(s, _buildTermNoteDtos(s));
     });
 
+    if (land == Land.bw) { // TODO In BW zählen aus FS und NWS insgesamt mindestens 4
+      // 2 der drei Leistungskurse doppelt gewichten
+      List<Subject> advancedSubjects = subjects.where((it) => it.subjectType == SubjectType.advanced).toList();
+      Map<Subject, int> weightedSums = advancedSubjects.mapWith((s) => map[s]!.sumBy((entry) => entry.note!).toInt());
+      List<MapEntry<Subject, int>> sorted = weightedSums.entries.toList()
+        ..sort((a, b) => b.value.compareTo(a.value));
+
+      for (int i = 0; i < 2; i++) {
+        if (i >= sorted.length) {
+          continue;
+        }
+        for (TermNoteDto termNote in map[sorted[i].key]!) {
+          termNote.weight = 2;
+        }
+      }
+    }
+
     List<TermNoteDto> allTermNotes = map.values.expandToList();
 
-    // Optionsregel (schlechteste Note aus Nicht-Abiturfach gegen noch nicht zählende Note tauschen)
+    // Optionsregel (schlechteste Note aus Nicht-Abiturfach gegen noch nicht zählende Note tauschen) TODO nur Bayern
     List<Subject> subjectsWithOneNoteCounting = subjects.where((s) => s != wSeminar).where((s) => map[s]!.countWhere((n) => n.counting) == 1).toList();
     List<TermNoteDto> notesWithOptionRulePossible = allTermNotes.where((note) => !SubjectService.isGraduationSubject(note.subject) && note.note != null && !subjectsWithOneNoteCounting.contains(note.subject)).toList();
     notesWithOptionRulePossible.sort((a,b) => a.note!.compareTo(b.note!));
@@ -125,6 +146,7 @@ class TermNoteDto {
   bool projection;
   bool counting;
   Subject subject;
+  int weight;
 
-  TermNoteDto({required this.note, required this.projection, required this.counting, required this.subject});
+  TermNoteDto({required this.note, required this.projection, required this.counting, required this.subject, this.weight = 1});
 }

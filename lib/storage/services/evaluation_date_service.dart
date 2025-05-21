@@ -1,4 +1,5 @@
 import 'package:abitur/storage/services/calendar_service.dart';
+import 'package:abitur/storage/services/evaluation_service.dart';
 import 'package:abitur/storage/services/notification_service.dart';
 import 'package:abitur/utils/constants.dart';
 
@@ -49,15 +50,20 @@ class EvaluationDateService {
     }).toList();
   }
 
-  static Future<EvaluationDate> newEvaluationDate(Evaluation evaluation, DateTime date, int? note) async {
+  static Future<EvaluationDate> newEvaluationDate(Evaluation evaluation, {DateTime? date, int? note, int? weight, String? description}) async {
 
     EvaluationDate e = EvaluationDate(
       evaluationId: evaluation.id,
       date: date,
       note: note,
-      weight: 1,
+      weight: weight ?? 1,
+      description: description ?? "",
     );
     await Storage.saveEvaluationDate(e);
+    List<EvaluationDate> dateList = evaluation.evaluationDates;
+    dateList.add(e);
+    evaluation.evaluationDates = dateList;
+    await Storage.saveEvaluation(evaluation);
     await CalendarService.syncEvaluationCalendarEvent(e);
     NotificationService.scheduleNotificationsForEvaluation(e);
     return e;
@@ -102,6 +108,13 @@ class EvaluationDateService {
   }
 
   static Future<void> deleteEvaluationDate(EvaluationDate evaluationDate) async {
+
+    Evaluation evaluation = evaluationDate.evaluation;
+    List<EvaluationDate> dateList = evaluation.evaluationDates;
+    dateList.remove(evaluationDate);
+    evaluation.evaluationDates = dateList;
+    await Storage.saveEvaluation(evaluation);
+
     await CalendarService.deleteEvaluationCalendarEvent(evaluationDate);
     await Storage.deleteEvaluationDate(evaluationDate);
     NotificationService.cancelEvaluationNotifications(evaluationDate);

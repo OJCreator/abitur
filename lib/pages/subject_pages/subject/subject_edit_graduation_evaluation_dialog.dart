@@ -17,13 +17,20 @@ class SubjectEditGraduationEvaluationDialog extends StatefulWidget {
 
 class _SubjectEditGraduationEvaluationDialogState extends State<SubjectEditGraduationEvaluationDialog> {
 
+  late bool _editWeighting;
+
   late bool giveGraduationNote;
 
   late int? selectedNote;
+  late int selectedWeight;
   late DateTime? selectedDate;
 
   @override
   void initState() {
+
+    _editWeighting = widget.graduationEvaluationDate.evaluation.evaluationDates.length > 1;
+    selectedWeight = widget.graduationEvaluationDate.weight;
+
     giveGraduationNote = widget.graduationEvaluationDate.note != null;
     selectedNote = widget.graduationEvaluationDate.note;
     selectedDate = widget.graduationEvaluationDate.date;
@@ -57,7 +64,7 @@ class _SubjectEditGraduationEvaluationDialogState extends State<SubjectEditGradu
               max: 15,
               divisions: 15,
               value: selectedNote?.toDouble() ?? 8,
-              label: "${selectedNote}",
+              label: "$selectedNote",
               onChanged: giveGraduationNote ? (newValue) {
                 setState(() {
                   selectedNote = newValue.toInt();
@@ -66,6 +73,23 @@ class _SubjectEditGraduationEvaluationDialogState extends State<SubjectEditGradu
               year2023: false,
             ),
             FormGap(),
+            if (_editWeighting) ...[
+              Text("Gewichtung"),
+              Slider(
+                min: 0,
+                max: 6,
+                divisions: 6,
+                value: selectedWeight?.toDouble() ?? 1,
+                label: "$selectedWeight",
+                onChanged: (newValue) {
+                  setState(() {
+                    selectedWeight = newValue.toInt();
+                  });
+                },
+                year2023: false,
+              ),
+              FormGap(),
+            ],
             DateInput(
               dateTime: selectedDate,
               onSelected: (newValue) {
@@ -86,7 +110,7 @@ class _SubjectEditGraduationEvaluationDialogState extends State<SubjectEditGradu
         ),
         FilledButton(
           onPressed: () async {
-            await EvaluationDateService.editEvaluationDate(widget.graduationEvaluationDate, date: selectedDate, note: selectedNote, weight: 1);
+            await EvaluationDateService.editEvaluationDate(widget.graduationEvaluationDate, date: selectedDate, note: selectedNote, weight: selectedWeight);
             Navigator.pop(context, true);
           },
           child: Text("Speichern"),

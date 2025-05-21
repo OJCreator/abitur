@@ -18,7 +18,7 @@ class SetupLandPage extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  "Welches Schulsystem besuchst du?",
+                  "Aus welchem Bundeland kommst du?",
                   style: Theme.of(context).textTheme.titleMedium,
                 ),
                 ...Land.values.map((land) {
