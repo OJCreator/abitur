@@ -1,3 +1,4 @@
+import 'package:abitur/isolates/serializer.dart';
 import 'package:hive/hive.dart';
 
 import '../../utils/uuid.dart';
@@ -5,7 +6,7 @@ import '../../utils/uuid.dart';
 part 'performance.g.dart';
 
 @HiveType(typeId: 1)
-class Performance {
+class Performance implements Serializable {
 
   @HiveField(0)
   String id;
@@ -26,6 +27,7 @@ class Performance {
     return Performance(name: "-", weighting: 0);
   }
 
+  @override
   Map<String, dynamic> toJson() => {
     "id": id,
     "name": name,

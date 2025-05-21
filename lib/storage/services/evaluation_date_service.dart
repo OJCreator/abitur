@@ -1,8 +1,12 @@
+import 'package:abitur/isolates/evaluation_date_isolates.dart';
+import 'package:abitur/isolates/serializer.dart';
 import 'package:abitur/storage/services/calendar_service.dart';
-import 'package:abitur/storage/services/evaluation_service.dart';
 import 'package:abitur/storage/services/notification_service.dart';
 import 'package:abitur/utils/constants.dart';
+import 'package:flutter/foundation.dart';
 
+import '../../isolates/models/evaluation_dates/evaluation_dates_model.dart';
+import '../../isolates/models/evaluation_dates/evaluation_dates_time_model.dart';
 import '../entities/evaluation.dart';
 import '../entities/evaluation_date.dart';
 import '../entities/subject.dart';
@@ -48,6 +52,14 @@ class EvaluationDateService {
           (e.note != null && e.note!.toString() == query)
       );
     }).toList();
+  }
+
+  static Future<List<EvaluationDate>> findAllFutureOrUngradedEvaluationDatesIsolated() async {
+    List<EvaluationDate> evaluationDates = Storage.loadEvaluationDates();
+    List<Map<String, dynamic>> evaluationsSerialized = evaluationDates.serialize();
+    EvaluationDatesTimeModel model = EvaluationDatesTimeModel(evaluationsSerialized, DateTime.now());
+    EvaluationDatesModel filtered = await compute(EvaluationDateIsolates.filterFutureOrNotGraded, model);
+    return filtered.evaluationDates.map((e) => EvaluationDate.fromJson(e)).toList();
   }
 
   static Future<EvaluationDate> newEvaluationDate(Evaluation evaluation, {DateTime? date, int? note, int? weight, String? description}) async {

@@ -8,6 +8,7 @@ import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 const Color primaryColor = Color(0xFF3C5C80);
 const Color _lightGrey = Color(0xFFCCCCD4);
 const Color _darkGrey = Color(0xFF333344);
+const Color shimmerColor = Color(0x0D000000);
 
 Color get secondShade {
   return Storage.loadSettings().lightMode ? _lightGrey : _darkGrey;

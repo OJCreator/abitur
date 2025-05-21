@@ -1,3 +1,4 @@
+import 'package:abitur/widgets/shimmer.dart';
 import 'package:flutter/material.dart';
 import 'package:percent_indicator/circular_percent_indicator.dart';
 
@@ -25,8 +26,15 @@ class PercentIndicator extends StatelessWidget {
     }
   }
   final Color? color;
+  final bool shimmer;
 
-  const PercentIndicator({required this.value, this.type = PercentIndicatorType.points, super.key, this.color});
+  const PercentIndicator({required this.value, this.type = PercentIndicatorType.points, super.key, this.color}):
+        shimmer = false;
+
+  const PercentIndicator.shimmer({this.color, super.key}):
+        value = 0,
+        type = PercentIndicatorType.points,
+        shimmer = true;
 
   @override
   Widget build(BuildContext context) {
@@ -40,7 +48,7 @@ class PercentIndicator extends StatelessWidget {
       lineWidth: 10,
       progressColor: color ?? Theme.of(context).colorScheme.surfaceTint,
       backgroundColor: Theme.of(context).colorScheme.secondaryContainer,
-      center: Text(
+      center: shimmer ? Shimmer(width: 60, height: 25,) : Text(
         pointString,
         style: Theme.of(context).textTheme.headlineMedium,
       ),

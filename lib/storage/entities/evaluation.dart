@@ -1,3 +1,4 @@
+import 'package:abitur/isolates/serializer.dart';
 import 'package:abitur/storage/entities/evaluation_type.dart';
 import 'package:abitur/storage/entities/performance.dart';
 import 'package:abitur/storage/entities/subject.dart';
@@ -13,7 +14,7 @@ import 'evaluation_date.dart';
 part 'evaluation.g.dart';
 
 @HiveType(typeId: 0)
-class Evaluation {
+class Evaluation implements Serializable {
 
   @HiveField(0)
   String id;
@@ -23,6 +24,7 @@ class Evaluation {
 
   @HiveField(2)
   String _subjectId;
+  String get subjectId => _subjectId;
   Subject get subject => SubjectService.findById(_subjectId) ?? Subject.empty();
   set subject(Subject newSubject) => _subjectId = newSubject.id;
 

@@ -15,12 +15,9 @@ class AverageAnalytics extends StatefulWidget {
 
 class _AverageAnalyticsState extends State<AverageAnalytics> {
 
-  DateTime get startDate => DateTime.now().add(Duration(days: -150));
+  DateTime get startDate => DateTime.now().add(Duration(days: -300));
 
-  List<LineChartBarData> get lineData {
-    return averageHistory.mapToIterable((key, value) => generateAverageData(key)).toList();
-  }
-  Map<Subject, List<Pair<DateTime, double>>> averageHistory = {};
+  late Future<Map<Subject, List<Pair<DateTime, double>>>> averageHistory;
 
   @override
   void initState() {
@@ -34,10 +31,7 @@ class _AverageAnalyticsState extends State<AverageAnalytics> {
     });
   }
 
-  LineChartBarData generateAverageData(Subject s) {
-
-    final data = averageHistory[s] ?? [];
-
+  LineChartBarData generateAverageData(Subject s, List<Pair<DateTime, double>> data) {
 
     List<Pair<DateTime, double>> filteredAvgHistory = data.where((data) => data.first.isAfter(startDate)).toList();
     List<Pair<DateTime, double>> abandonedEntries = data.where((data) => !data.first.isAfter(startDate)).toList();
@@ -76,36 +70,44 @@ class _AverageAnalyticsState extends State<AverageAnalytics> {
           const SizedBox(height: 38,),
           AspectRatio(
             aspectRatio: 1.5,
-            child: LineChart(
-              LineChartData(
-                lineTouchData: LineTouchData(enabled: false),
-                gridData: FlGridData(show: false),
-                titlesData: FlTitlesData(
-                  bottomTitles: AxisTitles(
-                    sideTitles: SideTitles(
-                      showTitles: true,
-                      reservedSize: 32,
-                      interval: 1,
-                      getTitlesWidget: bottomTitleWidgets,
+            child: FutureBuilder(
+              future: averageHistory,
+              builder: (context, snapshot) {
+                if (!snapshot.hasData) {
+                  return Center(child: CircularProgressIndicator());
+                }
+                return LineChart(
+                  LineChartData(
+                    lineTouchData: LineTouchData(enabled: false),
+                    gridData: FlGridData(show: false),
+                    titlesData: FlTitlesData(
+                      bottomTitles: AxisTitles(
+                        sideTitles: SideTitles(
+                          showTitles: true,
+                          reservedSize: 32,
+                          interval: 1,
+                          getTitlesWidget: bottomTitleWidgets,
+                        ),
+                      ),
+                      rightTitles: const AxisTitles(),
+                      topTitles: const AxisTitles(),
+                      leftTitles: AxisTitles(
+                        sideTitles: SideTitles(
+                          getTitlesWidget: leftTitles,
+                          showTitles: true,
+                          interval: 1,
+                        ),
+                      ),
                     ),
+                    borderData: FlBorderData(show: false),
+                    lineBarsData: snapshot.data!.mapToIterable((key, value) => generateAverageData(key, value)).toList(),
+                    minX: 0,
+                    maxX: DateTime.now().difference(startDate).inDays.toDouble(),
+                    maxY: 15,
+                    minY: 0,
                   ),
-                  rightTitles: const AxisTitles(),
-                  topTitles: const AxisTitles(),
-                  leftTitles: AxisTitles(
-                    sideTitles: SideTitles(
-                      getTitlesWidget: leftTitles,
-                      showTitles: true,
-                      interval: 1,
-                    ),
-                  ),
-                ),
-                borderData: FlBorderData(show: false),
-                lineBarsData: lineData,
-                minX: 0,
-                maxX: DateTime.now().difference(startDate).inDays.toDouble(),
-                maxY: 15,
-                minY: 0,
-              ),
+                );
+              }
             ),
           ),
         ],

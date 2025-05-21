@@ -1,5 +1,6 @@
 import 'dart:ui';
 
+import 'package:abitur/isolates/serializer.dart';
 import 'package:abitur/storage/entities/performance.dart';
 import 'package:abitur/storage/services/performance_service.dart';
 import 'package:abitur/utils/constants.dart';
@@ -12,7 +13,7 @@ import 'evaluation.dart';
 part 'subject.g.dart';
 
 @HiveType(typeId: 2)
-class Subject {
+class Subject implements Serializable {
 
   @HiveField(0)
   String id;
@@ -81,6 +82,7 @@ class Subject {
     return "Subject#$id (Name: '$name', Type: '${subjectType.name}')";
   }
 
+  @override
   Map<String, dynamic> toJson() => {
     "name": name,
     "shortName": shortName,

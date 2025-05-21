@@ -24,7 +24,7 @@ class EvaluationsPage extends StatefulWidget {
 
 class _EvaluationsPageState extends State<EvaluationsPage> {
 
-  List<EvaluationDate> evaluationDates = [];
+  late Future<List<EvaluationDate>> evaluationDates;
   List<Holiday> holidays = [];
   DateTime focusedDay = DateTime.now();
 
@@ -44,8 +44,7 @@ class _EvaluationsPageState extends State<EvaluationsPage> {
 
   void searchEvaluations() {
     setState(() {
-      evaluationDates = EvaluationDateService.findAll().where((e) => e.date != null && (e.date!.isAfter(DateTime.now()) || (e.note == null && e.weight > 0))).toList();
-      evaluationDates.sort((a, b) => a.compareTo(b));
+      evaluationDates = EvaluationDateService.findAllFutureOrUngradedEvaluationDatesIsolated();
     });
   }
 
@@ -155,9 +154,26 @@ class _EvaluationsPageState extends State<EvaluationsPage> {
               ),
             ),
             // Prüfungen
-            ...evaluationDates.map((evaluationDate) {
-              return EvaluationListTile(evaluationDate: evaluationDate, reloadEvaluations: searchEvaluations,);
-            }),
+            FutureBuilder(
+              future: evaluationDates,
+              builder: (context, snapshot) {
+                if (!snapshot.hasData) {
+                  return Column(
+                    children: [
+                      for (int i = 0; i < 5; i++)
+                        EvaluationDateListTile.shimmer(),
+                    ],
+                  );
+                } else {
+                  return Column(
+                    children: snapshot.data!.map((evaluationDate) {
+                      return EvaluationListTile(evaluationDate: evaluationDate,
+                        reloadEvaluations: searchEvaluations,);
+                    }).toList(),
+                  );
+                }
+              },
+            ),
             SizedBox(height: 80,), // damit der FloatingActionButton nichts verdeckt
           ],
         ),

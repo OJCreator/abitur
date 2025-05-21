@@ -1,3 +1,4 @@
+import 'package:abitur/isolates/serializer.dart';
 import 'package:abitur/storage/services/settings_service.dart';
 import 'package:abitur/utils/uuid.dart';
 import 'package:hive/hive.dart';
@@ -8,13 +9,14 @@ import 'evaluation.dart';
 part 'evaluation_date.g.dart';
 
 @HiveType(typeId: 7)
-class EvaluationDate {
+class EvaluationDate implements Serializable, Comparable<EvaluationDate> {
 
   @HiveField(0)
   String id;
 
   @HiveField(1)
   String _evaluationId;
+  String get evaluationId => _evaluationId;
   Evaluation get evaluation => EvaluationService.findById(_evaluationId) ?? Evaluation.empty();
   set evaluation(Evaluation newEvaluation) => _evaluationId = newEvaluation.id;
 
@@ -49,6 +51,7 @@ class EvaluationDate {
     return EvaluationDate(date: DateTime.now());
   }
 
+  @override
   Map<String, dynamic> toJson() => {
     "id": id,
     "evaluationId": _evaluationId,
@@ -71,6 +74,7 @@ class EvaluationDate {
     );
   }
 
+  @override
   int compareTo(EvaluationDate other) {
     return (date ?? SettingsService.lastDayOfSchool).compareTo(other.date ?? SettingsService.lastDayOfSchool);
   }

@@ -1,10 +1,11 @@
+import 'package:abitur/isolates/serializer.dart';
 import 'package:abitur/utils/uuid.dart';
 import 'package:hive/hive.dart';
 
 part 'evaluation_type.g.dart';
 
 @HiveType(typeId: 8)
-class EvaluationType {
+class EvaluationType implements Serializable {
 
   @HiveField(0)
   String id;
@@ -25,6 +26,7 @@ class EvaluationType {
     return EvaluationType(name: "Kein Typ");
   }
 
+  @override
   Map<String, dynamic> toJson() => {
     "id": id,
     "name": name,

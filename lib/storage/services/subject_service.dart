@@ -1,10 +1,17 @@
 import 'dart:ui';
 
 import 'package:abitur/exceptions/invalid_form_input_exception.dart';
+import 'package:abitur/isolates/evaluation_date_isolates.dart';
+import 'package:abitur/isolates/models/evaluation_dates/evaluation_dates_evaluation_subjects_model.dart';
+import 'package:abitur/isolates/models/evaluation_dates/evaluation_dates_history_model.dart';
+import 'package:abitur/isolates/models/subject/subjects_model.dart';
+import 'package:abitur/isolates/serializer.dart';
+import 'package:abitur/isolates/subject_isolates.dart';
 import 'package:abitur/storage/services/settings_service.dart';
 import 'package:abitur/storage/services/timetable_service.dart';
 import 'package:abitur/storage/storage.dart';
 import 'package:abitur/utils/constants.dart';
+import 'package:flutter/foundation.dart';
 
 import '../../utils/pair.dart';
 import '../entities/evaluation.dart';
@@ -85,6 +92,13 @@ class SubjectService {
     await Storage.deleteSubject(subject);
   }
 
+
+  static Future<List<Subject>> findAllSortedIsolated() async {
+    List<Subject> subjects = findAll();
+    SubjectsModel model = SubjectsModel(subjects.serialize());
+    SubjectsModel result = await compute(SubjectIsolates.sortSubjects, model);
+    return result.subjects.map((s) => Subject.fromJson(s)).toList();
+  }
   static List<Subject> findAll() {
     List<Subject> subjects = Storage.loadSubjects();
     subjects.sort((a,b) => a.name.compareTo(b.name));
@@ -122,37 +136,22 @@ class SubjectService {
     return avg(averages);
   }
 
-  static List<Pair<DateTime, double>> getAverageHistory({Subject? filterBySubject}) {
+  static Future<Map<Subject, List<Pair<DateTime, double>>>> getAverageHistoryForAllSubjects() async {
 
-    List<EvaluationDate> evaluationsDates;
-    if (filterBySubject == null) {
-      evaluationsDates = EvaluationDateService.findAllGraded();
-    } else {
-      evaluationsDates = EvaluationDateService.findAllGradedBySubject(filterBySubject);
-    }
-    evaluationsDates.sort((a, b) => a.compareTo(b));
+    List<EvaluationDate> evaluationDates = EvaluationDateService.findAll();
+    List<Evaluation> evaluations = EvaluationService.findAll();
+    List<Subject> subjects = SubjectService.findAll();
 
-    List<Pair<DateTime, double>> history = [];
-    List<int> allGrades = [];
+    EvaluationDatesEvaluationsSubjectsModel model = EvaluationDatesEvaluationsSubjectsModel(evaluationDates.serialize(), evaluations.serialize(), subjects.serialize());
 
-    for (var evaluation in evaluationsDates) {
-      if (evaluation.note == null || evaluation.date == null || evaluation.date!.isAfter(DateTime.now())) {
-        continue;
-      }
+    EvaluationDatesHistoryModel historyModel = await compute(EvaluationDateIsolates.getAverageHistoryForAllSubjects, model);
 
-      allGrades.add(evaluation.note!); // TODO stimmt das?????
-      double currentAverage = avg(allGrades)!;
-      history.add(Pair(evaluation.date!, currentAverage));
-    }
-
+    final subjectMap = { for (var s in subjects) s.id: s };
+    final Map<Subject, List<Pair<DateTime, double>>> history = {
+      for (var entry in historyModel.history.entries)
+        if (subjectMap.containsKey(entry.key)) subjectMap[entry.key]!: entry.value
+    };
     return history;
-  }
-
-  static Map<Subject, List<Pair<DateTime, double>>> getAverageHistoryForAllSubjects() {
-    List<Subject> subjects = findAllGradable();
-    final entries = subjects.map((s) => MapEntry(s, getAverageHistory(filterBySubject: s)));
-    final data = Map.fromEntries(entries);
-    return data;
   }
 
   static double? getAverage(Subject s) {

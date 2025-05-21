@@ -1,5 +1,6 @@
 import 'dart:ui';
 
+import 'package:abitur/isolates/serializer.dart';
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
 
@@ -8,7 +9,7 @@ import '../../utils/constants.dart';
 part 'settings.g.dart';
 
 @HiveType(typeId: 3)
-class Settings {
+class Settings implements Serializable {
 
   @HiveField(0)
   DateTime graduationYear;
@@ -65,6 +66,7 @@ class Settings {
   }) : _accentColor = accentColor.toARGB32(),
         _land = land.code;
 
+  @override
   Map<String, dynamic> toJson() => {
     "graduationYear": graduationYear.toString(),
     "lightMode": lightMode,
