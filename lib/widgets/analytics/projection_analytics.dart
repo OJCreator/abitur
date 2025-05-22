@@ -1,8 +1,11 @@
+import 'package:abitur/isolates/models/projection/projection_model.dart';
 import 'package:abitur/pages/analytics_pages/projection_analytics_page.dart';
 import 'package:abitur/widgets/percent_indicator.dart';
 import 'package:flutter/material.dart';
 
 import '../../storage/services/projection_service.dart';
+import '../forms/form_gap.dart';
+import '../linear_percent_indicator.dart';
 
 class ProjectionAnalytics extends StatefulWidget {
   const ProjectionAnalytics({super.key});
@@ -13,7 +16,7 @@ class ProjectionAnalytics extends StatefulWidget {
 
 class _ProjectionAnalyticsState extends State<ProjectionAnalytics> {
 
-  double graduationAvg = 0;
+  late Future<ProjectionModel> projection;
 
   @override
   void initState() {
@@ -23,7 +26,7 @@ class _ProjectionAnalyticsState extends State<ProjectionAnalytics> {
 
   void loadGraduationAvg() {
     setState(() {
-      graduationAvg = ProjectionService.getGraduationAvg();
+      projection = ProjectionService.computeProjectionIsolated();
     });
   }
 
@@ -55,10 +58,48 @@ class _ProjectionAnalyticsState extends State<ProjectionAnalytics> {
               loadGraduationAvg();
             },
             child: Center(
-              child: PercentIndicator(value: graduationAvg, type: PercentIndicatorType.note,),
+              child: Column(
+                children: [
+                  FutureBuilder(
+                    future: projection,
+                    builder: (context, snapshot) {
+                      if (!snapshot.hasData) return PercentIndicator.shimmer();
+                      return PercentIndicator(value: snapshot.data!.graduationAverage, type: PercentIndicatorType.note,);
+                    },
+                  ),
+                  FormGap(),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 8),
+                    child: Row(
+                      children: [
+                        FutureBuilder(
+                            future: projection,
+                            builder: (context, snapshot) {
+                              return LinearPercentIndicator(
+                                label: "Block 1",
+                                description: snapshot.hasData ? "${snapshot.data!.resultBlock1} / 600 Punkten" : "max. 600 Punkte",
+                                value: snapshot.hasData ? (snapshot.data!.resultBlock1 / 600) : 0,
+                              );
+                            }
+                        ),
+                        FormGap(),
+                        FutureBuilder(
+                            future: projection,
+                            builder: (context, snapshot) {
+                              return LinearPercentIndicator(
+                                label: "Block 2",
+                                description: snapshot.hasData ? "${snapshot.data!.resultBlock2} / 300 Punkten" : "max. 300 Punkte",
+                                value: snapshot.hasData ? (snapshot.data!.resultBlock2 / 300) : 0,
+                              );
+                            }
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
-
         ],
       ),
     );

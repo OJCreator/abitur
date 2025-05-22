@@ -1,13 +1,22 @@
 import 'dart:math';
 
+import 'package:abitur/isolates/models/projection/projection_model.dart';
+import 'package:abitur/isolates/projection_isolate.dart';
+import 'package:abitur/isolates/serializer.dart';
 import 'package:abitur/storage/services/evaluation_service.dart';
+import 'package:abitur/storage/services/performance_service.dart';
 import 'package:abitur/storage/services/settings_service.dart';
 import 'package:abitur/storage/services/subject_service.dart';
+import 'package:flutter/foundation.dart';
 
+import '../../isolates/models/projection/evaluations_subjects_performances_evaluation_dates_model.dart';
 import '../../utils/constants.dart';
+import '../entities/evaluation.dart';
+import '../entities/evaluation_date.dart';
+import '../entities/performance.dart';
 import '../entities/settings.dart';
 import '../entities/subject.dart';
-import 'graduation_service.dart';
+import 'evaluation_date_service.dart';
 
 class ProjectionService {
 
@@ -22,7 +31,7 @@ class ProjectionService {
     return termNotes.where((note) => note.counting && note.note != null).toList().sumBy((note) => note.note! * note.weight).toInt();
   }
   static int resultBlock2() {
-    List<Subject> abiSubjects = SubjectService.graduationSubjects().whereType<Subject>().toList();
+    List<Subject> abiSubjects = SubjectService.graduationSubjects();
     Iterable<int> examNotes = abiSubjects.map((s) {
       if (s.graduationEvaluation != null) {
         int? note = EvaluationService.calculateNote(s.graduationEvaluation!);
@@ -137,6 +146,24 @@ class ProjectionService {
   static int? _calcTermAverage(Subject s, int term) {
     double? avg = SubjectService.getAverageByTerm(s, term);
     return roundNote(avg);
+  }
+
+  static Future<ProjectionModel> computeProjectionIsolated() async {
+
+    Land land = SettingsService.land;
+    List<Evaluation> evaluations = EvaluationService.findAll();
+    List<Subject> subjects = SubjectService.findAll();
+    List<Performance> performances = PerformanceService.findAll();
+    List<EvaluationDate> evaluationDates = EvaluationDateService.findAll();
+
+    EvaluationsSubjectsPerformancesEvaluationDatesModel model = EvaluationsSubjectsPerformancesEvaluationDatesModel(
+      land: land,
+      evaluations: evaluations.serialize(),
+      subjects: subjects.serialize(),
+      performances: performances.serialize(),
+      evaluationDates: evaluationDates.serialize(),
+    );
+    return compute(ProjectionIsolate.calculateProjection, model);
   }
 }
 

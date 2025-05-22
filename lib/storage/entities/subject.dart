@@ -48,11 +48,13 @@ class Subject implements Serializable {
 
   @HiveField(7)
   List<String> _performanceIds;
+  List<String> get performanceIds => _performanceIds;
   set performances(List<Performance> newPerformances) => _performanceIds = newPerformances.map((p) => p.id).toList();
   List<Performance> get performances => _performanceIds.map((p) => PerformanceService.findById(p)!).toList();
 
   @HiveField(8)
   String? _graduationEvaluationId;
+  String? get graduationEvaluationId => _graduationEvaluationId;
   Evaluation? get graduationEvaluation => _graduationEvaluationId == null ? null : EvaluationService.findById(_graduationEvaluationId!);
   set graduationEvaluation(Evaluation? e) => _graduationEvaluationId = e?.id;
 

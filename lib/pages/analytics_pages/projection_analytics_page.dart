@@ -1,3 +1,4 @@
+import 'package:abitur/isolates/models/projection/projection_model.dart';
 import 'package:abitur/pages/analytics_pages/projection_change_graduation_subjects_page.dart';
 import 'package:abitur/storage/services/projection_service.dart';
 import 'package:abitur/storage/services/subject_service.dart';
@@ -19,29 +20,19 @@ class ProjectionAnalyticsPage extends StatefulWidget {
 
 class _ProjectionAnalyticsPageState extends State<ProjectionAnalyticsPage> {
 
-  List<Subject> subjects = SubjectService.findAllGradable();
-  double overallAvg = SubjectService.getCurrentAverage() ?? 15;
-
-  late Map<Subject, List<TermNoteDto>> data;
-  List<Subject?> graduationSubjects = SubjectService.graduationSubjects();
-
-  late int resultBlock1;
-  late int resultBlock2;
+  late Future<ProjectionModel> projection;
 
   @override
   void initState() {
-    data = ProjectionService.buildProjectionOverviewInformation();
-    resultBlock1 = ProjectionService.resultBlock1();
-    loadGraduationData();
+    loadData();
 
     super.initState();
   }
 
-  void loadGraduationData() {
+  void loadData() {
 
     setState(() {
-      resultBlock2 = ProjectionService.resultBlock2();
-      graduationSubjects = SubjectService.graduationSubjects();
+      projection = ProjectionService.computeProjectionIsolated();
     });
   }
 
@@ -56,22 +47,38 @@ class _ProjectionAnalyticsPageState extends State<ProjectionAnalyticsPage> {
           padding: const EdgeInsets.all(8.0),
           child: Column(
             children: [
-              PercentIndicator(value: ProjectionService.getGraduationAvg(), type: PercentIndicatorType.note,),
+              FutureBuilder(
+                future: projection,
+                builder: (context, snapshot) {
+                  if (!snapshot.hasData) return PercentIndicator.shimmer();
+                  return PercentIndicator(value: snapshot.data!.graduationAverage, type: PercentIndicatorType.note,);
+                },
+              ),
               FormGap(),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 8),
                 child: Row(
                   children: [
-                    LinearPercentIndicator(
-                      label: "Block 1",
-                      description: "$resultBlock1 / 600 Punkten",
-                      value: resultBlock1 / 600,
+                    FutureBuilder(
+                      future: projection,
+                      builder: (context, snapshot) {
+                        return LinearPercentIndicator(
+                          label: "Block 1",
+                          description: snapshot.hasData ? "${snapshot.data!.resultBlock1} / 600 Punkten" : "max. 600 Punkte",
+                          value: snapshot.hasData ? (snapshot.data!.resultBlock1 / 600) : 0,
+                        );
+                      }
                     ),
                     FormGap(),
-                    LinearPercentIndicator(
-                      label: "Block 2",
-                      description: "$resultBlock2 / 300 Punkten",
-                      value: resultBlock2 / 300,
+                    FutureBuilder(
+                        future: projection,
+                        builder: (context, snapshot) {
+                          return LinearPercentIndicator(
+                            label: "Block 2",
+                            description: snapshot.hasData ? "${snapshot.data!.resultBlock2} / 300 Punkten" : "max. 300 Punkte",
+                            value: snapshot.hasData ? (snapshot.data!.resultBlock2 / 300) : 0,
+                          );
+                        }
                     ),
                   ],
                 ),
@@ -79,46 +86,57 @@ class _ProjectionAnalyticsPageState extends State<ProjectionAnalyticsPage> {
               FormGap(),
               InfoCard("Diese Daten zeigen nur die aktuelle Tendenz und können von der Realität abweichen."),
               FormGap(),
-              Table(
-                columnWidths: {
-                  0: FlexColumnWidth(3),
-                  1: FlexColumnWidth(1),
-                  2: FlexColumnWidth(1),
-                  3: FlexColumnWidth(1),
-                  4: FlexColumnWidth(1),
-                },
-                children: List.generate(data.length+1, (row) {
-                  if (row == 0) {
-                    return TableRow(
-                      children: [
-                        Container(),
-                        Center(child: Text("HJ 1"),),
-                        Center(child: Text("HJ 2"),),
-                        Center(child: Text("HJ 3"),),
-                        Center(child: Text("HJ 4"),),
-                      ],
-                    );
+              FutureBuilder(
+                future: projection,
+                builder: (context, snapshot) {
+                  Map<String, List<ProjectionTermModel>> data;
+                  if (snapshot.hasData) {
+                    data = snapshot.data!.block1;
+                  } else {
+                    data = {};
                   }
-                  Subject s = data.keys.toList()[row - 1];
-                  return TableRow(
-                    decoration: BoxDecoration(
-                      color: row%2 == 0 ? Theme.of(context).colorScheme.surface : Theme.of(context).colorScheme.surfaceContainer,
-                      borderRadius: BorderRadius.circular(5),
-                    ),
-                    children: List.generate(5, (col) {
-                      if (col == 0) {
-                        return SubjectTableLabel(subject: s);
+                  return Table(
+                    columnWidths: {
+                      0: FlexColumnWidth(3),
+                      1: FlexColumnWidth(1),
+                      2: FlexColumnWidth(1),
+                      3: FlexColumnWidth(1),
+                      4: FlexColumnWidth(1),
+                    },
+                    children: List.generate(data.length+1, (row) {
+                      if (row == 0) {
+                        return TableRow(
+                          children: [
+                            Container(),
+                            Center(child: Text("HJ 1"),),
+                            Center(child: Text("HJ 2"),),
+                            Center(child: Text("HJ 3"),),
+                            Center(child: Text("HJ 4"),),
+                          ],
+                        );
                       }
-                      TermNoteDto termNoteDto = data[s]![col - 1];
-                      return NoteProjection(
-                        background: termNoteDto.counting,
-                        note: termNoteDto.noteString,
-                        bold: !termNoteDto.projection,
-                        weight: termNoteDto.weight,
+                      Subject s = SubjectService.findById(data.keys.toList()[row - 1]) ?? Subject.empty();
+                      return TableRow(
+                        decoration: BoxDecoration(
+                          color: row%2 == 0 ? Theme.of(context).colorScheme.surface : Theme.of(context).colorScheme.surfaceContainer,
+                          borderRadius: BorderRadius.circular(5),
+                        ),
+                        children: List.generate(5, (col) {
+                          if (col == 0) {
+                            return SubjectTableLabel(subject: s);
+                          }
+                          ProjectionTermModel termNoteDto = data[s.id]![col - 1];
+                          return NoteProjection(
+                            background: termNoteDto.counting,
+                            note: termNoteDto.noteString,
+                            bold: !termNoteDto.projection,
+                            weight: termNoteDto.weight,
+                          );
+                        }),
                       );
                     }),
                   );
-                }),
+                }
               ),
               
               FormGap(),
@@ -139,42 +157,50 @@ class _ProjectionAnalyticsPageState extends State<ProjectionAnalyticsPage> {
                           fullscreenDialog: true,
                         ),
                       );
-                      loadGraduationData();
+                      loadData();
                     },
                     icon: Icon(Icons.edit),
                   ),
                 ],
               ),
 
-              Table(
-                columnWidths: {
-                  0: FlexColumnWidth(1),
-                  2: FlexColumnWidth(1),
-                },
-                children: List.generate(graduationSubjects.length, (row) {
-                  Subject? s = graduationSubjects[row];
-                  return TableRow(
-                    decoration: BoxDecoration(
-                      color: row%2 == 0 ? Theme.of(context).colorScheme.surface : Theme.of(context).colorScheme.surfaceContainer,
-                      borderRadius: BorderRadius.circular(5),
-                    ),
-                    children: List.generate(2, (col) {
-                      if (s == null) {
-                        return Container();
-                      }
-                      if (col == 0) {
-                        return SubjectTableLabel(subject: s);
-                      }
-                      TermNoteDto dto = ProjectionService.graduationProjection(s);
-                      return NoteProjection(
-                        background: dto.counting,
-                        note: dto.noteString,
-                        bold: !dto.projection,
-                        weight: 4,
+              FutureBuilder(
+                future: projection,
+                builder: (context, snapshot) {
+                  Map<String, ProjectionTermModel> data;
+                  if (snapshot.hasData) {
+                    data = snapshot.data!.block2;
+                  } else {
+                    data = {};
+                  }
+                  return Table(
+                    columnWidths: {
+                      0: FlexColumnWidth(1),
+                      2: FlexColumnWidth(1),
+                    },
+                    children: List.generate(data.length, (row) {
+                      Subject s = SubjectService.findById(data.keys.toList()[row]) ?? Subject.empty();
+                      return TableRow(
+                        decoration: BoxDecoration(
+                          color: row%2 == 0 ? Theme.of(context).colorScheme.surface : Theme.of(context).colorScheme.surfaceContainer,
+                          borderRadius: BorderRadius.circular(5),
+                        ),
+                        children: List.generate(2, (col) {
+                          if (col == 0) {
+                            return SubjectTableLabel(subject: s);
+                          }
+                          ProjectionTermModel dto = data[s.id]!;
+                          return NoteProjection(
+                            background: dto.counting,
+                            note: dto.noteString,
+                            bold: !dto.projection,
+                            weight: 4,
+                          );
+                        })
                       );
-                    })
+                    }),
                   );
-                }),
+                }
               ),
             ],
           ),

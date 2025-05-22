@@ -30,6 +30,7 @@ class Evaluation implements Serializable {
 
   @HiveField(3)
   String _performanceId;
+  String get performanceId => _performanceId;
   Performance get performance => PerformanceService.findById(_performanceId) ?? Performance.empty();
   set performance(Performance newPerformance) => _performanceId = newPerformance.id;
 
@@ -43,6 +44,7 @@ class Evaluation implements Serializable {
 
   @HiveField(6)
   List<String> _evaluationDateIds;
+  List<String> get evaluationDateIds => _evaluationDateIds;
   List<EvaluationDate> get evaluationDates => EvaluationDateService.findAllById(_evaluationDateIds);
   set evaluationDates(List<EvaluationDate> newEvaluationDates) => _evaluationDateIds = newEvaluationDates.map((it) => it.id).toList();
 
