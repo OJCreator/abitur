@@ -1,6 +1,7 @@
 import 'dart:ui';
 
 import 'package:abitur/exceptions/invalid_form_input_exception.dart';
+import 'package:abitur/isolates/average_isolates.dart';
 import 'package:abitur/isolates/evaluation_date_isolates.dart';
 import 'package:abitur/isolates/models/evaluation_dates/evaluation_dates_evaluation_subjects_model.dart';
 import 'package:abitur/isolates/models/evaluation_dates/evaluation_dates_history_model.dart';
@@ -89,6 +90,7 @@ class SubjectService {
     List<Evaluation> evaluations = EvaluationService.findAllBySubject(subject);
     await EvaluationService.deleteAllEvaluations(evaluations);
     await TimetableService.deleteSubjectEntries(subject);
+    await PerformanceService.deletePerformances(subject.performances);
     await Storage.deleteSubject(subject);
   }
 
@@ -106,12 +108,7 @@ class SubjectService {
   }
 
   static Subject? findById(String? id) {
-    for (var subject in findAll()) {
-      if (subject.id == id) {
-        return subject;
-      }
-    }
-    return null;
+    return id != null ? Storage.loadSubject(id) : null;
   }
 
   static bool hasSubjects() {
@@ -120,6 +117,19 @@ class SubjectService {
 
   static List<Subject> findAllGradable() {
     return findAll().where((s) => s.subjectType != SubjectType.voluntary).toList();
+  }
+
+  static Future<double?> getCurrentAverageIsolated() async {
+    List<Subject> subjects = findAll();
+    List<Evaluation> evaluations = EvaluationService.findAll();
+    List<EvaluationDate> evaluationDates = EvaluationDateService.findAll();
+    List<Performance> performances = PerformanceService.findAll();
+
+    EvaluationDatesEvaluationsSubjectsModel model = EvaluationDatesEvaluationsSubjectsModel(evaluationDates.serialize(), evaluations.serialize(), subjects.serialize(), performances.serialize());
+
+    double? avg = await compute(AverageIsolates.computeCurrentAverage, model);
+
+    return avg;
   }
 
   static double? getCurrentAverage() {
@@ -141,8 +151,9 @@ class SubjectService {
     List<EvaluationDate> evaluationDates = EvaluationDateService.findAll();
     List<Evaluation> evaluations = EvaluationService.findAll();
     List<Subject> subjects = SubjectService.findAll();
+    List<Performance> performances = PerformanceService.findAll();
 
-    EvaluationDatesEvaluationsSubjectsModel model = EvaluationDatesEvaluationsSubjectsModel(evaluationDates.serialize(), evaluations.serialize(), subjects.serialize());
+    EvaluationDatesEvaluationsSubjectsModel model = EvaluationDatesEvaluationsSubjectsModel(evaluationDates.serialize(), evaluations.serialize(), subjects.serialize(), performances.serialize());
 
     EvaluationDatesHistoryModel historyModel = await compute(EvaluationDateIsolates.getAverageHistoryForAllSubjects, model);
 

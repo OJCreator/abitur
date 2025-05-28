@@ -1,5 +1,6 @@
 import 'dart:math';
 
+import 'package:abitur/isolates/average_isolates.dart';
 import 'package:abitur/isolates/models/projection/evaluations_subjects_performances_evaluation_dates_model.dart';
 import 'package:abitur/isolates/models/projection/projection_model.dart';
 import 'package:abitur/utils/constants.dart';
@@ -110,7 +111,7 @@ class ProjectionIsolate {
 
     List<Evaluation> subjectEvaluations = evaluations.values.where((s) => s.subjectId == subject.id).toList();
 
-    List<int?> notes = List.generate(4, (term) => roundNote(_getAverageByTerm(subject, term, subjectEvaluations, evaluationDates, performances)));
+    List<int?> notes = List.generate(4, (term) => AverageIsolates.getAverageByTerm(subject, term, subjectEvaluations, evaluationDates, performances));
 
     bool isGraduationSubject = subject.graduationEvaluationId != null && subject.subjectType != SubjectType.seminar;
     List<int> countingTerms = notes.findNLargestIndices(isGraduationSubject ? 4 : subject.countingTermAmount);
@@ -130,31 +131,6 @@ class ProjectionIsolate {
         1, // todo evtl zählen sie mehr, z.B. die Leistungsfächer in Baden-Württemberg
       );
     });
-  }
-
-  static double? _getAverageByTerm(Subject s, int term, List<Evaluation> evaluations, Map<String, EvaluationDate> evaluationDates, Map<String, Performance> performances) {
-    Iterable<Evaluation> evaluationsOfTerm = evaluations.where((e) => e.subjectId == s.id && e.term == term);
-    if (!s.terms.contains(term)) {
-      return null;
-    }
-    Map<String, Iterable<Evaluation>> performancesAndNotes = s.performanceIds.mapWith((performanceId)  {
-      return evaluationsOfTerm.where((note) {
-        return note.performanceId == performanceId;
-      });
-    });
-    Iterable<Pair<double, double?>> weightAndNote = performancesAndNotes.mapToIterable((performanceId, value) {
-      Iterable<int?> noteValues = value.map((evaluation) => _calculateNote(evaluation, evaluationDates));
-      return Pair(performances[performanceId]!.weighting, avg(noteValues));
-    });
-    double? average = weightedAvg(weightAndNote);
-    return average;
-  }
-  static int? _calculateNote(Evaluation evaluation, Map<String, EvaluationDate> evaluationDates) {
-    Iterable<EvaluationDate> eds = evaluation.evaluationDateIds.map((id) => evaluationDates[id]!).where((it) => it.note != null);
-    double weightTotal = eds.map((it) => it.weight).sum().toDouble();
-    if (weightTotal == 0) return null;
-    double note = eds.map((it) => it.note! * it.weight).sum() / weightTotal;
-    return roundNote(note);
   }
 
 
@@ -190,7 +166,7 @@ class ProjectionIsolate {
   static int? _calculateSubjectAverage(Subject subject,  Map<String, Evaluation> evaluations, Map<String, EvaluationDate> evaluationDates, Map<String, Performance> performances) {
 
     List<Evaluation> subjectEvaluations = evaluations.values.where((s) => s.subjectId == subject.id).toList();
-    List<int?> notes = List.generate(4, (term) => roundNote(_getAverageByTerm(subject, term, subjectEvaluations, evaluationDates, performances)));
+    List<int?> notes = List.generate(4, (term) => AverageIsolates.getAverageByTerm(subject, term, subjectEvaluations, evaluationDates, performances));
 
     List<int> nonNullNotes = notes.whereType<int>().toList();
     int? defaultSubjectAverage = nonNullNotes.isEmpty

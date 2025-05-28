@@ -1,5 +1,4 @@
 import 'package:abitur/storage/entities/evaluation_type.dart';
-import 'package:abitur/storage/entities/graduation_evaluation.dart';
 import 'package:abitur/storage/entities/settings.dart';
 import 'package:abitur/storage/entities/timetable/timetable.dart';
 import 'package:abitur/storage/entities/timetable/timetable_entry.dart';
@@ -26,7 +25,6 @@ class Storage {
   static late Box<TimetableSettings> _timetableSettingsBox;
   static late Box<Timetable> _timetableBox;
   static late Box<TimetableEntry> _timetableEntryBox;
-  // static late Box<GraduationEvaluation> _graduationEvaluationBox;
 
   static Future<void> init() async {
     await Hive.initFlutter();
@@ -40,7 +38,6 @@ class Storage {
     Hive.registerAdapter(TimetableSettingsAdapter());
     Hive.registerAdapter(TimetableAdapter());
     Hive.registerAdapter(TimetableEntryAdapter());
-    // Hive.registerAdapter(GraduationEvaluationAdapter());
 
     _evaluationBox = await Hive.openBox<Evaluation>('evaluations');
     _evaluationDateBox = await Hive.openBox<EvaluationDate>('evaluationDates');
@@ -51,7 +48,6 @@ class Storage {
     _timetableSettingsBox = await Hive.openBox<TimetableSettings>('timetableSettings');
     _timetableBox = await Hive.openBox<Timetable>('timetables');
     _timetableEntryBox = await Hive.openBox<TimetableEntry>('timetableEntries');
-    // _graduationEvaluationBox = await Hive.openBox<GraduationEvaluation>('graduationEvaluations');
 
     initialValues();
     // TODO überprüfen, ob es Objekte mit IDs gibt, auf die kein anderes Objekt verweist => Warnung!
@@ -140,52 +136,43 @@ class Storage {
   static List<Subject> loadSubjects() {
     return _subjectBox.values.toList();
   }
+  static Subject? loadSubject(String id) {
+    return _subjectBox.get(id);
+  }
 
   static Future<void> saveSubject(Subject s) async {
-    int index = loadSubjects().indexOf(s);
-    if (index == -1) {
-      await _subjectBox.add(s);
-    }
-    else {
-      await _subjectBox.deleteAt(index);
-      await _subjectBox.add(s);
+
+    bool alreadyExists = _subjectBox.containsKey(s.id);
+    if (alreadyExists) {
+      await _subjectBox.delete(s.id);
 
       // Delete evaluations of terms that do not longer exist
       List<int> termsThatDoNotExist = [0,1,2,3].where((i) => !s.terms.contains(i)).toList();
       List<Evaluation> toDelete = EvaluationService.findAllBySubjectAndTerms(s, termsThatDoNotExist);
       EvaluationService.deleteAllEvaluations(toDelete);
     }
+
+    await _subjectBox.put(s.id, s);
   }
 
   static Future<void> deleteSubject(Subject s) async {
-    int index = loadSubjects().indexOf(s);
-    if (index == -1) {
-      return;
-    }
-    await _subjectBox.deleteAt(index);
+    await _subjectBox.delete(s.id);
   }
 
   // Performances
   static List<Performance> loadPerformances() {
     return _performanceBox.values.toList();
   }
+  static Performance? loadPerformance(String id) {
+    return _performanceBox.get(id);
+  }
 
   static Future<void> savePerformance(Performance p) async {
-    int index = loadPerformances().indexOf(p);
-    if (index == -1) {
-      await _performanceBox.add(p);
-    }
-    else {
-      await _performanceBox.deleteAt(index);
-      await _performanceBox.add(p);
-    }
+    await _performanceBox.delete(p.id);
+    await _performanceBox.put(p.id, p);
   }
   static Future<void> deletePerformance(Performance p) async {
-    int index = loadPerformances().indexOf(p);
-    if (index == -1) {
-      return;
-    }
-    await _performanceBox.deleteAt(index);
+    await _performanceBox.delete(p.id);
   }
 
   // Settings
@@ -240,18 +227,4 @@ class Storage {
   static Future<void> deleteTimetableEntry(String entryId) async {
     await _timetableEntryBox.delete(entryId);
   }
-
-  // GraduationEvaluations
-  // static List<GraduationEvaluation> loadGraduationEvaluations() {
-  //   return _graduationEvaluationBox.values.toList();
-  // }
-  //
-  // static Future<void> saveGraduationEvaluation(GraduationEvaluation e) async {
-  //   await _graduationEvaluationBox.delete(e.id);
-  //   await _graduationEvaluationBox.put(e.id, e);
-  // }
-  //
-  // static Future<void> deleteGraduationEvaluation(GraduationEvaluation e) async {
-  //   await _graduationEvaluationBox.delete(e.id);
-  // }
 }

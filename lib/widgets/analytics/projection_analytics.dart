@@ -63,8 +63,8 @@ class _ProjectionAnalyticsState extends State<ProjectionAnalytics> {
                   FutureBuilder(
                     future: projection,
                     builder: (context, snapshot) {
-                      if (!snapshot.hasData) return PercentIndicator.shimmer();
-                      return PercentIndicator(value: snapshot.data!.graduationAverage, type: PercentIndicatorType.note,);
+                      if (!snapshot.hasData) return PercentIndicator.shimmer(title: "Abiturschnitt",);
+                      return PercentIndicator(value: snapshot.data!.graduationAverage, type: PercentIndicatorType.note, title: "Abiturschnitt",);
                     },
                   ),
                   FormGap(),

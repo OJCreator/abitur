@@ -267,6 +267,12 @@ class _TermViewState extends State<_TermView> {
     });
   }
 
+  Iterable<(int, Performance)> _getIndexedPerformances() {
+    List<Performance> keys = evaluations.keys.toList();
+    keys.sort((a, b) => a.name.compareTo(b.name));
+    return keys.indexed;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -290,7 +296,7 @@ class _TermViewState extends State<_TermView> {
               ),
               if (evaluations.isEmpty)
                 InfoCard("In diesem Halbjahr gibt es noch keine Noten."),
-              for (final (i, p) in evaluations.keys.indexed) ...[
+              for (final (i, p) in _getIndexedPerformances()) ...[
                 if (i > 0)
                   Divider(),
                 SectionHeadingListTile(heading: p.name),

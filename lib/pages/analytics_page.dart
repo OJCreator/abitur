@@ -11,8 +11,22 @@ import '../storage/services/settings_service.dart';
 import '../widgets/analytics/projection_analytics.dart';
 import '../widgets/info_card.dart';
 
-class AnalyticsPage extends StatelessWidget {
+class AnalyticsPage extends StatefulWidget {
   const AnalyticsPage({super.key});
+
+  @override
+  State<AnalyticsPage> createState() => _AnalyticsPageState();
+}
+
+class _AnalyticsPageState extends State<AnalyticsPage> {
+
+  late Future<double?> currentAverage;
+
+  @override
+  void initState() {
+    currentAverage = SubjectService.getCurrentAverageIsolated();
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -35,7 +49,13 @@ class AnalyticsPage extends StatelessWidget {
       body: SingleChildScrollView(
         child: Column(
           children: [
-            PercentIndicator(value: SubjectService.getCurrentAverage(),),
+            FutureBuilder(
+              future: currentAverage,
+              builder: (context, snapshot) {
+                if (!snapshot.hasData) return PercentIndicator.shimmer(title: "Durchschnitt",);
+                return PercentIndicator(value: snapshot.data, type: PercentIndicatorType.points, title: "Durchschnitt", tooltip: "Durschschnitt der Halbjahresnoten",);
+              },
+            ),
             if (SettingsService.choseGraduationSubjectsTime())
               Padding(
                   padding: const EdgeInsets.all(8.0),

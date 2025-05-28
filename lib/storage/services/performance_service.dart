@@ -10,12 +10,7 @@ class PerformanceService {
     return Storage.loadPerformances();
   }
   static Performance? findById(String id) {
-    for (var performance in findAll()) {
-      if (performance.id == id) {
-        return performance;
-      }
-    }
-    return null;
+    return Storage.loadPerformance(id);
   }
 
   static Future<Performance> newPerformance(String name, double weighting) async {
