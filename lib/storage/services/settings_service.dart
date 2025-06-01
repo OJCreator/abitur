@@ -15,6 +15,7 @@ class SettingsService {
   static DateTime get firstDayOfTerm3 => DateTime(loadSettings().graduationYear.year - 1, 8, 1);
   static DateTime get firstDayOfTerm4 => DateTime(loadSettings().graduationYear.year, 2, 1);
   static DateTime get dayToChoseGraduationSubjects => DateTime(loadSettings().graduationYear.year, 3, 1); // TODO für die Hochrechnung ist eigentlich besser früher, man kann ja noch updaten... -> Idee: Wenn man auf Hochrechnung klickt ohne Abifächer ausgewählt zu haben, muss man die erst wählen.
+  static DateTime get dayToShowReview => DateTime(loadSettings().graduationYear.year, 7, 1); // TODO Wann soll das Review verfügbar sein? Dynamisch nach der letzten Abi-Prüfung (wenn die Note da ist)? Und eine Notification senden!
   static DateTime get lastDayOfSchool =>  DateTime(loadSettings().graduationYear.year, 7, 31);
 
   static Settings loadSettings() {
@@ -64,5 +65,9 @@ class SettingsService {
 
   static bool choseGraduationSubjectsTime() {
     return DateTime.now().isAfter(dayToChoseGraduationSubjects);
+  }
+
+  static bool showReviewTime() {
+    return true;// DateTime.now().isAfter(dayToShowReview); todo auskommentieren
   }
 }

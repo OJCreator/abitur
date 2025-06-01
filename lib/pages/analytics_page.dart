@@ -1,3 +1,4 @@
+import 'package:abitur/pages/review/review_page.dart';
 import 'package:abitur/pages/settings_pages/settings_page.dart';
 import 'package:abitur/pages/subject_pages/subject_chose_graduation_page.dart';
 import 'package:abitur/storage/services/subject_service.dart';
@@ -56,6 +57,22 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
                 return PercentIndicator(value: snapshot.data, type: PercentIndicatorType.points, title: "Durchschnitt", tooltip: "Durschschnitt der Halbjahresnoten",);
               },
             ),
+            if (SettingsService.showReviewTime())
+              Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: InfoCard(
+                    "Dein persönliches Abitur-Review ist fertig!",
+                    action: "Ansehen",
+                    onAction: () {
+                      Navigator.push(context,
+                          MaterialPageRoute(
+                            builder: (context) {
+                              return ReviewPage();
+                            },
+                          ));
+                    },
+                  )
+              ),
             if (SettingsService.choseGraduationSubjectsTime())
               Padding(
                   padding: const EdgeInsets.all(8.0),

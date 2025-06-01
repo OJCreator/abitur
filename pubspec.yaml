@@ -58,6 +58,9 @@ dependencies:
   app_settings: ^6.1.1
   static_shortcuts: ^0.0.2
 
+  # review
+  animated_flip_counter: ^0.3.4
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
