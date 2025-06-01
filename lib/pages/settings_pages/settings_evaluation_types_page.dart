@@ -1,9 +1,8 @@
 import 'package:abitur/storage/services/evaluation_type_service.dart';
+import 'package:abitur/widgets/forms/assesment_type_selector.dart';
 import 'package:flutter/material.dart';
 
 import '../../storage/entities/evaluation_type.dart';
-import '../../storage/entities/settings.dart';
-import '../../storage/storage.dart';
 import '../../widgets/confirm_dialog.dart';
 
 class SettingsEvaluationTypesPage extends StatefulWidget {
@@ -15,8 +14,19 @@ class SettingsEvaluationTypesPage extends StatefulWidget {
 
 class _SettingsEvaluationTypesPageState extends State<SettingsEvaluationTypesPage> {
 
+  List<EvaluationType> evaluationTypes = [];
 
-  Settings s = Storage.loadSettings();
+  @override
+  void initState() {
+    _loadEvaluationTypes();
+    super.initState();
+  }
+
+  void _loadEvaluationTypes() {
+    setState(() {
+      evaluationTypes = EvaluationTypeService.findAll();
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -28,7 +38,7 @@ class _SettingsEvaluationTypesPageState extends State<SettingsEvaluationTypesPag
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            for (EvaluationType evaluationType in EvaluationTypeService.findAll())
+            for (EvaluationType evaluationType in evaluationTypes)
               Dismissible(
                 key: Key(evaluationType.id),
                 direction: DismissDirection.startToEnd,
@@ -52,28 +62,26 @@ class _SettingsEvaluationTypesPageState extends State<SettingsEvaluationTypesPag
                   );
 
                   if (shouldDelete == true) {
-                    setState(() {
-                      EvaluationTypeService.deleteEvaluationType(evaluationType);
-                    });
+                    await EvaluationTypeService.deleteEvaluationType(evaluationType);
+                    _loadEvaluationTypes();
                   }
                   return null;
                 },
                 child: ListTile(
                   title: Text(evaluationType.name),
+                  subtitle: Text(evaluationType.assessmentType.name),
                   onTap: () async {
-                    String? newName = await showDialog(context: context, builder: (_) {
+                    bool? edited = await showDialog(context: context, builder: (_) {
                       return EvaluationTypeDialog(
                         title: "Kategorie bearbeiten",
-                        initialValue: evaluationType.name,
+                        initialValue: evaluationType,
                         confirmText: "Speichern",
                       );
                     });
-                    if (newName == null) {
+                    if (edited != true) {
                       return;
                     }
-                    setState(() {
-                      EvaluationTypeService.editEvaluationType(evaluationType, name: newName);
-                    });
+                    _loadEvaluationTypes();
                   },
                 ),
               ),
@@ -82,15 +90,13 @@ class _SettingsEvaluationTypesPageState extends State<SettingsEvaluationTypesPag
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () async {
-          String? newName = await showDialog(context: context, builder: (_) {
+          bool? newEvaluationType = await showDialog(context: context, builder: (_) {
             return EvaluationTypeDialog();
           });
-          if (newName == null) {
+          if (newEvaluationType != true) {
             return;
           }
-          setState(() {
-            EvaluationTypeService.newEvaluationType(newName, true);
-          });
+          _loadEvaluationTypes();
         },
         icon: Icon(Icons.add),
         label: Text("Neue Kategorie"),
@@ -99,27 +105,40 @@ class _SettingsEvaluationTypesPageState extends State<SettingsEvaluationTypesPag
   }
 }
 
-class EvaluationTypeDialog extends StatelessWidget {
+class EvaluationTypeDialog extends StatefulWidget {
 
-  final TextEditingController _textEditingController = TextEditingController();
-  final String initialValue;
+  final EvaluationType? initialValue;
   final String title;
   final String confirmText;
 
-  EvaluationTypeDialog({
+  const EvaluationTypeDialog({
     super.key,
-    this.initialValue = "",
+    this.initialValue,
     this.title = "Kategorie bearbeiten",
     this.confirmText = "Erstellen",
   });
 
   @override
+  State<EvaluationTypeDialog> createState() => _EvaluationTypeDialogState();
+}
+
+class _EvaluationTypeDialogState extends State<EvaluationTypeDialog> {
+
+  final TextEditingController _textEditingController = TextEditingController();
+
+  AssessmentType _chosenAssessmentType = AssessmentType.written;
+
+  @override
+  void initState() {
+    _textEditingController.text = widget.initialValue?.name ?? "";
+    _chosenAssessmentType = widget.initialValue?.assessmentType ?? AssessmentType.written;
+    super.initState();
+  }
+
+  @override
   Widget build(BuildContext context) {
-
-    _textEditingController.text = initialValue;
-
     return AlertDialog(
-      title: Text(title),
+      title: Text(widget.title),
       content: SingleChildScrollView(
         child: Column(
           children: [
@@ -130,6 +149,14 @@ class EvaluationTypeDialog extends StatelessWidget {
                 border: OutlineInputBorder(),
               ),
             ),
+            AssessmentTypeSelector(
+              selectedAssessmentType: _chosenAssessmentType,
+              onSelected: (newAssessmentType) {
+                setState(() {
+                  _chosenAssessmentType = newAssessmentType;
+                });
+              },
+            )
           ],
         ),
       ),
@@ -137,16 +164,22 @@ class EvaluationTypeDialog extends StatelessWidget {
         TextButton(
           child: const Text("Abbrechen"),
           onPressed: () {
-            Navigator.pop(context, null);
+            Navigator.pop(context, false);
           },
         ),
         FilledButton(
-          child: Text(confirmText),
-          onPressed: () {
+          child: Text(widget.confirmText),
+          onPressed: () async {
             if (_textEditingController.text.isEmpty) {
               return;
             }
-            Navigator.pop(context, _textEditingController.text);
+            String name = _textEditingController.text;
+            if (widget.initialValue == null) {
+              await EvaluationTypeService.newEvaluationType(_textEditingController.text, _chosenAssessmentType, true);
+            } else {
+              await EvaluationTypeService.editEvaluationType(widget.initialValue!, name: name, assessmentType: _chosenAssessmentType);
+            }
+            Navigator.pop(context, true);
           },
         ),
       ],

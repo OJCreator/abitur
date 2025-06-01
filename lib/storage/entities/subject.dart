@@ -2,7 +2,9 @@ import 'dart:ui';
 
 import 'package:abitur/isolates/serializer.dart';
 import 'package:abitur/storage/entities/performance.dart';
+import 'package:abitur/storage/entities/subject_category.dart';
 import 'package:abitur/storage/services/performance_service.dart';
+import 'package:abitur/storage/services/subject_category_service.dart';
 import 'package:abitur/utils/constants.dart';
 import 'package:hive/hive.dart';
 
@@ -35,24 +37,29 @@ class Subject implements Serializable {
   set subjectType(SubjectType newSubjectType) => _subjectType = newSubjectType.code;
 
   @HiveField(5)
-  List<int> _terms;
+  String _subjectCategoryId;
+  String get subjectCategoryId => _subjectCategoryId;
+  SubjectCategory get subjectCategory => SubjectCategoryService.findById(_subjectCategoryId) ?? SubjectCategory.empty();
+  set subjectCategory(SubjectCategory newSubjectCategory) => _subjectCategoryId = newSubjectCategory.id;
 
+  @HiveField(6)
+  List<int> _terms;
   Set<int> get terms => _terms.toSet();
   set terms(Set<int> newTerms) {
     _terms = newTerms.toList();
     _terms.sort((a,b) => a.compareTo(b));
   }
 
-  @HiveField(6)
+  @HiveField(7)
   int countingTermAmount;
 
-  @HiveField(7)
+  @HiveField(8)
   List<String> _performanceIds;
   List<String> get performanceIds => _performanceIds;
   set performances(List<Performance> newPerformances) => _performanceIds = newPerformances.map((p) => p.id).toList();
   List<Performance> get performances => _performanceIds.map((p) => PerformanceService.findById(p)!).toList();
 
-  @HiveField(8)
+  @HiveField(9)
   String? _graduationEvaluationId;
   String? get graduationEvaluationId => _graduationEvaluationId;
   Evaluation? get graduationEvaluation => _graduationEvaluationId == null ? null : EvaluationService.findById(_graduationEvaluationId!);
@@ -63,6 +70,7 @@ class Subject implements Serializable {
     required this.shortName,
     Color color = primaryColor,
     SubjectType subjectType = SubjectType.basic,
+    String subjectCategoryId = "",
     Set<int>? terms,
     required this.countingTermAmount,
     List<String> performanceIds = const [],
@@ -71,6 +79,7 @@ class Subject implements Serializable {
   }) : _color = color.toARGB32(),
         id = id ?? Uuid.generate(),
         _subjectType = subjectType.code,
+        _subjectCategoryId = subjectCategoryId,
         _terms = terms?.toList() ?? [0,1,2,3],
         _performanceIds = performanceIds,
         _graduationEvaluationId = graduationEvaluationId;
@@ -90,6 +99,7 @@ class Subject implements Serializable {
     "shortName": shortName,
     "color": _color,
     "subjectType": _subjectType,
+    "subjectCategoryId": _subjectCategoryId,
     "terms": _terms,
     "countingTermAmount": countingTermAmount,
     "performanceIds": _performanceIds,
@@ -103,6 +113,7 @@ class Subject implements Serializable {
       shortName: json["shortName"],
       color: Color(json["color"]),
       subjectType: SubjectType.fromCode(json["subjectType"]),
+      subjectCategoryId: json["subjectCategoryId"],
       terms: (json["terms"] as List).map((e) => e as int).toSet(),
       countingTermAmount: json["countingTermAmount"] as int,
       performanceIds: (json["performanceIds"] as List).map((e) => e as String).toList(),

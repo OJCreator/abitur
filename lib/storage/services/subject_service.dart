@@ -8,6 +8,7 @@ import 'package:abitur/isolates/models/evaluation_dates/evaluation_dates_history
 import 'package:abitur/isolates/models/subject/subjects_model.dart';
 import 'package:abitur/isolates/serializer.dart';
 import 'package:abitur/isolates/subject_isolates.dart';
+import 'package:abitur/storage/entities/subject_category.dart';
 import 'package:abitur/storage/services/settings_service.dart';
 import 'package:abitur/storage/services/timetable_service.dart';
 import 'package:abitur/storage/storage.dart';
@@ -26,7 +27,7 @@ import 'performance_service.dart';
 
 class SubjectService {
 
-  static Future<Subject> newSubject(String name, String shortName, Color color, Set<int> terms, int countingTermAmount, SubjectType subjectType, List<String> performanceIds) async {
+  static Future<Subject> newSubject(String name, String shortName, Color color, Set<int> terms, int countingTermAmount, SubjectType subjectType, SubjectCategory subjectCategory, List<String> performanceIds) async {
 
     List<Subject> existingSubjects = findAll();
     Land land = SettingsService.land;
@@ -38,6 +39,7 @@ class SubjectService {
       name: name,
       shortName: shortName,
       subjectType: subjectType,
+      subjectCategoryId: subjectCategory.id,
       terms: terms,
       countingTermAmount: countingTermAmount,
       performanceIds: performanceIds,
@@ -55,7 +57,7 @@ class SubjectService {
     return s;
   }
 
-  static Future<Subject> editSubject(Subject subject, {required String name, required String shortName, required Color color, required Set<int> terms, required int countingTermAmount, required SubjectType subjectType, required List<Performance> performances}) async {
+  static Future<Subject> editSubject(Subject subject, {required String name, required String shortName, required Color color, required Set<int> terms, required int countingTermAmount, required SubjectType subjectType, required SubjectCategory subjectCategory, required List<Performance> performances}) async {
 
     List<Subject> existingSubjects = findAll().where((s) => s != subject).toList();
     Land land = SettingsService.land;
@@ -73,6 +75,7 @@ class SubjectService {
     subject.terms = terms;
     subject.countingTermAmount = countingTermAmount;
     subject.subjectType = subjectType;
+    subject.subjectCategory = subjectCategory;
     subject.performances = performances;
     await Storage.saveSubject(subject);
 

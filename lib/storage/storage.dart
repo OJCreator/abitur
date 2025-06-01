@@ -1,10 +1,13 @@
 import 'package:abitur/storage/entities/evaluation_type.dart';
 import 'package:abitur/storage/entities/settings.dart';
+import 'package:abitur/storage/entities/subject_category.dart';
 import 'package:abitur/storage/entities/timetable/timetable.dart';
 import 'package:abitur/storage/entities/timetable/timetable_entry.dart';
 import 'package:abitur/storage/services/evaluation_service.dart';
 import 'package:abitur/storage/services/evaluation_type_service.dart';
+import 'package:abitur/storage/services/settings_service.dart';
 import 'package:abitur/storage/services/subject_service.dart';
+import 'package:abitur/storage/services/subject_category_service.dart';
 import 'package:abitur/storage/services/timetable_service.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
@@ -21,6 +24,7 @@ class Storage {
   static late Box<EvaluationType> _evaluationTypeBox;
   static late Box<Performance> _performanceBox;
   static late Box<Subject> _subjectBox;
+  static late Box<SubjectCategory> _subjectCategoryBox;
   static late Box<Settings> _settingsBox;
   static late Box<TimetableSettings> _timetableSettingsBox;
   static late Box<Timetable> _timetableBox;
@@ -34,6 +38,7 @@ class Storage {
     Hive.registerAdapter(EvaluationTypeAdapter());
     Hive.registerAdapter(PerformanceAdapter());
     Hive.registerAdapter(SubjectAdapter());
+    Hive.registerAdapter(SubjectCategoryAdapter());
     Hive.registerAdapter(SettingsAdapter());
     Hive.registerAdapter(TimetableSettingsAdapter());
     Hive.registerAdapter(TimetableAdapter());
@@ -44,6 +49,7 @@ class Storage {
     _evaluationTypeBox = await Hive.openBox<EvaluationType>('evaluationTypes');
     _performanceBox = await Hive.openBox<Performance>('performances');
     _subjectBox = await Hive.openBox<Subject>('subjects');
+    _subjectCategoryBox = await Hive.openBox<SubjectCategory>('subjectCategories');
     _settingsBox = await Hive.openBox<Settings>('settings');
     _timetableSettingsBox = await Hive.openBox<TimetableSettings>('timetableSettings');
     _timetableBox = await Hive.openBox<Timetable>('timetables');
@@ -66,10 +72,22 @@ class Storage {
 
     List<EvaluationType> evaluationTypes = EvaluationTypeService.findAll();
     if (evaluationTypes.isEmpty) {
-      EvaluationTypeService.newEvaluationType("Klausur", true);
-      EvaluationTypeService.newEvaluationType("Test", true);
-      EvaluationTypeService.newEvaluationType("Referat", true);
-      EvaluationTypeService.newEvaluationType("Mündliche Note", false);
+      EvaluationTypeService.newEvaluationType("Klausur", AssessmentType.written, true);
+      EvaluationTypeService.newEvaluationType("Test", AssessmentType.written, true);
+      EvaluationTypeService.newEvaluationType("Referat", AssessmentType.oral, true);
+      EvaluationTypeService.newEvaluationType("Mündliche Note", AssessmentType.oral, false);
+    }
+
+    List<SubjectCategory> subjectCategories = SubjectCategoryService.findAll();
+    Land land = SettingsService.land;
+    if (subjectCategories.isEmpty && land != Land.none) {
+      if (land == Land.by) {
+        SubjectCategoryService.newSubjectCategory("Fremdsprache", 4);
+        SubjectCategoryService.newSubjectCategory("Naturwissenschaft", 4);
+        SubjectCategoryService.newSubjectCategory("Gesellschaftswissenschaft", 4);
+        SubjectCategoryService.newSubjectCategory("...", 4); // todo weitere & wie sollen die berechnet werden? Wenn es 2 Nat.Wiss sind, dann 7, sonst alle 4 Einbringungen
+      }
+      // todo andere Bundesländer
     }
 
     List<Subject> seminarWithoutGraduationEvaluation = SubjectService.findAll().where((s) => s.subjectType == SubjectType.seminar && s.graduationEvaluation == null).toList();
@@ -157,6 +175,24 @@ class Storage {
 
   static Future<void> deleteSubject(Subject s) async {
     await _subjectBox.delete(s.id);
+  }
+
+  // SubjectTypes
+  static List<SubjectCategory> loadSubjectCategories() {
+    return _subjectCategoryBox.values.toList();
+  }
+
+  static SubjectCategory? loadSubjectCategory(String sId) {
+    return _subjectCategoryBox.get(sId);
+  }
+
+  static Future<void> saveSubjectCategory(SubjectCategory s) async {
+    await _subjectCategoryBox.delete(s.id);
+    await _subjectCategoryBox.put(s.id, s);
+  }
+
+  static Future<void> deleteSubjectCategory(SubjectCategory s) async {
+    await _subjectCategoryBox.delete(s.id);
   }
 
   // Performances

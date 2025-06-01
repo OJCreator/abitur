@@ -1,18 +1,21 @@
+import 'package:abitur/exceptions/invalid_form_input_exception.dart';
 import 'package:abitur/storage/entities/performance.dart';
 import 'package:abitur/storage/services/evaluation_service.dart';
+import 'package:abitur/storage/services/subject_category_service.dart';
 import 'package:abitur/storage/services/subject_service.dart';
 import 'package:abitur/widgets/forms/form_gap.dart';
 import 'package:abitur/widgets/forms/performance_form.dart';
-import 'package:abitur/widgets/forms/subject_color_picker.dart';
-import 'package:abitur/widgets/forms/subject_name_and_short_name_input.dart';
+import 'package:abitur/widgets/forms/subject_name_and_color_input.dart';
 import 'package:abitur/widgets/forms/subject_type_selector.dart';
 import 'package:abitur/widgets/forms/terms_multiple_choice.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../storage/entities/subject.dart';
+import '../../storage/entities/subject_category.dart';
 import '../../utils/brightness_notifier.dart';
 import '../../widgets/confirm_dialog.dart';
+import '../../widgets/forms/subject_category_dropdown.dart';
 
 class SubjectEditPage extends StatefulWidget {
 
@@ -28,21 +31,25 @@ class _SubjectEditPageState extends State<SubjectEditPage> {
 
   late final TextEditingController _nameController;
   late final TextEditingController _shortNameController;
+  late final List<SubjectCategory> _allSubjectCategories;
 
   late Color _selectedColor;
   late int _countingTerms;
   late Set<int> _selectedTerms;
   late SubjectType _selectedSubjectType;
+  late SubjectCategory _subjectCategory;
   late List<Performance> _performances;
 
   @override
   void initState() {
     _nameController = TextEditingController(text: widget.subject.name);
     _shortNameController = TextEditingController(text: widget.subject.shortName);
+    _allSubjectCategories = SubjectCategoryService.findAll();
     _selectedColor = widget.subject.color;
     _countingTerms = widget.subject.countingTermAmount;
     _selectedTerms = widget.subject.terms;
     _selectedSubjectType = widget.subject.subjectType;
+    _subjectCategory = widget.subject.subjectCategory;
     _performances = widget.subject.performances;
     super.initState();
   }
@@ -83,16 +90,11 @@ class _SubjectEditPageState extends State<SubjectEditPage> {
             child: Form(
               child: Column(
                 children: [
-                  SubjectNameAndShortNameInput(
+                  SubjectNameAndColorInput(
                     nameController: _nameController,
                     shortNameController: _shortNameController,
-                  ),
-
-                  FormGap(),
-
-                  SubjectColorPicker(
-                    currentColor: _selectedColor,
-                    onSelected: (newColor) {
+                    color: _selectedColor,
+                    onSelectedColor: (newColor) {
                       setState(() {
                         _selectedColor = newColor;
                       });
@@ -106,6 +108,21 @@ class _SubjectEditPageState extends State<SubjectEditPage> {
                     onSelected: (SubjectType newSelection) {
                       setState(() {
                         _selectedSubjectType = newSelection;
+                      });
+                    },
+                  ),
+
+                  FormGap(),
+
+                  SubjectCategoryDropdown(
+                    selectedSubjectCategory: _subjectCategory,
+                    subjectCategories: _allSubjectCategories,
+                    onSelected: (SubjectCategory? newSubjectCategory) {
+                      if (newSubjectCategory == null) {
+                        return;
+                      }
+                      setState(() {
+                        _subjectCategory = newSubjectCategory;
                       });
                     },
                   ),
@@ -166,18 +183,21 @@ class _SubjectEditPageState extends State<SubjectEditPage> {
               }
             }
 
-            Subject editedSubject = await SubjectService.editSubject(
-              widget.subject,
-              name: _nameController.text,
-              shortName: _shortNameController.text,
-              color: _selectedColor,
-              terms: _selectedTerms,
-              countingTermAmount: _countingTerms,
-              subjectType: _selectedSubjectType,
-              performances: _performances,
-            );
+            trySubmittingForm(context, () async {
+              Subject editedSubject = await SubjectService.editSubject(
+                widget.subject,
+                name: _nameController.text,
+                shortName: _shortNameController.text,
+                color: _selectedColor,
+                terms: _selectedTerms,
+                countingTermAmount: _countingTerms,
+                subjectType: _selectedSubjectType,
+                subjectCategory: _subjectCategory,
+                performances: _performances,
+              );
 
-            Navigator.pop(context, editedSubject);
+              Navigator.pop(context, editedSubject);
+            });
           },
           label: Text("Speichern"),
           icon: Icon(Icons.save),

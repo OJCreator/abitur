@@ -95,7 +95,7 @@ class ProjectionService {
     }
 
     map[wSeminar] = _buildTermNoteDtos(wSeminar);
-    Subject seminararbeit = Subject(name: "Seminararbeit", shortName: "Arbeit", countingTermAmount: 2, color: wSeminar.color);
+    Subject seminararbeit = Subject(name: "Seminararbeit", shortName: "Arbeit", subjectCategoryId: wSeminar.subjectCategoryId, countingTermAmount: 2, color: wSeminar.color);
     int? seminararbeitNote = wSeminar.graduationEvaluation?.evaluationDates.first.note;
     map[seminararbeit] = [
       TermNoteDto(note: seminararbeitNote ?? subjectOverallAverage(wSeminar), projection: seminararbeitNote == null, counting: true, subject: wSeminar),

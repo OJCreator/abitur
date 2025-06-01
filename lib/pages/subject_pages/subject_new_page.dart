@@ -1,11 +1,13 @@
 import 'package:abitur/storage/entities/performance.dart';
+import 'package:abitur/storage/entities/subject_category.dart';
 import 'package:abitur/storage/services/performance_service.dart';
+import 'package:abitur/storage/services/subject_category_service.dart';
 import 'package:abitur/storage/services/subject_service.dart';
 import 'package:abitur/utils/constants.dart';
 import 'package:abitur/widgets/forms/form_gap.dart';
 import 'package:abitur/widgets/forms/performance_form.dart';
-import 'package:abitur/widgets/forms/subject_color_picker.dart';
-import 'package:abitur/widgets/forms/subject_name_and_short_name_input.dart';
+import 'package:abitur/widgets/forms/subject_category_dropdown.dart';
+import 'package:abitur/widgets/forms/subject_name_and_color_input.dart';
 import 'package:abitur/widgets/forms/subject_type_selector.dart';
 import 'package:abitur/widgets/forms/terms_multiple_choice.dart';
 import 'package:flutter/material.dart';
@@ -14,7 +16,6 @@ import 'package:provider/provider.dart';
 import '../../exceptions/invalid_form_input_exception.dart';
 import '../../storage/entities/subject.dart';
 import '../../utils/brightness_notifier.dart';
-import '../../widgets/confirm_dialog.dart';
 
 class SubjectNewPage extends StatefulWidget {
 
@@ -34,10 +35,19 @@ class _SubjectNewPageState extends State<SubjectNewPage> {
   Set<int> _terms = {0,1,2,3};
   int _countingTerms = 4;
   SubjectType _subjectType = SubjectType.basic;
+  late SubjectCategory _subjectCategory;
+  List<SubjectCategory> _allSubjectCategories = List.empty(growable: true);
   List<Performance> _performances = [
     Performance(name: "Klausuren", weighting: 0.5),
     Performance(name: "Kleine Noten", weighting: 0.5),
   ];
+
+  @override
+  void initState() {
+    _allSubjectCategories = SubjectCategoryService.findAll();
+    _subjectCategory = _allSubjectCategories.first;
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -59,16 +69,12 @@ class _SubjectNewPageState extends State<SubjectNewPage> {
               key: _formKey,
               child: Column(
                 children: [
-                  SubjectNameAndShortNameInput(
+                  SubjectNameAndColorInput(
                     nameController: _name,
                     shortNameController: _shortName,
-                  ),
-
-                  FormGap(),
-
-                  SubjectColorPicker(
-                    currentColor: _color,
-                    onSelected: (newColor) {
+                    color: _color,
+                    onSelectedColor: (newColor) {
+                      print("New: ${newColor.toHexString()}");
                       setState(() {
                         _color = newColor;
                       });
@@ -82,6 +88,21 @@ class _SubjectNewPageState extends State<SubjectNewPage> {
                     onSelected: (SubjectType newSelection) {
                       setState(() {
                         _subjectType = newSelection;
+                      });
+                    },
+                  ),
+
+                  FormGap(),
+
+                  SubjectCategoryDropdown(
+                    selectedSubjectCategory: _subjectCategory,
+                    subjectCategories: _allSubjectCategories,
+                    onSelected: (SubjectCategory? newSubjectCategory) {
+                      if (newSubjectCategory == null) {
+                        return;
+                      }
+                      setState(() {
+                        _subjectCategory = newSubjectCategory;
                       });
                     },
                   ),
@@ -141,8 +162,7 @@ class _SubjectNewPageState extends State<SubjectNewPage> {
               return;
             }
 
-            try {
-
+            trySubmittingForm(context, () async {
               await SubjectService.newSubject(
                 _name.text,
                 _shortName.text,
@@ -150,31 +170,13 @@ class _SubjectNewPageState extends State<SubjectNewPage> {
                 _terms,
                 _countingTerms,
                 _subjectType,
+                _subjectCategory,
                 _performances.map((p) => p.id).toList(),
               );
               await PerformanceService.savePerformances(_performances);
 
               Navigator.pop(context);
-            } on InvalidFormException catch (e) {
-              await showDialog(
-                barrierDismissible: false,
-                context: context,
-                builder: (context) {
-                  return AlertDialog(
-                    title: Text("Es gab einen Fehler."),
-                    content: Text(e.message),
-                    actions: [
-                      TextButton(
-                        onPressed: () {
-                          Navigator.pop(context);
-                        },
-                        child: Text("Zurück"),
-                      ),
-                    ],
-                  );
-                },
-              );
-            }
+            });
           },
         ),
       ),

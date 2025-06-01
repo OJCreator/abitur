@@ -209,9 +209,9 @@ double? weightedAvg(Iterable<Pair<double, double?>> weightAndValue) {
   return totalWeight == 0 ? null : weightedSum / totalWeight;
 }
 Color getContrastingTextColor(Color backgroundColor) {
-  double luminance = (0.299 * backgroundColor.r +
+  double luminance = 0.299 * backgroundColor.r +
       0.587 * backgroundColor.g +
-      0.114 * backgroundColor.b) / 255;
+      0.114 * backgroundColor.b;
 
   return luminance > 0.5 ? Colors.black : Colors.white;
 }

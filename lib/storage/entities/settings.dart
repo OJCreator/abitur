@@ -53,7 +53,7 @@ class Settings implements Serializable {
   Settings({
     required this.graduationYear,
     this.lightMode = true,
-    Land land = Land.by,
+    Land land = Land.none,
     Color accentColor = primaryColor,
     this.viewedWelcomeScreen = false,
     this.calendarSynchronisation = true,
@@ -114,7 +114,8 @@ enum Land {
   sn("Sachsen"),
   st("Sachsen-Anhalt"),
   sh("Schleswig-Holstein"),
-  th("Thüringen");
+  th("Thüringen"),
+  none("Kein Land");
 
   final String name;
 
@@ -128,31 +129,3 @@ enum Land {
     );
   }
 }
-
-// enum SchoolSystem {
-//   no("Kein Schulsystem festgelegt"),
-//
-//   byHg("Humanistisches Gymnasium"),
-//   bySg("Sprachliches Gymnasium"),
-//   byNtg("Naturwissenschaftlich-technologisches Gymnasium"),
-//   byMug("Musisches Gymnasium"),
-//   byWwg("Wirtschaftswissenschaftliches Gymnasium"),
-//   bySwg("Sozialwissenschaftliches Gymnasium"),
-//   byEfk("Einführungsklasse");
-//
-//   final String name;
-//
-//   const SchoolSystem(this.name);
-//
-//   String get code => toString().split('.').last;
-//
-//   static List<SchoolSystem> fromLand(Land land) {
-//     return SchoolSystem.values.where((land) => land.code.startsWith(land.code)).toList();
-//   }
-//
-//   static SchoolSystem fromCode(String code) {
-//     return SchoolSystem.values.firstWhere((schoolSystem) => schoolSystem.code == code,
-//       orElse: () => throw ArgumentError("Invalid SchoolSystem code: $code"),
-//     );
-//   }
-// }

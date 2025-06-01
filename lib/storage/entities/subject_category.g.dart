@@ -1,40 +1,38 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'evaluation_type.dart';
+part of 'subject_category.dart';
 
 // **************************************************************************
 // TypeAdapterGenerator
 // **************************************************************************
 
-class EvaluationTypeAdapter extends TypeAdapter<EvaluationType> {
+class SubjectCategoryAdapter extends TypeAdapter<SubjectCategory> {
   @override
-  final int typeId = 8;
+  final int typeId = 9;
 
   @override
-  EvaluationType read(BinaryReader reader) {
+  SubjectCategory read(BinaryReader reader) {
     final numOfFields = reader.readByte();
     final fields = <int, dynamic>{
       for (int i = 0; i < numOfFields; i++) reader.readByte(): reader.read(),
     };
-    return EvaluationType(
+    return SubjectCategory(
       name: fields[1] as String,
-      showInCalendar: fields[3] as bool,
+      minGradesRequired: fields[2] as int,
       id: fields[0] as String?,
-    ).._assessmentType = fields[2] as String;
+    );
   }
 
   @override
-  void write(BinaryWriter writer, EvaluationType obj) {
+  void write(BinaryWriter writer, SubjectCategory obj) {
     writer
-      ..writeByte(4)
+      ..writeByte(3)
       ..writeByte(0)
       ..write(obj.id)
       ..writeByte(1)
       ..write(obj.name)
       ..writeByte(2)
-      ..write(obj._assessmentType)
-      ..writeByte(3)
-      ..write(obj.showInCalendar);
+      ..write(obj.minGradesRequired);
   }
 
   @override
@@ -43,7 +41,7 @@ class EvaluationTypeAdapter extends TypeAdapter<EvaluationType> {
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      other is EvaluationTypeAdapter &&
+      other is SubjectCategoryAdapter &&
           runtimeType == other.runtimeType &&
           typeId == other.typeId;
 }

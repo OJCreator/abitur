@@ -39,6 +39,7 @@ class Evaluation implements Serializable {
 
   @HiveField(5)
   String _evaluationTypeId;
+  String get evaluationTypeId => _evaluationTypeId;
   EvaluationType get evaluationType => EvaluationTypeService.findById(_evaluationTypeId) ?? EvaluationType.empty();
   set evaluationType(EvaluationType newEvaluationType) => _evaluationTypeId = newEvaluationType.id;
 
