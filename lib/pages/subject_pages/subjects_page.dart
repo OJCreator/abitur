@@ -1,5 +1,5 @@
 import 'package:abitur/pages/subject_pages/subject_chose_graduation_page.dart';
-import 'package:abitur/pages/subject_pages/subject_new_page.dart';
+import 'package:abitur/pages/subject_pages/subject_input_page.dart';
 import 'package:abitur/pages/subject_pages/subject_page.dart';
 import 'package:abitur/storage/services/settings_service.dart';
 import 'package:abitur/storage/services/subject_service.dart';
@@ -32,7 +32,7 @@ class _SubjectsPageState extends State<SubjectsPage> {
     await Navigator.push(
       context,
       MaterialPageRoute(builder: (context) {
-        return SubjectNewPage();
+        return SubjectInputPage();
       }),
     );
     _loadSubjects();

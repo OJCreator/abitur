@@ -1,5 +1,6 @@
 import 'package:abitur/storage/entities/evaluation.dart';
 import 'package:abitur/storage/services/evaluation_service.dart';
+import 'package:abitur/storage/services/settings_service.dart';
 import 'package:abitur/utils/constants.dart';
 import 'package:flutter/material.dart';
 
@@ -31,8 +32,8 @@ class EvaluationListTile extends StatelessWidget {
   }
 
   String timeString() {
-    String firstDate = evaluation.evaluationDates.first.date!.format();
-    String lastDate = evaluation.evaluationDates.last.date!.format();
+    String firstDate = (evaluation.evaluationDates.firstOrNull?.date ?? SettingsService.lastDayOfSchool).format();
+    String lastDate = (evaluation.evaluationDates.lastOrNull?.date ?? SettingsService.lastDayOfSchool).format();
     if (firstDate == lastDate) {
       return firstDate;
     }

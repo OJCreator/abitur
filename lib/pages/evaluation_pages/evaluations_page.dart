@@ -1,5 +1,4 @@
-import 'package:abitur/pages/evaluation_pages/evaluation_edit_page.dart';
-import 'package:abitur/pages/evaluation_pages/evaluation_new_page.dart';
+import 'package:abitur/pages/evaluation_pages/evaluation_input_page.dart';
 import 'package:abitur/pages/subject_pages/subject_page.dart';
 import 'package:abitur/storage/entities/evaluation.dart';
 import 'package:abitur/storage/entities/evaluation_date.dart';
@@ -53,7 +52,7 @@ class _EvaluationsPageState extends State<EvaluationsPage> {
       await Navigator.push(
         context,
         MaterialPageRoute(builder: (context) {
-          return EvaluationNewPage();
+          return EvaluationInputPage();
         }),
       );
     } else {
@@ -237,7 +236,7 @@ class EvaluationListTile extends StatelessWidget {
           await Navigator.push(
             context,
             MaterialPageRoute(builder: (context) {
-              return EvaluationEditPage(evaluation: evaluationDate.evaluation);
+              return EvaluationInputPage(evaluation: evaluationDate.evaluation);
             }),
           );
         }
@@ -274,7 +273,9 @@ class _EvaluationDayDialogState extends State<EvaluationDayDialog> {
       await Navigator.push(
         context,
         MaterialPageRoute(builder: (context) {
-          return EvaluationNewPage(initialDateTime: selectedDate,);
+          return EvaluationInputPage(
+            dateTime: selectedDate,
+          );
         }),
       );
     } else {

@@ -2,6 +2,7 @@ import 'package:abitur/storage/entities/evaluation.dart';
 import 'package:abitur/storage/entities/evaluation_type.dart';
 import 'package:abitur/storage/services/evaluation_date_service.dart';
 import 'package:abitur/storage/services/notification_service.dart';
+import 'package:abitur/storage/services/settings_service.dart';
 import 'package:abitur/storage/storage.dart';
 import 'package:abitur/utils/constants.dart';
 
@@ -13,7 +14,7 @@ class EvaluationService {
 
   static List<Evaluation> findAll() {
     List<Evaluation> evaluations = Storage.loadEvaluations();
-    evaluations.sort((a,b) => a.evaluationDates.first.compareTo(b.evaluationDates.first));
+    evaluations.sort((a,b) => (a.evaluationDates.firstOrNull?.date ?? SettingsService.lastDayOfSchool).compareTo(b.evaluationDates.firstOrNull?.date ?? SettingsService.lastDayOfSchool));
     return evaluations;
   }
   static Evaluation? findById(String evaluationId) {

@@ -1,7 +1,5 @@
-import 'package:abitur/pages/evaluation_pages/evaluation_edit_page.dart';
-import 'package:abitur/pages/evaluation_pages/evaluation_new_page.dart';
 import 'package:abitur/pages/subject_pages/subject/subject_edit_graduation_evaluation_dialog.dart';
-import 'package:abitur/pages/subject_pages/subject_edit_page.dart';
+import 'package:abitur/pages/subject_pages/subject_input_page.dart';
 import 'package:abitur/storage/entities/evaluation_date.dart';
 import 'package:abitur/storage/entities/performance.dart';
 import 'package:abitur/storage/services/evaluation_service.dart';
@@ -22,8 +20,8 @@ import 'package:provider/provider.dart';
 import '../../storage/entities/evaluation.dart';
 import '../../storage/entities/subject.dart';
 import '../../utils/brightness_notifier.dart';
-import '../../widgets/evaluation_date_list_tile.dart';
 import '../../widgets/graduation_date_list_tile.dart';
+import '../evaluation_pages/evaluation_input_page.dart';
 
 class SubjectPage extends StatefulWidget {
 
@@ -76,7 +74,7 @@ class _SubjectPageState extends State<SubjectPage> with SingleTickerProviderStat
     Subject? editedSubject = await Navigator.push(
       context,
       MaterialPageRoute(builder: (context) {
-        return SubjectEditPage(
+        return SubjectInputPage(
           subject: subject,
         );
       }),
@@ -113,9 +111,9 @@ class _SubjectPageState extends State<SubjectPage> with SingleTickerProviderStat
     Evaluation? newEvaluation = await Navigator.push(
       context,
       MaterialPageRoute(builder: (context) {
-        return EvaluationNewPage(
-          initialSubject: widget.subject,
-          initialTerm: subject.terms.elementAt(_tabController.index),
+        return EvaluationInputPage(
+          subject: widget.subject,
+          term: subject.terms.elementAt(_tabController.index),
         );
       }),
     );
@@ -307,7 +305,7 @@ class _TermViewState extends State<_TermView> {
                       await Navigator.push(
                         context,
                         MaterialPageRoute(builder: (context) {
-                          return EvaluationEditPage(evaluation: e);
+                          return EvaluationInputPage(evaluation: e);
                         }),
                       );
                       _loadEvaluations();

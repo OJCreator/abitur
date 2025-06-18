@@ -79,3 +79,17 @@ class EvaluationDate implements Serializable, Comparable<EvaluationDate> {
     return (date ?? SettingsService.lastDayOfSchool).compareTo(other.date ?? SettingsService.lastDayOfSchool);
   }
 }
+
+extension EvaluationDateClone on EvaluationDate {
+  EvaluationDate clone() {
+    return EvaluationDate(
+      id: id,
+      evaluationId: _evaluationId,
+      date: date,
+      note: note,
+      calendarId: calendarId,
+      weight: weight,
+      description: description,
+    );
+  }
+}

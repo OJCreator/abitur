@@ -1,4 +1,4 @@
-import 'package:abitur/pages/evaluation_pages/evaluation_new_page.dart';
+import 'package:abitur/pages/evaluation_pages/evaluation_input_page.dart';
 import 'package:abitur/pages/evaluation_pages/evaluations_page.dart';
 import 'package:abitur/pages/analytics_page.dart';
 import 'package:abitur/pages/subject_pages/subjects_page.dart';
@@ -107,7 +107,7 @@ class _ScreenScaffoldingState extends State<ScreenScaffolding> {
     if (shortcut == "newEvaluation") {
       navigatorKey.currentState?.push(
         MaterialPageRoute(
-          builder: (context) => EvaluationNewPage(),
+          builder: (context) => EvaluationInputPage(),
         ),
       );
     }

@@ -1,4 +1,3 @@
-import 'package:abitur/pages/evaluation_pages/evaluation_edit_page.dart';
 import 'package:abitur/storage/entities/settings.dart';
 import 'package:abitur/storage/services/settings_service.dart';
 import 'package:device_calendar/device_calendar.dart';
@@ -9,6 +8,7 @@ import 'package:permission_handler/permission_handler.dart' as AppSettings;
 import 'package:synchronized/synchronized.dart';
 
 import '../../main.dart';
+import '../../pages/evaluation_pages/evaluation_input_page.dart';
 import '../../pages/subject_pages/subject_page.dart';
 import '../../utils/constants.dart';
 import '../entities/evaluation_date.dart';
@@ -186,7 +186,7 @@ class NotificationService {
       EvaluationDate evaluationDate = EvaluationDateService.findById(evaluationId);
       navigatorKey.currentState?.push(
         MaterialPageRoute(
-          builder: (context) => EvaluationEditPage(evaluation: evaluationDate.evaluation),
+          builder: (context) => EvaluationInputPage(evaluation: evaluationDate.evaluation),
         ),
       );
     }
