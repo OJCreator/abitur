@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../widgets/color_dialog.dart';
+import '../settings_pages/settings_appearance_page.dart';
 
 class SetupUiPage extends StatefulWidget {
   const SetupUiPage({super.key});
@@ -17,7 +18,7 @@ class SetupUiPage extends StatefulWidget {
 
 class _SetupUiPageState extends State<SetupUiPage> {
 
-  bool lightMode = true;
+  ThemeMode themeMode = ThemeMode.system;
   Color accentColor = primaryColor;
 
   @override
@@ -34,16 +35,23 @@ class _SetupUiPageState extends State<SetupUiPage> {
                   "Und jetzt die wirklich wichtigen Fragen:",
                   style: Theme.of(context).textTheme.titleMedium,
                 ),
-                SwitchListTile(
-                  value: lightMode,
-                  title: Text("Light Mode"),
-                  onChanged: (s) {
-                    Provider.of<BrightnessNotifier>(context, listen: false,).setBrightness(!lightMode);
+                ListTile(
+                  title: Text("Design"),
+                  subtitle: Text(themeMode.label),
+                  onTap: () async {
+                    ThemeMode? newThemeMode = await showModalBottomSheet(
+                      context: context,
+                      builder: (context) => ThemeModeSelectorSheet(currentThemeMode: themeMode,),
+                    );
+                    if (newThemeMode == null) {
+                      return;
+                    }
+                    Settings s = SettingsService.loadSettings();
                     setState(() {
-                      Settings s = SettingsService.loadSettings();
-                      s.lightMode = !lightMode;
-                      lightMode = !lightMode;
+                      s.themeMode = newThemeMode;
+                      themeMode = newThemeMode;
                     });
+                    Provider.of<BrightnessNotifier>(context, listen: false,).setThemeMode(s.themeMode);
                   },
                 ),
                 ListTile(

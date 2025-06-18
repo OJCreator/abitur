@@ -37,6 +37,9 @@ class AverageIsolates {
 
   static int? getAverageByTerm(Subject s, int term, List<Evaluation> evaluations, Map<String, EvaluationDate> evaluationDates, Map<String, Performance> performances) {
     if (!s.terms.contains(term)) return null;
+    if (s.manuallyEnteredTermNotes[term] != null) {
+      return s.manuallyEnteredTermNotes[term]!;
+    }
 
     // Filtere alle passenden Bewertungen
     var evaluationsOfTerm = evaluations.where(

@@ -54,12 +54,15 @@ class Subject implements Serializable {
   int countingTermAmount;
 
   @HiveField(8)
+  List<int?> manuallyEnteredTermNotes;
+
+  @HiveField(9)
   List<String> _performanceIds;
   List<String> get performanceIds => _performanceIds;
   set performances(List<Performance> newPerformances) => _performanceIds = newPerformances.map((p) => p.id).toList();
   List<Performance> get performances => _performanceIds.map((p) => PerformanceService.findById(p)!).toList();
 
-  @HiveField(9)
+  @HiveField(10)
   String? _graduationEvaluationId;
   String? get graduationEvaluationId => _graduationEvaluationId;
   Evaluation? get graduationEvaluation => _graduationEvaluationId == null ? null : EvaluationService.findById(_graduationEvaluationId!);
@@ -72,6 +75,7 @@ class Subject implements Serializable {
     SubjectType subjectType = SubjectType.basic,
     String subjectCategoryId = "",
     Set<int>? terms,
+    this.manuallyEnteredTermNotes = const [null, null, null, null],
     required this.countingTermAmount,
     List<String> performanceIds = const [],
     String? id,
@@ -102,6 +106,7 @@ class Subject implements Serializable {
     "subjectCategoryId": _subjectCategoryId,
     "terms": _terms,
     "countingTermAmount": countingTermAmount,
+    "manuallyEnteredTermNotes": manuallyEnteredTermNotes,
     "performanceIds": _performanceIds,
     "id": id,
     "graduationEvaluationId": _graduationEvaluationId,
@@ -116,6 +121,7 @@ class Subject implements Serializable {
       subjectCategoryId: json["subjectCategoryId"],
       terms: (json["terms"] as List).map((e) => e as int).toSet(),
       countingTermAmount: json["countingTermAmount"] as int,
+      manuallyEnteredTermNotes: (json["manuallyEnteredTermNotes"] as List).map((e) => e as int?).toList(),
       performanceIds: (json["performanceIds"] as List).map((e) => e as String).toList(),
       id: json["id"],
       graduationEvaluationId: json["graduationEvaluationId"]

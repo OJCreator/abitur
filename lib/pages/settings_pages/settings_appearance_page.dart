@@ -1,3 +1,4 @@
+import 'package:abitur/utils/constants.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -49,15 +50,22 @@ class _SettingsAppearancePageState extends State<SettingsAppearancePage> {
                 });
               },
             ),
-            SwitchListTile(
-              title: Text("Light Mode"),
-              value: s.lightMode,
-              onChanged: (v) {
+            ListTile(
+              title: Text("Design"),
+              subtitle: Text(s.themeMode.label),
+              onTap: () async {
+                ThemeMode? newThemeMode = await showModalBottomSheet(
+                  context: context,
+                  builder: (context) => ThemeModeSelectorSheet(currentThemeMode: s.themeMode,),
+                );
+                if (newThemeMode == null) {
+                  return;
+                }
                 setState(() {
-                  s.lightMode = !s.lightMode;
+                  s.themeMode = newThemeMode;
                 });
-                Provider.of<BrightnessNotifier>(context, listen: false).setBrightness(s.lightMode);
                 Storage.saveSettings(s);
+                Provider.of<BrightnessNotifier>(context, listen: false).setThemeMode(s.themeMode);
               },
             ),
           ],
@@ -66,3 +74,28 @@ class _SettingsAppearancePageState extends State<SettingsAppearancePage> {
     );
   }
 }
+class ThemeModeSelectorSheet extends StatelessWidget {
+
+  final ThemeMode currentThemeMode;
+
+  const ThemeModeSelectorSheet({super.key, required this.currentThemeMode});
+
+  @override
+  Widget build(BuildContext context) {
+
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: ThemeMode.values.map((mode) {
+        return RadioListTile<ThemeMode>(
+          title: Text(mode.label),
+          value: mode,
+          groupValue: currentThemeMode,
+          onChanged: (ThemeMode? selected) {
+            Navigator.pop(context, selected);
+          },
+        );
+      }).toList(),
+    );
+  }
+}
+

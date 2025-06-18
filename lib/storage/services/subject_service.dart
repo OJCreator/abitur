@@ -170,12 +170,15 @@ class SubjectService {
 
   static double? getAverage(Subject s) {
     Set<int> terms = EvaluationService.findAllGradedBySubject(s).map((e) => e.term).toSet();
-    Iterable<int?> averages = terms.map((term) => getAverageByTerm(s, term)?.roundGrade());
+    Iterable<int?> averages = terms.map((term) => roundNote(getAverageByTerm(s, term)));
     double? average = avg(averages);
     return average;
   }
 
   static double? getAverageByTerm(Subject s, int term) {
+    if (s.manuallyEnteredTermNotes[term] != null) {
+      return s.manuallyEnteredTermNotes[term]!.toDouble();
+    }
     Iterable<Evaluation> evaluations = EvaluationService.findAllGradedBySubjectAndTerm(s, term);
     if (!s.terms.contains(term)) {
       return null;
@@ -222,6 +225,11 @@ class SubjectService {
     }
   }
 
+  static Future<void> manuallyEnterTermNote(Subject s, {required int term, required int? note}) async {
+    s.manuallyEnteredTermNotes[term] = note;
+    await Storage.saveSubject(s);
+  }
+
   static bool isGraduationSubject(Subject subject) {
     return subject.graduationEvaluation != null && subject.subjectType != SubjectType.seminar;
   }
@@ -239,6 +247,7 @@ class SubjectService {
     for (Subject s in findAll()) {
       await deleteSubject(s);
     }
+    print("Hias");
     List<Subject> subjects = jsonData.map((e) => Subject.fromJson(e)).toList();
     for (Subject s in subjects) {
       await Storage.saveSubject(s);

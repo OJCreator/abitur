@@ -14,8 +14,12 @@ class Settings implements Serializable {
   @HiveField(0)
   DateTime graduationYear;
 
+  // @HiveField(1)
+  // bool lightMode;
   @HiveField(1)
-  bool lightMode;
+  int _themeModeIndex;
+  ThemeMode get themeMode => ThemeMode.values[_themeModeIndex];
+  set themeMode(ThemeMode mode) => _themeModeIndex = mode.index;
 
   @HiveField(2)
   int _accentColor;
@@ -52,7 +56,7 @@ class Settings implements Serializable {
 
   Settings({
     required this.graduationYear,
-    this.lightMode = true,
+    ThemeMode themeMode = ThemeMode.system,
     Land land = Land.none,
     Color accentColor = primaryColor,
     this.viewedWelcomeScreen = false,
@@ -63,13 +67,14 @@ class Settings implements Serializable {
     this.missingGradeReminder = false,
     this.missingGradeReminderDelayDays = 21,
     this.missingGradeReminderTimeInMinutes = 15*60,
-  }) : _accentColor = accentColor.toARGB32(),
+  }) : _themeModeIndex = themeMode.index,
+        _accentColor = accentColor.toARGB32(),
         _land = land.code;
 
   @override
   Map<String, dynamic> toJson() => {
     "graduationYear": graduationYear.toString(),
-    "lightMode": lightMode,
+    "themeModeIndex": _themeModeIndex,
     "accentColor": _accentColor,
     "land": _land,
     "calendarSynchronisation": calendarSynchronisation,
@@ -84,7 +89,7 @@ class Settings implements Serializable {
   static Settings fromJson(Map<String, dynamic> json) {
     return Settings(
       graduationYear: DateTime.parse(json["graduationYear"]),
-      lightMode: json["lightMode"],
+      themeMode: ThemeMode.system,//ThemeMode.values[json["themeModeIndex"]],
       land: Land.fromCode(json["land"]),
       accentColor: Color(json["accentColor"]),
       calendarSynchronisation: json["calendarSynchronisation"] ?? true,

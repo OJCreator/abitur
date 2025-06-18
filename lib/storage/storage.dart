@@ -56,6 +56,7 @@ class Storage {
     _timetableEntryBox = await Hive.openBox<TimetableEntry>('timetableEntries');
 
     initialValues();
+    filterUnreferencedObjects();
     // TODO überprüfen, ob es Objekte mit IDs gibt, auf die kein anderes Objekt verweist => Warnung!
   }
 
@@ -93,6 +94,18 @@ class Storage {
     List<Subject> seminarWithoutGraduationEvaluation = SubjectService.findAll().where((s) => s.subjectType == SubjectType.seminar && s.graduationEvaluation == null).toList();
     for (Subject seminar in seminarWithoutGraduationEvaluation) {
       SubjectService.setGraduationEvaluation(seminar, graduation: true);
+    }
+  }
+
+  static void filterUnreferencedObjects() {
+    List<Evaluation> evals = loadEvaluations();
+    Set<String> referencedIds = evals.expand((e) => e.evaluationDateIds).toSet();
+
+    for (EvaluationDate e in loadEvaluationDates()) {
+      if (!referencedIds.contains(e.id)) {
+        print("$e wird nicht mehr referenziert und sollte gelöscht werden.");
+        // deleteEvaluationDate(e);
+      }
     }
   }
 

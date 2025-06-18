@@ -18,7 +18,6 @@ class SettingsAdapter extends TypeAdapter<Settings> {
     };
     return Settings(
       graduationYear: fields[0] as DateTime,
-      lightMode: fields[1] as bool,
       viewedWelcomeScreen: fields[4] as bool,
       calendarSynchronisation: fields[5] as bool,
       calendarFullDayEvents: fields[6] as bool,
@@ -28,6 +27,7 @@ class SettingsAdapter extends TypeAdapter<Settings> {
       missingGradeReminderDelayDays: fields[10] as int,
       missingGradeReminderTimeInMinutes: fields[11] as int,
     )
+      .._themeModeIndex = fields[1] as int
       .._accentColor = fields[2] as int
       .._land = fields[3] as String;
   }
@@ -39,7 +39,7 @@ class SettingsAdapter extends TypeAdapter<Settings> {
       ..writeByte(0)
       ..write(obj.graduationYear)
       ..writeByte(1)
-      ..write(obj.lightMode)
+      ..write(obj._themeModeIndex)
       ..writeByte(2)
       ..write(obj._accentColor)
       ..writeByte(3)

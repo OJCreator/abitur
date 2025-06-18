@@ -126,7 +126,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
         SettingsService.markWelcomeScreenAsViewed();
 
         // Theming
-        Provider.of<BrightnessNotifier>(context, listen: false,).setBrightness(SettingsService.loadSettings().lightMode);
+        Provider.of<BrightnessNotifier>(context, listen: false,).setThemeMode(SettingsService.loadSettings().themeMode);
         Provider.of<SeedNotifier>(context, listen: false,).seed = SettingsService.loadSettings().accentColor;
 
         Navigator.pushReplacement(

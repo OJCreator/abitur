@@ -1,17 +1,43 @@
 import 'package:abitur/storage/storage.dart';
 import 'package:flutter/material.dart';
 
-class BrightnessNotifier extends ChangeNotifier {
-  bool _isLightMode = Storage.loadSettings().lightMode;
+class BrightnessNotifier extends ChangeNotifier with WidgetsBindingObserver {
+  ThemeMode _themeMode = Storage.loadSettings().themeMode;
 
-  bool get isLightMode => _isLightMode;
+  BrightnessNotifier() {
+    WidgetsBinding.instance.addObserver(this);
+  }
 
-  void setBrightness(bool isLightMode) {
-    _isLightMode = isLightMode;
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  ThemeMode get themeMode => _themeMode;
+
+  void setThemeMode(ThemeMode mode) {
+    _themeMode = mode;
     notifyListeners();
   }
 
   Brightness get currentBrightness {
-    return _isLightMode ? Brightness.light : Brightness.dark;
+    switch (_themeMode) {
+      case ThemeMode.light:
+        return Brightness.light;
+      case ThemeMode.dark:
+        return Brightness.dark;
+      case ThemeMode.system:
+      // Du kannst hier evtl. mit MediaQuery arbeiten oder einen Default setzen
+        return WidgetsBinding.instance.platformDispatcher.platformBrightness;
+    }
+  }
+
+  @override
+  void didChangePlatformBrightness() {
+    if (_themeMode == ThemeMode.system) {
+      notifyListeners();
+    }
   }
 }
+

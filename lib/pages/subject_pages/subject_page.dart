@@ -283,9 +283,17 @@ class _TermViewState extends State<_TermView> {
               Padding(
                 padding: const EdgeInsets.all(8.0),
                 child: Center(
-                  child: PercentIndicator(value: SubjectService.getAverageByTerm(widget.subject, widget.term), color: widget.subject.color),
+                  child: PercentIndicator(
+                    value: SubjectService.getAverageByTerm(widget.subject, widget.term),
+                    color: widget.subject.color,
+                    edit: () {
+                      manuallyEnterTermNoteDialog();
+                    },
+                  ),
                 ),
               ),
+              if (widget.subject.manuallyEnteredTermNotes[widget.term] != null)
+                InfoCard("Diese Halbjahresnote wurde manuell eingetragen."),
               ListTile(
                 title: Text(
                   "Noten:",
@@ -318,6 +326,20 @@ class _TermViewState extends State<_TermView> {
       ),
     );
   }
+
+  void manuallyEnterTermNoteDialog() {
+    showModalBottomSheet(
+      context: context,
+      showDragHandle: true,
+      isScrollControlled: true,
+      builder: (context) {
+        return ManualTermNoteEnterSheet(subject: widget.subject, term: widget.term);
+      },
+    ).then((value) {
+      setState(() { });
+    });
+  }
+
 }
 
 class _GraduationWorkTermView extends StatefulWidget {
@@ -392,3 +414,61 @@ class _GraduationWorkTermViewState extends State<_GraduationWorkTermView> {
     );
   }
 }
+
+class ManualTermNoteEnterSheet extends StatefulWidget {
+
+  final Subject subject;
+  final int term;
+
+  const ManualTermNoteEnterSheet({super.key, required this.subject, required this.term});
+
+  @override
+  State<ManualTermNoteEnterSheet> createState() => _ManualTermNoteEnterSheetState();
+}
+
+class _ManualTermNoteEnterSheetState extends State<ManualTermNoteEnterSheet> {
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: EdgeInsets.only(
+        bottom: MediaQuery.of(context).viewInsets.bottom + 32,
+        left: 16,
+        right: 16,
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SwitchListTile(
+            title: Text("Halbjahresnote manuell eintragen"),
+            value: widget.subject.manuallyEnteredTermNotes[widget.term] != null,
+            onChanged: (newValue) {
+              setState(() {
+                if (widget.subject.manuallyEnteredTermNotes[widget.term] == null) {
+                  SubjectService.manuallyEnterTermNote(widget.subject, term: widget.term, note: 8);
+                } else {
+                  SubjectService.manuallyEnterTermNote(widget.subject, term: widget.term, note: null);
+                }
+              });
+            },
+          ),
+
+          Slider(
+            min: 0,
+            max: 15,
+            divisions: 15,
+            value: (widget.subject.manuallyEnteredTermNotes[widget.term] ?? 8).toDouble(),
+            label: "${widget.subject.manuallyEnteredTermNotes[widget.term]}",
+            onChanged: widget.subject.manuallyEnteredTermNotes[widget.term] != null ? (newNote) {
+              setState(() {
+                SubjectService.manuallyEnterTermNote(widget.subject, term: widget.term, note: newNote.round());
+              });
+            } : null,
+            year2023: false,
+          ),
+        ],
+      ),
+    );
+  }
+}
+

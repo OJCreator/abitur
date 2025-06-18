@@ -75,6 +75,9 @@ class EvaluationDate implements Serializable, Comparable<EvaluationDate> {
   }
 
   @override
+  String toString() => "EvaluationDate#$id (evaluation: ${evaluation.name}, subject: ${evaluation.subject.name})";
+
+  @override
   int compareTo(EvaluationDate other) {
     return (date ?? SettingsService.lastDayOfSchool).compareTo(other.date ?? SettingsService.lastDayOfSchool);
   }

@@ -1,18 +1,11 @@
 import 'dart:convert';
 
-import 'package:abitur/storage/storage.dart';
 import 'package:abitur/utils/pair.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 
 const Color primaryColor = Color(0xFF3C5C80);
-const Color _lightGrey = Color(0xFFCCCCD4);
-const Color _darkGrey = Color(0xFF333344);
 const Color shimmerColor = Color(0x0D000000);
-
-Color get secondShade {
-  return Storage.loadSettings().lightMode ? _lightGrey : _darkGrey;
-}
 
 
 extension IterableExtension<T> on Iterable<T> {
@@ -28,14 +21,21 @@ extension ListExtension<T> on List<T> {
     return getRange(0, maxSize).toList();
   }
 }
+extension ThemeModeExtension on ThemeMode {
+  String get label {
+    switch(this) {
+      case ThemeMode.system:
+        return "System";
+      case ThemeMode.light:
+        return "Hell";
+      case ThemeMode.dark:
+        return "Dunkel";
+    }
+  }
+}
 extension MapToIterableExtension<K, V> on Map<K, V> {
   Iterable<T> mapToIterable<T>(T Function(K key, V value) transform) {
     return entries.map((entry) => transform(entry.key, entry.value));
-  }
-}
-extension RoundGradeExtenstion on double {
-  int roundGrade() {
-    return round();
   }
 }
 extension ColorExtension on Color {

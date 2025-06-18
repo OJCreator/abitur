@@ -19,6 +19,7 @@ class SubjectAdapter extends TypeAdapter<Subject> {
     return Subject(
       name: fields[1] as String,
       shortName: fields[2] as String,
+      manuallyEnteredTermNotes: (fields[8] as List).cast<int?>(),
       countingTermAmount: fields[7] as int,
       id: fields[0] as String?,
     )
@@ -26,14 +27,14 @@ class SubjectAdapter extends TypeAdapter<Subject> {
       .._subjectType = fields[4] as String
       .._subjectCategoryId = fields[5] as String
       .._terms = (fields[6] as List).cast<int>()
-      .._performanceIds = (fields[8] as List).cast<String>()
-      .._graduationEvaluationId = fields[9] as String?;
+      .._performanceIds = (fields[9] as List).cast<String>()
+      .._graduationEvaluationId = fields[10] as String?;
   }
 
   @override
   void write(BinaryWriter writer, Subject obj) {
     writer
-      ..writeByte(10)
+      ..writeByte(11)
       ..writeByte(0)
       ..write(obj.id)
       ..writeByte(1)
@@ -51,8 +52,10 @@ class SubjectAdapter extends TypeAdapter<Subject> {
       ..writeByte(7)
       ..write(obj.countingTermAmount)
       ..writeByte(8)
-      ..write(obj._performanceIds)
+      ..write(obj.manuallyEnteredTermNotes)
       ..writeByte(9)
+      ..write(obj._performanceIds)
+      ..writeByte(10)
       ..write(obj._graduationEvaluationId);
   }
 

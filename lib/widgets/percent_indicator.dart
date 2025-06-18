@@ -29,47 +29,70 @@ class PercentIndicator extends StatelessWidget {
   }
   final Color? color;
   final bool shimmer;
+  final Function()? edit;
 
-  const PercentIndicator({required this.value, this.type = PercentIndicatorType.points, super.key, this.color, this.title, this.tooltip}):
+  const PercentIndicator({required this.value, this.type = PercentIndicatorType.points, super.key, this.color, this.title, this.tooltip, this.edit}):
         shimmer = false;
 
   const PercentIndicator.shimmer({this.color, super.key, this.title, this.tooltip}):
         value = 0,
         type = PercentIndicatorType.points,
-        shimmer = true;
+        shimmer = true,
+        edit = null;
 
   @override
   Widget build(BuildContext context) {
-    return Tooltip(
-      message: tooltip ?? (type == PercentIndicatorType.note ? "Note" : "Punkte"),
-      child: CircularPercentIndicator(
-        radius: 75,
-        animation: true,
-        curve: Curves.easeOut,
-        animationDuration: 1000,
-        percent: _percent,
-        circularStrokeCap: CircularStrokeCap.round,
-        lineWidth: 10,
-        progressColor: color ?? Theme.of(context).colorScheme.surfaceTint,
-        backgroundColor: Theme.of(context).colorScheme.secondaryContainer,
-        center: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            if (shimmer)
-              Shimmer(width: 60, height: 30,),
-            if (!shimmer)
-              Text(
-                pointString,
-                style: Theme.of(context).textTheme.headlineMedium,
-              ),
-            if (title != null)
-              Text(
-                title!,
-                style: Theme.of(context).textTheme.labelMedium,
-              ),
-          ],
+    return Stack(
+      children: [
+        Tooltip(
+          message: tooltip ?? (type == PercentIndicatorType.note ? "Note" : "Punkte"),
+          child: CircularPercentIndicator(
+            radius: 75,
+            animation: true,
+            curve: Curves.easeOut,
+            animationDuration: 1000,
+            percent: _percent,
+            circularStrokeCap: CircularStrokeCap.round,
+            lineWidth: 10,
+            progressColor: color ?? Theme.of(context).colorScheme.surfaceTint,
+            backgroundColor: Theme.of(context).colorScheme.secondaryContainer,
+            center: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                if (shimmer)
+                  Shimmer(width: 60, height: 30,),
+                if (!shimmer)
+                  Text(
+                    pointString,
+                    style: Theme.of(context).textTheme.headlineMedium,
+                  ),
+                if (title != null)
+                  Text(
+                    title!,
+                    style: Theme.of(context).textTheme.labelMedium,
+                  ),
+              ],
+            ),
+          ),
         ),
-      ),
+        if (edit != null)
+          Positioned(
+            top: 4,
+            right: 4,
+            child: Material(
+              color: Theme.of(context).colorScheme.surfaceContainerHigh,
+              shape: const CircleBorder(),
+              elevation: 2,
+              child: IconButton(
+                icon: Icon(Icons.edit, size: 20),
+                onPressed: edit,
+                tooltip: "Bearbeiten",
+                constraints: const BoxConstraints(),
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
+            ),
+          ),
+      ],
     );
   }
 }
