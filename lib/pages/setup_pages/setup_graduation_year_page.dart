@@ -21,7 +21,7 @@ class SetupGraduationYearPage extends StatelessWidget {
                   "In welchem Jahr machst du voraussichtlich dein Abitur?",
                   style: Theme.of(context).textTheme.titleMedium,
                 ),
-                ...generateChoices().map((year) {
+                ...possibleGraduationYears().map((year) {
                   return ListTile(
                     dense: true,
                     title: Text(year.toString()),
@@ -46,14 +46,16 @@ class SetupGraduationYearPage extends StatelessWidget {
       ),
     );
   }
+}
 
-  List<int> generateChoices() {
-    DateTime now = DateTime.now();
-    int currentYear = now.year;
 
-    if (now.isBefore(now.copyWith(month: 8, day: 1))) {
-      return [currentYear, currentYear + 1, currentYear + 2, currentYear + 3];
-    }
-    return [currentYear + 1, currentYear + 2, currentYear + 3];
+
+List<int> possibleGraduationYears() {
+  DateTime now = DateTime.now();
+  int currentYear = now.year;
+
+  if (now.isBefore(now.copyWith(month: 8, day: 1))) {
+    return [currentYear, currentYear + 1, currentYear + 2, currentYear + 3];
   }
+  return [currentYear + 1, currentYear + 2, currentYear + 3];
 }

@@ -5,6 +5,7 @@ import 'package:abitur/pages/settings_pages/settings_appearance_page.dart';
 import 'package:abitur/pages/settings_pages/settings_calendar_page.dart';
 import 'package:abitur/pages/settings_pages/settings_evaluation_types_page.dart';
 import 'package:abitur/pages/settings_pages/settings_notifications_page.dart';
+import 'package:abitur/pages/setup_pages/setup_graduation_year_page.dart';
 import 'package:abitur/storage/entities/evaluation_type.dart';
 import 'package:abitur/storage/entities/graduation/graduation_evaluation.dart';
 import 'package:abitur/storage/entities/timetable/timetable_entry.dart';
@@ -17,6 +18,7 @@ import 'package:abitur/storage/services/subject_service.dart';
 import 'package:abitur/storage/services/timetable_service.dart';
 import 'package:abitur/storage/storage.dart';
 import 'package:abitur/utils/constants.dart';
+import 'package:abitur/widgets/info_card.dart';
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
@@ -58,12 +60,49 @@ class _SettingsPageState extends State<SettingsPage> {
               leading: Icon(Icons.school),
               subtitle: Text(s.graduationYear.formatYear()),
               onTap: () {
-                showDialog(context: context, builder: (context) {
-                  return AlertDialog(
-                    title: Text("Abijahrgang wechseln"),
-                    content: Placeholder(child: Text("\n\n\n\n\n\n\n"),),
-                    actions: [],
-                  );
+                showModalBottomSheet(
+                  context: context,
+                  showDragHandle: true,
+                  isScrollControlled: true,
+
+                  builder: (context) {
+                    return DraggableScrollableSheet(
+                        expand: false,
+                        snap: true,
+                        maxChildSize: 0.8,
+                        builder: (context, scrollController) {
+                          return Padding(
+                            padding: EdgeInsets.only(
+                              bottom: MediaQuery.of(context).viewInsets.bottom + 32,
+                              left: 16,
+                              right: 16,
+                            ),
+                            child: SingleChildScrollView(
+                              controller: scrollController,
+                              child: Column(
+                                mainAxisSize: MainAxisSize.max,
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  InfoCard("Diese Funktion befindet sich noch in Arbeit."),
+                                  Text("In welchem Jahr planst du, das Abitur zu machen?"),
+                                  for (int year in possibleGraduationYears())
+                                    ListTile(
+                                      title: Text("$year"),
+                                      onTap: () {
+                                        print("TODO (Jahr: $year)");
+                                        Navigator.of(context).pop();
+                                      },
+                                    ),
+                                ],
+                              ),
+                            ),
+                          );
+                        }
+                    );
+                    // return ManualTermNoteEnterSheet(subject: widget.subject, term: widget.term);
+                  },
+                ).then((value) {
+                  setState(() { });
                 });
               },
             ),
@@ -72,12 +111,49 @@ class _SettingsPageState extends State<SettingsPage> {
               leading: Icon(Icons.location_on),
               subtitle: Text(s.land.name),
               onTap: () {
-                showDialog(context: context, builder: (context) {
-                  return AlertDialog(
-                    title: Text("Bundesland wechseln"),
-                    content: Placeholder(child: Text("\n\n\n\n\n\n\n"),),
-                    actions: [],
-                  );
+                showModalBottomSheet(
+                  context: context,
+                  showDragHandle: true,
+                  isScrollControlled: true,
+
+                  builder: (context) {
+                    return DraggableScrollableSheet(
+                      expand: false,
+                      snap: true,
+                      maxChildSize: 0.8,
+                      builder: (context, scrollController) {
+                        return Padding(
+                          padding: EdgeInsets.only(
+                            bottom: MediaQuery.of(context).viewInsets.bottom + 32,
+                            left: 16,
+                            right: 16,
+                          ),
+                          child: SingleChildScrollView(
+                            controller: scrollController,
+                            child: Column(
+                              mainAxisSize: MainAxisSize.max,
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                InfoCard("Diese Funktion befindet sich noch in Arbeit."),
+                                Text("In welches Bundesland willst du wechseln?"),
+                                for (Land l in Land.values)
+                                  ListTile(
+                                    title: Text(l.name),
+                                    onTap: () {
+                                      print("TODO (Bundesland: ${l.name})");
+                                      Navigator.of(context).pop();
+                                    },
+                                  ),
+                              ],
+                            ),
+                          ),
+                        );
+                      }
+                    );
+                    // return ManualTermNoteEnterSheet(subject: widget.subject, term: widget.term);
+                  },
+                ).then((value) {
+                  setState(() { });
                 });
               },
             ),

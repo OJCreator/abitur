@@ -124,11 +124,11 @@ launcher_name:
 flutter_launcher_icons:
   android: true
   ios: false
-  image_path: "assets/icon.png"
-  adaptive_icon_foreground: "assets/icon.png" # Set the foreground image (same or different from image_path)
-  adaptive_icon_background: "#FFFFFF"
-  adaptive_icon_foreground_inset: 24
-  adaptive_icon_monochrome: "assets/icon.png"
+  image_path: "assets/icon2.png"
+  adaptive_icon_foreground: "assets/icon2.png" # Set the foreground image (same or different from image_path)
+  adaptive_icon_background: "#B3E9FE"
+  adaptive_icon_foreground_inset: 18
+  adaptive_icon_monochrome: "assets/icon2.png"
   remove_alpha_ios: true
   min_sdk_android: 21
 

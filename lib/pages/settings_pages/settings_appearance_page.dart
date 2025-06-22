@@ -56,6 +56,8 @@ class _SettingsAppearancePageState extends State<SettingsAppearancePage> {
               onTap: () async {
                 ThemeMode? newThemeMode = await showModalBottomSheet(
                   context: context,
+                  showDragHandle: true,
+                  isScrollControlled: true,
                   builder: (context) => ThemeModeSelectorSheet(currentThemeMode: s.themeMode,),
                 );
                 if (newThemeMode == null) {
@@ -83,18 +85,25 @@ class ThemeModeSelectorSheet extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
 
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: ThemeMode.values.map((mode) {
-        return RadioListTile<ThemeMode>(
-          title: Text(mode.label),
-          value: mode,
-          groupValue: currentThemeMode,
-          onChanged: (ThemeMode? selected) {
-            Navigator.pop(context, selected);
-          },
-        );
-      }).toList(),
+    return Padding(
+      padding: EdgeInsets.only(
+        bottom: MediaQuery.of(context).viewInsets.bottom + 16,
+        left: 8,
+        right: 8,
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: ThemeMode.values.map((mode) {
+          return RadioListTile<ThemeMode>(
+            title: Text(mode.label),
+            value: mode,
+            groupValue: currentThemeMode,
+            onChanged: (ThemeMode? selected) {
+              Navigator.pop(context, selected);
+            },
+          );
+        }).toList(),
+      ),
     );
   }
 }

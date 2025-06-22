@@ -4,7 +4,7 @@ import 'package:abitur/utils/pair.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 
-const Color primaryColor = Color(0xFF3C5C80);
+const Color primaryColor = Color(0xFF2B4769);
 const Color shimmerColor = Color(0x0D000000);
 
 
