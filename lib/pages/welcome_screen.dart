@@ -18,6 +18,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../storage/services/evaluation_date_service.dart';
+import '../storage/services/graduation_service.dart';
 import '../storage/services/subject_service.dart';
 
 class WelcomeScreen extends StatefulWidget {
@@ -112,6 +113,8 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
         print("Extracted EvaluationTypes from JSON.");
         await SettingsService.buildFromJson(jsonData["settings"] as Map<String, dynamic>);
         print("Extracted Settings from JSON.");
+        await GraduationService.buildFromJson((jsonData["graduationEvaluations"] as List).map((e) => e as Map<String, dynamic>).toList());
+        print("Extracted GraduationEvaluations from JSON.");
         await TimetableService.buildSettingsFromJson(jsonData["timetableSettings"] as Map<String, dynamic>);
         print("Extracted TimetableSettings from JSON.");
         await TimetableService.buildTimetableFromJson((jsonData["timetables"] as List).map((e) => e as Map<String, dynamic>).toList());

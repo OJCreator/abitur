@@ -1,6 +1,5 @@
 import 'package:abitur/pages/subject_pages/subject/subject_edit_graduation_evaluation_dialog.dart';
 import 'package:abitur/pages/subject_pages/subject_input_page.dart';
-import 'package:abitur/storage/entities/evaluation_date.dart';
 import 'package:abitur/storage/entities/performance.dart';
 import 'package:abitur/storage/services/evaluation_service.dart';
 import 'package:abitur/storage/services/graduation_service.dart';
@@ -18,6 +17,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../storage/entities/evaluation.dart';
+import '../../storage/entities/graduation/graduation_evaluation.dart';
 import '../../storage/entities/subject.dart';
 import '../../utils/brightness_notifier.dart';
 import '../../widgets/graduation_date_list_tile.dart';
@@ -37,7 +37,7 @@ class SubjectPage extends StatefulWidget {
 class _SubjectPageState extends State<SubjectPage> with SingleTickerProviderStateMixin {
 
   late Subject subject;
-  Evaluation? graduationEvaluation;
+  GraduationEvaluation? graduationEvaluation;
   bool giveGraduationNote = false;
 
   late TabController _tabController;
@@ -51,16 +51,16 @@ class _SubjectPageState extends State<SubjectPage> with SingleTickerProviderStat
     if (!subject.terms.contains(currentTerm)) {
       currentTerm = 0;
     }
-    if (widget.openGraduationPage && (SubjectService.isGraduationSubject(subject) || subject.subjectType == SubjectType.seminar)) {
+    if (widget.openGraduationPage && (GraduationService.isGraduationSubject(subject) || subject.subjectType == SubjectType.seminar)) {
       currentTerm = subject.terms.length;
     }
     _tabKeys = subject.terms.map((e) => GlobalKey<_TermViewState>()).toList();
     int tabLength = subject.terms.length;
-    if (SubjectService.isGraduationSubject(subject) || subject.subjectType == SubjectType.seminar) {
+    if (GraduationService.isGraduationSubject(subject) || subject.subjectType == SubjectType.seminar) {
       tabLength++;
       _tabKeys.add(GlobalKey<_TermViewState>());
-      graduationEvaluation = subject.graduationEvaluation;
-      giveGraduationNote = graduationEvaluation!.evaluationDates.first.note != null;
+      graduationEvaluation = GraduationService.findEvaluationBySubject(subject)!;
+      giveGraduationNote = graduationEvaluation!.notePartOne != null;
     }
     _tabController = TabController(length: tabLength, vsync: this, initialIndex: currentTerm);
     _tabController.addListener(() {
@@ -164,7 +164,7 @@ class _SubjectPageState extends State<SubjectPage> with SingleTickerProviderStat
                 Tab(
                   text: "${term + 1}. Halbjahr",
                 ),
-              if (SubjectService.isGraduationSubject(subject))
+              if (GraduationService.isGraduationSubject(subject))
                 Tab(
                   text: "Abitur",
                 ),
@@ -189,9 +189,6 @@ class _SubjectPageState extends State<SubjectPage> with SingleTickerProviderStat
                 subject: subject,
                 graduationEvaluation: graduationEvaluation!,
                 key: _tabKeys.last,
-                editEvaluationDate: (e) {
-                  _editGraduationWorkData(e);
-                },
               ),
           ],
         ),
@@ -203,21 +200,34 @@ class _SubjectPageState extends State<SubjectPage> with SingleTickerProviderStat
         ) : FloatingActionButton(
           child: Icon(Icons.edit),
           onPressed: () {
-            _editGraduationWorkData(graduationEvaluation!.evaluationDates.first);
+            _editGraduationWorkData(graduationEvaluation!);
           },
         ),
       ),
     );
   }
 
-  Future<void> _editGraduationWorkData(EvaluationDate e) async {
-    await showDialog(context: context, barrierDismissible: false, builder: (context) {
-      return SubjectEditGraduationEvaluationDialog(
-        graduationEvaluationDate: e,
-      );
+  Future<void> _editGraduationWorkData(GraduationEvaluation e) async {
+    showModalBottomSheet(
+      context: context,
+      showDragHandle: true,
+      isScrollControlled: true,
+      builder: (context) {
+        return SubjectEditGraduationEvaluationDialog(
+          graduationEvaluation: e,
+        );
+        // return ManualTermNoteEnterSheet(subject: widget.subject, term: widget.term);
+      },
+    ).then((value) {
+      setState(() { });
     });
-
-    setState(() {});
+    // await showDialog(context: context, barrierDismissible: false, builder: (context) {
+    //   return SubjectEditGraduationEvaluationDialog(
+    //     graduationEvaluation: e,
+    //   );
+    // });
+    //
+    // setState(() {});
   }
 }
 
@@ -339,16 +349,14 @@ class _TermViewState extends State<_TermView> {
       setState(() { });
     });
   }
-
 }
 
 class _GraduationWorkTermView extends StatefulWidget {
   
   final Subject subject;
-  final Evaluation graduationEvaluation;
-  final Function(EvaluationDate) editEvaluationDate;
+  final GraduationEvaluation graduationEvaluation;
   
-  const _GraduationWorkTermView({super.key, required this.subject, required this.graduationEvaluation, required this.editEvaluationDate});
+  const _GraduationWorkTermView({super.key, required this.subject, required this.graduationEvaluation});
 
   @override
   State<_GraduationWorkTermView> createState() => _GraduationWorkTermViewState();
@@ -367,46 +375,31 @@ class _GraduationWorkTermViewState extends State<_GraduationWorkTermView> {
               Padding(
                 padding: const EdgeInsets.all(8.0),
                 child: Center( // TODO Wichtig: sh. Tabelle https://km.baden-wuerttemberg.de/fileadmin/redaktion/m-km/intern/PDF/Publikationen/Gymnasium/2025_Leitfaden_fuer_die_gymnasiale_Oberstufe_Abitur_2027.pdf Seite 14, nicht erst runden und dann mal 4, sondern erst mal 4 und dann runden!
-                  child: PercentIndicator(value: EvaluationService.calculateNote(widget.graduationEvaluation)?.toDouble(), color: widget.subject.color),
+                  child: PercentIndicator(
+                    value: GraduationService.calculateNote(widget.graduationEvaluation)?.toDouble(),
+                    color: widget.subject.color,
+                    title: widget.graduationEvaluation.graduationEvaluationType.name,
+                  ),
                 ),
               ),
               FormGap(),
-              if (widget.graduationEvaluation.evaluationDates.length == 1)
+              if (!widget.graduationEvaluation.isDividedEvaluation)
                 DateInput(
-                  dateTime: widget.graduationEvaluation.evaluationDates.first.date,
+                  dateTime: widget.graduationEvaluation.datePartOne,
                 ),
-              if (widget.graduationEvaluation.evaluationDates.length > 1)
+              if (widget.graduationEvaluation.isDividedEvaluation)
                 ...[
-                  for (EvaluationDate e in widget.graduationEvaluation.evaluationDates)
-                    GraduationDateListTile(
-                      evaluationDate: e,
-                      onTap: () async {
-                        widget.editEvaluationDate(e);
-                        // await Navigator.push(
-                        //   context,
-                        //   MaterialPageRoute(builder: (context) {
-                        //     return EvaluationEditPage(evaluation: e);
-                        //   }),
-                        // );
-                        // _loadEvaluations();
-                        // TODO die einzelnen EvaluationDates bearbeiten
-                      },
-                    ),
+                  GraduationDateListTile(
+                    date: widget.graduationEvaluation.datePartOne,
+                    weight: widget.graduationEvaluation.weightPartOne,
+                    note: widget.graduationEvaluation.notePartOne,
+                  ),
+                  GraduationDateListTile(
+                    date: widget.graduationEvaluation.datePartTwo,
+                    weight: widget.graduationEvaluation.weightPartTwo,
+                    note: widget.graduationEvaluation.notePartTwo,
+                  ),
                 ],
-              FilledButton(
-                onPressed: () async {
-                  if (widget.graduationEvaluation.evaluationDates.length == 1) {
-                    print("Ho");
-                    await GraduationService.addSecondGraduationDate(widget.subject, 1, "Beschreibung");
-                  } else {
-                    await GraduationService.removeSecondGraduationDate(widget.subject);
-                  }
-                  setState(() {
-
-                  });
-                },
-                child: Text(widget.graduationEvaluation.evaluationDates.length > 1 ? "Ein Prüfungstermin" : "Zwei Prüfungstermine"),
-              ),
             ],
           ),
         ),

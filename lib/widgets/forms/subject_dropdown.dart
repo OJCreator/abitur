@@ -7,6 +7,7 @@ class SubjectDropdown extends StatelessWidget {
   final String label;
   final List<Subject?> subjects;
   final Subject? selectedSubject;
+  final bool enabled;
   final bool Function(Subject s)? disabled;
   final Function(Subject? s) onSelected;
 
@@ -14,6 +15,7 @@ class SubjectDropdown extends StatelessWidget {
     this.label = "Fach",
     required this.subjects,
     required this.selectedSubject,
+    this.enabled = true,
     required this.onSelected,
     this.disabled,
     super.key,
@@ -23,6 +25,7 @@ class SubjectDropdown extends StatelessWidget {
   Widget build(BuildContext context) {
     return DropdownMenu(
       initialSelection: selectedSubject,
+      enabled: enabled,
       expandedInsets: const EdgeInsets.all(0),
       label: Text(label),
       onSelected: (s) {

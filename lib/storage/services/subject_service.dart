@@ -8,7 +8,9 @@ import 'package:abitur/isolates/models/evaluation_dates/evaluation_dates_history
 import 'package:abitur/isolates/models/subject/subjects_model.dart';
 import 'package:abitur/isolates/serializer.dart';
 import 'package:abitur/isolates/subject_isolates.dart';
+import 'package:abitur/storage/entities/graduation/graduation_evaluation.dart';
 import 'package:abitur/storage/entities/subject_category.dart';
+import 'package:abitur/storage/services/graduation_service.dart';
 import 'package:abitur/storage/services/settings_service.dart';
 import 'package:abitur/storage/services/timetable_service.dart';
 import 'package:abitur/storage/storage.dart';
@@ -31,8 +33,12 @@ class SubjectService {
 
     List<Subject> existingSubjects = findAll();
     Land land = SettingsService.land;
-    if ([Land.bw, Land.by].contains(land) && subjectType == SubjectType.advanced && existingSubjects.countWhere((s) => s.subjectType == SubjectType.advanced) >= 3) {
+    int advancedSubjectAmount = existingSubjects.countWhere((s) => s.subjectType == SubjectType.advanced);
+    if ([Land.bw, Land.by, Land.rp, Land.sh, Land.th, Land.st, Land.hh].contains(land) && subjectType == SubjectType.advanced && advancedSubjectAmount >= 3) {
       throw InvalidFormException("Es gibt bereits 3 Fächer auf erhöhtem Anforderungsniveau. Du kannst keine weiteren hinzufügen.");
+    }
+    if ([Land.ni, Land.he, Land.sn, Land.be, Land.bb, Land.nw, Land.mv, Land.sl, Land.hb].contains(land) && subjectType == SubjectType.advanced && advancedSubjectAmount >= 2) {
+      throw InvalidFormException("Es gibt bereits 2 Fächer auf erhöhtem Anforderungsniveau. Du kannst keine weiteren hinzufügen.");
     }
 
     Subject s = Subject(
@@ -47,11 +53,8 @@ class SubjectService {
     );
     await Storage.saveSubject(s);
 
-    if (land == Land.bw && subjectType == SubjectType.advanced) {
-      setGraduationEvaluation(s);
-    }
     if (subjectType == SubjectType.seminar) {
-      setGraduationEvaluation(s, graduation: true);
+      await GraduationService.setGraduationEvaluation(s, GraduationEvaluationType.seminar);
     }
 
     return s;
@@ -61,8 +64,12 @@ class SubjectService {
 
     List<Subject> existingSubjects = findAll().where((s) => s != subject).toList();
     Land land = SettingsService.land;
-    if ([Land.bw, Land.by].contains(land) && subjectType == SubjectType.advanced && existingSubjects.countWhere((s) => s.subjectType == SubjectType.advanced) >= 3) {
+    int advancedSubjectAmount = existingSubjects.countWhere((s) => s.subjectType == SubjectType.advanced);
+    if ([Land.bw, Land.by, Land.rp, Land.sh, Land.th, Land.st, Land.hh].contains(land) && subjectType == SubjectType.advanced && advancedSubjectAmount >= 3) {
       throw InvalidFormException("Es gibt bereits 3 Fächer auf erhöhtem Anforderungsniveau. Du kannst keine weiteren hinzufügen.");
+    }
+    if ([Land.ni, Land.he, Land.sn, Land.be, Land.bb, Land.nw, Land.mv, Land.sl, Land.hb].contains(land) && subjectType == SubjectType.advanced && advancedSubjectAmount >= 2) {
+      throw InvalidFormException("Es gibt bereits 2 Fächer auf erhöhtem Anforderungsniveau. Du kannst keine weiteren hinzufügen.");
     }
 
     await PerformanceService.savePerformances(performances);
@@ -79,11 +86,8 @@ class SubjectService {
     subject.performances = performances;
     await Storage.saveSubject(subject);
 
-    if (land == Land.bw && subjectType == SubjectType.advanced) {
-      await setGraduationEvaluation(subject);
-    }
     if (subjectType == SubjectType.seminar) {
-      await setGraduationEvaluation(subject, graduation: true);
+      await GraduationService.setGraduationEvaluation(subject, GraduationEvaluationType.seminar);
     }
 
     return subject;
@@ -176,13 +180,13 @@ class SubjectService {
   }
 
   static double? getAverageByTerm(Subject s, int term) {
+    if (!s.terms.contains(term)) {
+      return null;
+    }
     if (s.manuallyEnteredTermNotes[term] != null) {
       return s.manuallyEnteredTermNotes[term]!.toDouble();
     }
     Iterable<Evaluation> evaluations = EvaluationService.findAllGradedBySubjectAndTerm(s, term);
-    if (!s.terms.contains(term)) {
-      return null;
-    }
     Map<Performance, Iterable<Evaluation>> performancesAndNotes = s.performances.mapWith((performance) {
       return evaluations.where((note) {
         return note.performance == performance;
@@ -196,51 +200,59 @@ class SubjectService {
     return average;
   }
 
-  static Future<void> setGraduationSubjects(List<Subject?> subjects) async {
-    if (subjects.contains(null)) {
-      throw Exception("Subjects dürfen nicht null sein!");
+  static Future<void> setGraduationSubjects(List<Subject?> subjectsWritten, List<Subject?> subjectsOral) async {
+    if (subjectsWritten.contains(null) || subjectsOral.contains(null)) {
+      throw InvalidFormException("Alle Prüfungen müssen belegt werden.");
     }
-    if (subjects.any((s) => s!.subjectType == SubjectType.seminar)) {
-      throw Exception("Subjects dürfen kein Seminarfach sein!");
+    final all = [
+      ...subjectsWritten,
+      ...subjectsOral
+    ].whereType<Subject>();
+    if (all.length != all.toSet().length) {
+      throw InvalidFormException("Du darfst kein Fach mehrfach wählen.");
     }
-    for (Subject subjectToRemove in graduationSubjects().where((s) => !subjects.contains(s))) {
-      if (subjectToRemove.subjectType != SubjectType.seminar) {
-        await setGraduationEvaluation(subjectToRemove, graduation: false);
-      }
+    if (all.any((s) => s.subjectType == SubjectType.seminar)) {
+      throw InvalidFormException("Subjects dürfen kein Seminarfach sein!");
     }
-    for (Subject? s in subjects) {
-      await setGraduationEvaluation(s!, graduation: true);
+    for (Subject subjectToRemove in GraduationService.graduationSubjects().where((s) => !all.contains(s))) {
+      await GraduationService.deleteGraduationEvaluation(subjectToRemove);
+    }
+    for (Subject? s in subjectsWritten) {
+      await GraduationService.setGraduationEvaluation(s!, GraduationEvaluationType.written);
+    }
+    for (Subject? s in subjectsOral) {
+      await GraduationService.setGraduationEvaluation(s!, GraduationEvaluationType.oral);
     }
   }
 
-  static Future<void> setGraduationEvaluation(Subject s, {bool graduation = true}) async {
-    if (!graduation && s.graduationEvaluation != null && s.subjectType != SubjectType.seminar) {
-      EvaluationService.deleteEvaluation(s.graduationEvaluation!);
-      s.graduationEvaluation = null;
-      Storage.saveSubject(s);
-    } else if (graduation && s.graduationEvaluation == null) {
-      Evaluation e = await EvaluationService.newGraduationEvaluation(s);
-      s.graduationEvaluation = e;
-      Storage.saveSubject(s);
-    }
-  }
+  // static Future<void> setGraduationEvaluation(Subject s, {bool graduation = true}) async {
+  //   if (!graduation && s.graduationEvaluation != null && s.subjectType != SubjectType.seminar) {
+  //     EvaluationService.deleteEvaluation(s.graduationEvaluation!);
+  //     s.graduationEvaluation = null;
+  //     Storage.saveSubject(s);
+  //   } else if (graduation && s.graduationEvaluation == null) {
+  //     Evaluation e = await EvaluationService.newGraduationEvaluation(s);
+  //     s.graduationEvaluation = e;
+  //     Storage.saveSubject(s);
+  //   }
+  // }
 
   static Future<void> manuallyEnterTermNote(Subject s, {required int term, required int? note}) async {
     s.manuallyEnteredTermNotes[term] = note;
     await Storage.saveSubject(s);
   }
 
-  static bool isGraduationSubject(Subject subject) {
-    return subject.graduationEvaluation != null && subject.subjectType != SubjectType.seminar;
-  }
-
-  static List<Subject> graduationSubjects() {
-    return findAll().where((s) => s.graduationEvaluation != null && s.subjectType != SubjectType.seminar).toList();
-  }
-
-  static List<Evaluation> graduationEvaluations() {
-    return graduationSubjects().map((s) => s.graduationEvaluation!).toList();
-  }
+  // static bool isGraduationSubject(Subject subject) {
+  //   return subject.graduationEvaluation != null && subject.subjectType != SubjectType.seminar;
+  // }
+  //
+  // static List<Subject> graduationSubjects() {
+  //   return findAll().where((s) => s.graduationEvaluation != null && s.subjectType != SubjectType.seminar).toList();
+  // }
+  //
+  // static List<Evaluation> graduationEvaluations() {
+  //   return graduationSubjects().map((s) => s.graduationEvaluation!).toList();
+  // }
 
   static Future<void> buildFromJson(List<Map<String, dynamic>> jsonData) async {
 

@@ -1,6 +1,11 @@
+import 'package:abitur/exceptions/invalid_form_input_exception.dart';
+import 'package:abitur/storage/entities/graduation/graduation_evaluation.dart';
+import 'package:abitur/storage/services/graduation_service.dart';
+import 'package:abitur/storage/services/settings_service.dart';
 import 'package:abitur/widgets/forms/subject_dropdown.dart';
 import 'package:flutter/material.dart';
 
+import '../../storage/entities/settings.dart';
 import '../../storage/entities/subject.dart';
 import '../../storage/services/subject_service.dart';
 import '../../widgets/forms/form_gap.dart';
@@ -14,14 +19,25 @@ class SubjectChoseGraduationPage extends StatefulWidget {
 
 class _SubjectChoseGraduationPageState extends State<SubjectChoseGraduationPage> {
 
-  late List<Subject?> _graduationSubjects;
+  late List<Subject?> _graduationSubjectsWritten;
+  late List<Subject?> _graduationSubjectsOral;
+  Subject? _fifthGraduationSubject;
+  late Land land;
+
+  bool includeFifthGraduationSubject = false;
 
   @override
   void initState() {
-    _graduationSubjects = SubjectService.graduationSubjects();
-    if (_graduationSubjects.length < 5) {
-      _graduationSubjects = [null, null, null, null, null];
+    land = SettingsService.land;
+    _graduationSubjectsWritten = GraduationService.graduationSubjectsFiltered(GraduationEvaluationType.written);
+    _graduationSubjectsWritten = List.generate(land.writtenAmount, (i) => _graduationSubjectsWritten.elementAtOrNull(i));
+
+    _graduationSubjectsOral = GraduationService.graduationSubjectsFiltered(GraduationEvaluationType.oral);
+    if (_graduationSubjectsOral.length > land.oralAmount && land.extraGraduationSubject) {
+      _fifthGraduationSubject = _graduationSubjectsOral.last;
+      includeFifthGraduationSubject = true;
     }
+    _graduationSubjectsOral = List.generate(land.oralAmount, (i) => _graduationSubjectsOral.elementAtOrNull(i));
     super.initState();
   }
 
@@ -43,63 +59,54 @@ class _SubjectChoseGraduationPageState extends State<SubjectChoseGraduationPage>
           child: Form(
             child: Column(
               children: [
-                _GraduationSubjectDropdown(
-                  label: "Schriftliches Abiturfach",
-                  subject: _graduationSubjects[0],
-                  onSelected: (s) {
-                    setState(() {
-                      _graduationSubjects[0] = s;
-                    });
-                  },
-                ),
+                if (land.extraGraduationSubject) ...[
+                  SwitchListTile(
+                    title: Text("Einbringung eines weiteren Prüfungsfaches"),
+                    value: includeFifthGraduationSubject,
+                    onChanged: (newValue) {
+                      setState(() {
+                        includeFifthGraduationSubject = newValue;
+                      });
+                    },
+                  ),
+                  FormGap(),
+                ],
 
-                FormGap(),
-
-                _GraduationSubjectDropdown(
-                  label: "Schriftliches Abiturfach",
-                  subject: _graduationSubjects[1],
-                  onSelected: (s) {
-                    setState(() {
-                      _graduationSubjects[1] = s;
-                    });
-                  },
-                ),
-
-                FormGap(),
-
-                _GraduationSubjectDropdown(
-                  label: "Schriftliches Abiturfach",
-                  subject: _graduationSubjects[2],
-                  onSelected: (s) {
-                    setState(() {
-                      _graduationSubjects[2] = s;
-                    });
-                  },
-                ),
-
-                FormGap(),
-
-                _GraduationSubjectDropdown(
-                  label: "Mündliches Abiturfach",
-                  subject: _graduationSubjects[3],
-                  onSelected: (s) {
-                    setState(() {
-                      _graduationSubjects[3] = s;
-                    });
-                  },
-                ),
-
-                FormGap(),
-
-                _GraduationSubjectDropdown(
-                  label: "Mündliches Abiturfach",
-                  subject: _graduationSubjects[4],
-                  onSelected: (s) {
-                    setState(() {
-                      _graduationSubjects[4] = s;
-                    });
-                  },
-                ),
+                for (int i = 0; i < land.writtenAmount; i++) ...[
+                  _GraduationSubjectDropdown(
+                    label: "Schriftliches Abiturfach",
+                    subject: _graduationSubjectsWritten[i],
+                    onSelected: (s) {
+                      setState(() {
+                        _graduationSubjectsWritten[i] = s;
+                      });
+                    },
+                  ),
+                  FormGap(),
+                ],
+                for (int i = 0; i < land.oralAmount; i++) ...[
+                  _GraduationSubjectDropdown(
+                    label: "Mündliches Abiturfach",
+                    subject: _graduationSubjectsOral[i],
+                    onSelected: (s) {
+                      setState(() {
+                        _graduationSubjectsOral[i] = s;
+                      });
+                    },
+                  ),
+                  FormGap(),
+                ],
+                if (includeFifthGraduationSubject)
+                  _GraduationSubjectDropdown(
+                    label: "Besondere Lernleistung",
+                    enabled: includeFifthGraduationSubject,
+                    subject: _fifthGraduationSubject,
+                    onSelected: (s) {
+                      setState(() {
+                        _fifthGraduationSubject = s;
+                      });
+                    },
+                  ),
               ],
             ),
           ),
@@ -107,30 +114,15 @@ class _SubjectChoseGraduationPageState extends State<SubjectChoseGraduationPage>
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () async {
-
-          if (_graduationSubjects.toSet().length < 5 || _graduationSubjects.contains(null)) {
-
-            showDialog(context: context, builder: (context) {
-              return AlertDialog(
-                title: Text("Ungültige Belegung"),
-                content: Text("Alle Prüfungen müssen belegt werden und du darfst kein Fach mehrfach wählen."),
-                actions: [
-                  TextButton(
-                    onPressed: () {
-                      Navigator.pop(context);
-                    },
-                    child: Text("Verstanden"),
-                  ),
-                ],
-              );
-            });
-
-            return;
+          List<Subject?> oral = _graduationSubjectsOral.toList();
+          if (includeFifthGraduationSubject) {
+            oral.add(_fifthGraduationSubject);
           }
 
-          await SubjectService.setGraduationSubjects(_graduationSubjects);
-
-          Navigator.pop(context);
+          trySubmittingForm(context, () async {
+            await SubjectService.setGraduationSubjects(_graduationSubjectsWritten, oral);
+            Navigator.pop(context);
+          });
         },
         label: Text("Speichern"),
         icon: Icon(Icons.save),
@@ -143,15 +135,17 @@ class _GraduationSubjectDropdown extends StatelessWidget {
 
   final String label;
   final Subject? subject;
-  final Function(Subject s) onSelected;
+  final bool enabled;
+  final Function(Subject? s) onSelected;
 
-  const _GraduationSubjectDropdown({required this.subject, required this.onSelected, required this.label});
+  const _GraduationSubjectDropdown({required this.subject, required this.onSelected, required this.label, this.enabled = true});
 
   @override
   Widget build(BuildContext context) {
     return SubjectDropdown(
       label: label,
       subjects: [null, ...SubjectService.findAllGradable()],
+      enabled: enabled,
       disabled: (s) {
         if (subject == s) {
           return false;
@@ -160,9 +154,6 @@ class _GraduationSubjectDropdown extends StatelessWidget {
       },
       selectedSubject: subject,
       onSelected: (s) {
-        if (s == null) {
-          return;
-        }
         onSelected(s);
       },
     );

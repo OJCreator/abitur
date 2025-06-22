@@ -6,8 +6,10 @@ import 'package:abitur/pages/settings_pages/settings_calendar_page.dart';
 import 'package:abitur/pages/settings_pages/settings_evaluation_types_page.dart';
 import 'package:abitur/pages/settings_pages/settings_notifications_page.dart';
 import 'package:abitur/storage/entities/evaluation_type.dart';
+import 'package:abitur/storage/entities/graduation/graduation_evaluation.dart';
 import 'package:abitur/storage/entities/timetable/timetable_entry.dart';
 import 'package:abitur/storage/services/evaluation_service.dart';
+import 'package:abitur/storage/services/graduation_service.dart';
 import 'package:abitur/storage/services/performance_service.dart';
 import 'package:abitur/storage/services/settings_service.dart';
 import 'package:abitur/storage/services/subject_category_service.dart';
@@ -158,16 +160,17 @@ class _SettingsPageState extends State<SettingsPage> {
     List<SubjectCategory> subjectCategories = SubjectCategoryService.findAll();
     List<Performance> performances = PerformanceService.findAll();
     Settings settings = SettingsService.loadSettings();
+    List<GraduationEvaluation> graduationEvaluations = GraduationService.findAllEvaluations();
     TimetableSettings timetableSettings = TimetableService.loadTimetableSettings();
     List<Timetable> timetables = TimetableService.loadTimetables();
     List<TimetableEntry> timetableEntries = TimetableService.loadTimetableEntries();
 
-    String jsonContent = exportDataToJson(subjects, subjectCategories, performances, evaluations, evaluationDates, evaluationTypes, settings, timetableSettings, timetables, timetableEntries);
+    String jsonContent = exportDataToJson(subjects, subjectCategories, performances, evaluations, evaluationDates, evaluationTypes, settings, graduationEvaluations, timetableSettings, timetables, timetableEntries);
     File f = await _saveToFile("abitur_data", jsonContent);
     Share.shareXFiles([XFile(f.path)], text: "Hier sind die Abitur-Daten!");
   }
 
-  String exportDataToJson(List<Subject> subjects, List<SubjectCategory> subjectCategories, List<Performance> performances, List<Evaluation> evaluations, List<EvaluationDate> evaluationDates, List<EvaluationType> evaluationTypes, Settings settings, TimetableSettings timetableSettings, List<Timetable> timetables, List<TimetableEntry> timetableEntries) {
+  String exportDataToJson(List<Subject> subjects, List<SubjectCategory> subjectCategories, List<Performance> performances, List<Evaluation> evaluations, List<EvaluationDate> evaluationDates, List<EvaluationType> evaluationTypes, Settings settings, List<GraduationEvaluation> graduationEvaluations, TimetableSettings timetableSettings, List<Timetable> timetables, List<TimetableEntry> timetableEntries) {
     final Map<String, dynamic> data = {
       "subjects": subjects.map((s) => s.toJson()).toList(),
       "subjectCategories": subjectCategories.map((s) => s.toJson()).toList(),
@@ -176,6 +179,7 @@ class _SettingsPageState extends State<SettingsPage> {
       "evaluationDates": evaluationDates.map((e) => e.toJson()).toList(),
       "evaluationTypes": evaluationTypes.map((e) => e.toJson()).toList(),
       "settings": settings.toJson(),
+      "graduationEvaluations": graduationEvaluations.map((e) => e.toJson()).toList(),
       "timetableSettings": timetableSettings.toJson(),
       "timetables": timetables.map((t) => t.toJson()).toList(),
       "timetableEntries": timetableEntries.map((t) => t.toJson()).toList(),

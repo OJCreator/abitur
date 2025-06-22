@@ -1,6 +1,7 @@
 import 'package:abitur/pages/subject_pages/subject_chose_graduation_page.dart';
 import 'package:abitur/pages/subject_pages/subject_input_page.dart';
 import 'package:abitur/pages/subject_pages/subject_page.dart';
+import 'package:abitur/storage/services/graduation_service.dart';
 import 'package:abitur/storage/services/settings_service.dart';
 import 'package:abitur/storage/services/subject_service.dart';
 import 'package:abitur/widgets/info_card.dart';
@@ -166,7 +167,7 @@ class SubjectListTile extends StatelessWidget {
       trailing: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          if (SubjectService.isGraduationSubject(subject)) GraduationBadge(),
+          if (GraduationService.isGraduationSubject(subject)) GraduationBadge(),
         ],
       ),
     );

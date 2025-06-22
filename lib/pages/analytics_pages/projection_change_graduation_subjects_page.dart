@@ -1,3 +1,4 @@
+import 'package:abitur/storage/services/graduation_service.dart';
 import 'package:flutter/material.dart';
 
 import '../../storage/entities/subject.dart';
@@ -19,7 +20,7 @@ class _ProjectionChangeGraduationSubjectsPageState extends State<ProjectionChang
 
   @override
   void initState() {
-    _graduationSubjects = SubjectService.graduationSubjects();
+    _graduationSubjects = GraduationService.graduationSubjects();
     if (_graduationSubjects.length < 5) {
       _graduationSubjects = [null, null, null, null, null];
     }
@@ -30,7 +31,7 @@ class _ProjectionChangeGraduationSubjectsPageState extends State<ProjectionChang
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("Abifächer wählen"),
+        title: Text("Abifächer wählen (DEPRECATED!!)"),
         leading: IconButton(
           icon: const Icon(Icons.close),
           onPressed: () {
@@ -129,7 +130,7 @@ class _ProjectionChangeGraduationSubjectsPageState extends State<ProjectionChang
             return;
           }
 
-          await SubjectService.setGraduationSubjects(_graduationSubjects);
+          await SubjectService.setGraduationSubjects(_graduationSubjects, _graduationSubjects);
 
           Navigator.pop(context);
         },

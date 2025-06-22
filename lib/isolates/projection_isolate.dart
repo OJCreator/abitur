@@ -3,6 +3,8 @@ import 'dart:math';
 import 'package:abitur/isolates/average_isolates.dart';
 import 'package:abitur/isolates/models/projection/evaluations_subjects_performances_evaluation_dates_model.dart';
 import 'package:abitur/isolates/models/projection/projection_model.dart';
+import 'package:abitur/storage/entities/graduation/graduation_evaluation.dart';
+import 'package:abitur/storage/services/graduation_service.dart';
 import 'package:abitur/utils/constants.dart';
 
 import '../storage/entities/evaluation.dart';
@@ -10,13 +12,24 @@ import '../storage/entities/evaluation_date.dart';
 import '../storage/entities/performance.dart';
 import '../storage/entities/settings.dart';
 import '../storage/entities/subject.dart';
-import '../utils/pair.dart';
 
 class ProjectionIsolate {
 
   static ProjectionModel calculateProjection(EvaluationsSubjectsPerformancesEvaluationDatesModel model) {
+    try {
+      return _calculateProjection(model);
+    } catch (e, st) {
+      print("ISOLATE ERROR (ProjectionIsolate): $e\n$st");
+      return ProjectionModel(6, 0, 0, {}, {});
+    }
+  }
+
+  static ProjectionModel _calculateProjection(EvaluationsSubjectsPerformancesEvaluationDatesModel model) {
 
     // Daten extrahieren
+    Map<String, GraduationEvaluation> graduationEvaluations = {
+      for (var e in model.graduationEvaluations) e['id']: GraduationEvaluation.fromJson(e),
+    };
     Map<String, Evaluation> evaluations = {
       for (var e in model.evaluations) e['id']: Evaluation.fromJson(e),
     };
@@ -42,8 +55,8 @@ class ProjectionIsolate {
     Map<String, int> defaultSubjectAverages = subjects.map((key, value) => MapEntry(key, _calculateSubjectAverage(subjects[key]!, evaluations, evaluationDates, performances) ?? defaultAverage));
 
 
-    final Map<String, List<ProjectionTermModel>> block1 = _resultBlock1(model.land, subjects, evaluations, evaluationDates, performances, defaultSubjectAverages);
-    final Map<String, ProjectionTermModel> block2 = _resultBlock2(model.land, subjects, evaluations, evaluationDates, defaultSubjectAverages);
+    final Map<String, List<ProjectionTermModel>> block1 = _resultBlock1(model.land, subjects, graduationEvaluations, evaluations, evaluationDates, performances, defaultSubjectAverages);
+    final Map<String, ProjectionTermModel> block2 = _resultBlock2(model.land, subjects, graduationEvaluations, defaultSubjectAverages);
 
     final int resultBlock1 = block1.values.expand((e) => e).where((model) => model.counting).toList().sumBy((model) => model.weight * (model.note ?? 0)).toInt();
     final int resultBlock2 = block2.values.where((model) => model.counting).toList().sumBy((model) => model.weight * (model.note ?? 0)).toInt();
@@ -53,7 +66,9 @@ class ProjectionIsolate {
     return result;
   }
 
-  static Map<String, List<ProjectionTermModel>> _resultBlock1(Land land, Map<String, Subject> subjects, Map<String, Evaluation> evaluations, Map<String, EvaluationDate> evaluationDates, Map<String, Performance> performances, Map<String, int> defaultSubjectAverages) {
+  static Map<String, List<ProjectionTermModel>> _resultBlock1(Land land, Map<String, Subject> subjects, Map<String, GraduationEvaluation> graduationEvaluations, Map<String, Evaluation> evaluations, Map<String, EvaluationDate> evaluationDates, Map<String, Performance> performances, Map<String, int> defaultSubjectAverages) {
+
+    // TODO Einbringungen für alle Bundesländer
 
     Map<String, Subject> normalSubjects = Map.fromEntries(subjects.entries.where((entry) => entry.value.subjectType != SubjectType.voluntary && entry.value.subjectType != SubjectType.seminar));
     Subject? seminarSubject = subjects.values.where((value) => value.subjectType == SubjectType.seminar).firstOrNull;
@@ -97,7 +112,7 @@ class ProjectionIsolate {
     // W-Seminar-Arbeit
     map[seminarSubject.id] = _buildModelsForSubject(land, seminarSubject, evaluations, evaluationDates, performances, defaultSubjectAverages[seminarSubject.id]!);
 
-    int? seminararbeitNote = evaluationDates[evaluations[seminarSubject.graduationEvaluationId]!.evaluationDateIds.first]!.note;
+    int? seminararbeitNote = roundNote(GraduationService.calculateNote(graduationEvaluations[seminarSubject.graduationEvaluationId]!));
     map[seminarSubject.id]![3] = ProjectionTermModel(
       seminararbeitNote ?? defaultSubjectAverages[seminarSubject.id]!,
       seminararbeitNote == null,
@@ -134,30 +149,38 @@ class ProjectionIsolate {
   }
 
 
-  static Map<String, ProjectionTermModel> _resultBlock2(Land land, Map<String, Subject> subjects, Map<String, Evaluation> evaluations, Map<String, EvaluationDate> evaluationDates, Map<String, int> defaultSubjectAverages) {
+  static Map<String, ProjectionTermModel> _resultBlock2(Land land, Map<String, Subject> subjects, Map<String, GraduationEvaluation> graduationEvaluations, Map<String, int> defaultSubjectAverages) {
 
     Iterable<Subject> graduationSubjects = subjects.values.where((s) => s.graduationEvaluationId != null && s.subjectType != SubjectType.seminar);
 
-    Iterable<Evaluation> graduationEvaluations = graduationSubjects.map((s) => evaluations[s.graduationEvaluationId]!);
+    Iterable<GraduationEvaluation> evals = graduationSubjects.map((s) => graduationEvaluations[s.graduationEvaluationId]!);
 
-    Iterable<MapEntry<String, ProjectionTermModel>> graduationModels = graduationEvaluations.map((e) => MapEntry(e.subjectId, _buildModelFromGraduationEvaluation(land, e, evaluationDates, defaultSubjectAverages[e.subjectId]!)));
+    Iterable<MapEntry<String, ProjectionTermModel>> graduationModels = evals.map((e) => MapEntry(e.subjectId, _buildModelFromGraduationEvaluation(land, e, defaultSubjectAverages[e.subjectId]!, evals.length)));
     return Map.fromEntries(graduationModels);
   }
-  static ProjectionTermModel _buildModelFromGraduationEvaluation(Land land, Evaluation evaluation, Map<String, EvaluationDate> evaluationDates, int defaultAverage) {
+  static ProjectionTermModel _buildModelFromGraduationEvaluation(Land land, GraduationEvaluation graduationEvaluation, int defaultAverage, int graduationEvaluationAmount) {
     int note = 0;
     bool projection = true;
-    int weight = 0;
+    int weight = (300 / 15 / graduationEvaluationAmount).toInt();
 
-    if (land == Land.by) {
-      weight = 4;
-      EvaluationDate e = evaluationDates[evaluation.evaluationDateIds.first]!;
-      if (e.note == null) {
-        note = defaultAverage;
+    double? calculatedNote = GraduationService.calculateNote(graduationEvaluation);
+    if (calculatedNote == null) {
+      note = defaultAverage;
+      projection = true;
+    } else {
+      note = roundNote(calculatedNote)!;
+      projection = false;
+    }
+
+    if (graduationEvaluation.isDividedEvaluation) {
+      if (calculatedNote == null) {
+        note = defaultAverage * weight;
         projection = true;
       } else {
-        note = e.note!;
+        note = (calculatedNote * weight).round();
         projection = false;
       }
+    weight = 1;
     }
 
     return ProjectionTermModel(note, projection, true, weight);

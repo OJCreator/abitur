@@ -194,7 +194,7 @@ class _ProjectionAnalyticsPageState extends State<ProjectionAnalyticsPage> {
                             background: dto.counting,
                             note: dto.noteString,
                             bold: !dto.projection,
-                            weight: 4,
+                            weight: dto.weight,
                           );
                         })
                       );

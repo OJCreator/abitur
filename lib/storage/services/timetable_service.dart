@@ -138,7 +138,7 @@ class TimetableService {
     Timetable t = loadTimetable(term);
     var firstHour = t.timetableEntryIds.elementAtOrNull(weekday-1)?.indexWhere((it) => it != null && loadTimetableEntry(it).subjectId == subject.id) ?? -1;
     String from = timetableSettings.times.elementAtOrNull(firstHour)?.split(" - ").first ?? "23:50";
-    DateFormat format = DateFormat("HH:mm");
+    DateFormat format = DateFormat("HH:mm"); // Todo manchmal um 2h verschoben
     return format.parse(from);
   }
 
@@ -147,7 +147,7 @@ class TimetableService {
     Timetable t = loadTimetable(term);
     var lastHour = t.timetableEntryIds.elementAtOrNull(weekday-1)?.lastIndexWhere((it) => it != null && loadTimetableEntry(it).subjectId == subject.id) ?? -1;
     String from = timetableSettings.times.elementAtOrNull(lastHour)?.split(" - ")[1] ?? "23:55";
-    DateFormat format = DateFormat("HH:mm");
+    DateFormat format = DateFormat("HH:mm"); // Todo manchmal um 2h verschoben
     return format.parse(from);
   }
 

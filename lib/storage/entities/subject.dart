@@ -3,14 +3,14 @@ import 'dart:ui';
 import 'package:abitur/isolates/serializer.dart';
 import 'package:abitur/storage/entities/performance.dart';
 import 'package:abitur/storage/entities/subject_category.dart';
+import 'package:abitur/storage/services/graduation_service.dart';
 import 'package:abitur/storage/services/performance_service.dart';
 import 'package:abitur/storage/services/subject_category_service.dart';
 import 'package:abitur/utils/constants.dart';
 import 'package:hive/hive.dart';
 
 import '../../utils/uuid.dart';
-import '../services/evaluation_service.dart';
-import 'evaluation.dart';
+import 'graduation/graduation_evaluation.dart';
 
 part 'subject.g.dart';
 
@@ -65,8 +65,8 @@ class Subject implements Serializable {
   @HiveField(10)
   String? _graduationEvaluationId;
   String? get graduationEvaluationId => _graduationEvaluationId;
-  Evaluation? get graduationEvaluation => _graduationEvaluationId == null ? null : EvaluationService.findById(_graduationEvaluationId!);
-  set graduationEvaluation(Evaluation? e) => _graduationEvaluationId = e?.id;
+  GraduationEvaluation? get graduationEvaluation => _graduationEvaluationId == null ? null : GraduationService.findEvaluationById(_graduationEvaluationId!);
+  set graduationEvaluation(GraduationEvaluation? e) => _graduationEvaluationId = e?.id;
 
   Subject({
     required this.name,
