@@ -105,7 +105,7 @@ class _EvaluationsPageState extends State<EvaluationsPage> {
               },
               calendarStyle: CalendarStyle(
                 holidayTextStyle: TextStyle(
-                  color: Theme.of(context).colorScheme.primary
+                  color: Theme.of(context).colorScheme.primary,
                 ),
                 holidayDecoration: BoxDecoration(
                   border: Border.fromBorderSide(

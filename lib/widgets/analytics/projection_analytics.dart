@@ -49,6 +49,7 @@ class _ProjectionAnalyticsState extends State<ProjectionAnalytics> {
 
           GestureDetector(
             onTap: () async {
+              Feedback.forTap(context);
               await Navigator.push(
                 context,
                 MaterialPageRoute(builder: (context) {

@@ -34,6 +34,7 @@ class _TimetableAnalyticsState extends State<TimetableAnalytics> {
           const SizedBox(height: 8),
           GestureDetector(
             onTap: () async {
+              Feedback.forTap(context);
               await Navigator.of(context).push(
                 MaterialPageRoute(builder: (context) {
                   return TimetablePage();
