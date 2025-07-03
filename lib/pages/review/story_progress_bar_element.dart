@@ -4,6 +4,7 @@ class StoryProgressBarElement extends StatefulWidget {
   final int index;
   final int currentStory;
   final Duration duration;
+  final bool isPaused;
   final Function()? onFinishedStory;
 
   const StoryProgressBarElement({
@@ -11,6 +12,7 @@ class StoryProgressBarElement extends StatefulWidget {
     required this.index,
     required this.currentStory,
     required this.duration,
+    required this.isPaused,
     this.onFinishedStory,
   });
 
@@ -42,10 +44,23 @@ class _StoryProgressBarElementState extends State<StoryProgressBarElement> with 
   @override
   void didUpdateWidget(covariant StoryProgressBarElement oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (widget.index == widget.currentStory && !_controller.isAnimating) {
-      _controller.forward(from: 0);
+    if (widget.index == widget.currentStory) {
+      if (oldWidget.currentStory != widget.currentStory) {
+        if (!widget.isPaused) {
+          _controller.forward(from: 0);
+        } else {
+          _controller.value = 0;
+          _controller.stop();
+        }
+      } else {
+        if (widget.isPaused && _controller.isAnimating) {
+          _controller.stop();
+        } else if (!widget.isPaused && !_controller.isAnimating) {
+          _controller.forward();
+        }
+      }
     } else {
-      _controller.stop();
+      if (_controller.isAnimating) _controller.stop();
     }
   }
 

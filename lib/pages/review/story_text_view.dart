@@ -73,15 +73,18 @@ class _StoryTextViewState extends State<StoryTextView> with TickerProviderStateM
 
   Future<void> startAnimation() async {
     await Future.delayed(widget.delay);
+    if (!mounted) return;
     await _slideInController.forward();
 
     await Future.delayed(Duration(seconds: 2));
+    if (!mounted) return;
     _offsetController.forward();
     setState(() {
       showSubtitle = true;
     });
 
     await Future.delayed(Duration(seconds: 3));
+    if (!mounted) return;
     await _slideOutController.forward();
   }
 

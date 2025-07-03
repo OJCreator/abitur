@@ -56,6 +56,7 @@ class _ReviewPageOverlayState extends State<ReviewPageOverlay> {
                   index: index,
                   currentStory: _currentStoryIndex,
                   duration: widget.storyDurations[index],
+                  isPaused: _pause,
                   onFinishedStory: _nextStory,
                 ),
               ),

@@ -60,6 +60,7 @@ dependencies:
 
   # review
   animated_flip_counter: ^0.3.4
+  just_audio: ^0.10.4
 
 dev_dependencies:
   flutter_test:
@@ -91,6 +92,7 @@ flutter:
   assets:
     - assets/icon.png
     - assets/icon2.png
+    - assets/mp3/embrace-364091.mp3
   #   - images/a_dot_ham.jpeg
 
   # An image asset can refer to one or more resolution-specific "variants", see
