@@ -43,6 +43,13 @@ class _ReviewPageOverlayState extends State<ReviewPageOverlay> {
     widget.onChangeStory(_currentStoryIndex);
   }
 
+  void _setPause(bool pause) {
+    setState(() {
+      _pause = pause;
+    });
+    widget.onChangePause(pause);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -70,10 +77,7 @@ class _ReviewPageOverlayState extends State<ReviewPageOverlay> {
             children: [
               IconButton.filledTonal(
                 onPressed: () {
-                  setState(() {
-                    _pause = !_pause;
-                  });
-                  widget.onChangePause(_pause);
+                  _setPause(!_pause);
                 },
                 icon: Icon(_pause ? Icons.play_arrow : Icons.pause),
               ),
@@ -101,6 +105,8 @@ class _ReviewPageOverlayState extends State<ReviewPageOverlay> {
               Expanded(
                 child: GestureDetector(
                   onTap: _lastStory,
+                  onLongPressStart: (_) => _setPause(true),
+                  onLongPressEnd: (_) => _setPause(false),
                   child: Container(
                     color: Colors.transparent,
                   ),
@@ -109,6 +115,8 @@ class _ReviewPageOverlayState extends State<ReviewPageOverlay> {
               Expanded(
                 child: GestureDetector(
                   onTap: _nextStory,
+                  onLongPressStart: (_) => _setPause(true),
+                  onLongPressEnd: (_) => _setPause(false),
                   child: Container(
                     color: Colors.transparent,
                   ),

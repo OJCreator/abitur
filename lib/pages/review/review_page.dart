@@ -1,8 +1,8 @@
-import 'package:abitur/pages/review/review_days.dart';
 import 'package:abitur/pages/review/review_evaluation_types.dart';
-import 'package:abitur/pages/review/review_figures.dart';
-import 'package:abitur/pages/review/review_notes.dart';
 import 'package:abitur/pages/review/review_page_overlay.dart';
+import 'package:abitur/pages/review/stories/average_story.dart';
+import 'package:abitur/pages/review/stories/evaluations_story.dart';
+import 'package:abitur/pages/review/stories/subjects_story.dart';
 import 'package:abitur/pages/review/stories/welcome_story.dart';
 import 'package:flutter/material.dart';
 import 'package:just_audio/just_audio.dart';
@@ -20,17 +20,17 @@ class _ReviewPageState extends State<ReviewPage> {
 
   final List<Widget> stories = [
     WelcomeStory(),
-    ReviewFigures(),
-    ReviewNotes(),
+    SubjectsStory(),
+    EvaluationsStory(),
+    AverageStory(),
     ReviewEvaluationTypes(),
-    ReviewDays(),
   ];
   List<Duration> storyDurations = [
     Duration(seconds: 13),
-    Duration(seconds: 5),
-    Duration(seconds: 5),
-    Duration(seconds: 5),
-    Duration(seconds: 5),
+    Duration(seconds: 15),
+    Duration(seconds: 16),
+    Duration(seconds: 16),
+    Duration(seconds: 8),
   ];
   int _currentStoryIndex = 0;
   bool _pause = false;

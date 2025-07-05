@@ -1,6 +1,6 @@
 import 'package:flutter/cupertino.dart';
 
-import '../story_text_view.dart';
+import '../story_widgets/story_text_view.dart';
 
 class WelcomeStory extends StatelessWidget {
   const WelcomeStory({super.key});
