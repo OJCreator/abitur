@@ -30,6 +30,7 @@ class _ReviewPageOverlayState extends State<ReviewPageOverlay> {
       _currentStoryIndex--;
     });
     widget.onChangeStory(_currentStoryIndex);
+    _setPause(false);
   }
 
   void _nextStory() {
@@ -41,6 +42,7 @@ class _ReviewPageOverlayState extends State<ReviewPageOverlay> {
       _currentStoryIndex++;
     });
     widget.onChangeStory(_currentStoryIndex);
+    _setPause(false);
   }
 
   void _setPause(bool pause) {

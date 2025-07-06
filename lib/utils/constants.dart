@@ -21,6 +21,26 @@ extension ListExtension<T> on List<T> {
     return getRange(0, maxSize).toList();
   }
 }
+extension MaxIndexExtension on List<num> {
+  int indexOfMax() {
+    if (isEmpty) {
+      throw StateError(
+          "Kann den Index des Maximums nicht bestimmen, Liste ist leer.");
+    }
+
+    int maxIndex = 0;
+    num maxValue = this[0];
+
+    for (int i = 1; i < length; i++) {
+      if (this[i] > maxValue) {
+        maxValue = this[i];
+        maxIndex = i;
+      }
+    }
+
+    return maxIndex;
+  }
+}
 extension ThemeModeExtension on ThemeMode {
   String get label {
     switch(this) {
@@ -92,7 +112,24 @@ extension IntExtension on int {
       default: return "Sonntag";
     }
   }
+  String monthShort() {
+    switch (this) {
+      case 1: return "Jan";
+      case 2: return "Feb";
+      case 3: return "Mär";
+      case 4: return "Apr";
+      case 5: return "Mai";
+      case 6: return "Jun";
+      case 7: return "Jul";
+      case 8: return "Aug";
+      case 9: return "Sep";
+      case 10: return "Okt";
+      case 11: return "Nov";
+      default: return "Dez";
+    }
+  }
 }
+
 
 double? avg(Iterable<int?> values) {
   Iterable<int> v = values.where((i) => i != null).cast<int>();

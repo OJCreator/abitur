@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../delayed_animation_controller.dart';
+
 class RankingElement {
   final String title;
   final String subtitle;
@@ -21,18 +23,14 @@ class StoryRankingView extends StatefulWidget {
   });
 
   @override
-  State<StoryRankingView> createState() => _StoryRankingViewState();
+  State<StoryRankingView> createState() => StoryRankingViewState();
 }
 
-class _StoryRankingViewState extends State<StoryRankingView> with TickerProviderStateMixin {
-  late AnimationController _slideInController;
-  late Animation<Offset> _slideInAnimation;
-
-  late AnimationController _offsetController;
-  late Animation<double> _offsetAnimation;
-
-  late AnimationController _slideOutController;
-  late Animation<Offset> _slideOutAnimation;
+class StoryRankingViewState extends State<StoryRankingView> with TickerProviderStateMixin {
+  late DelayedAnimationController<Offset> _slideInController;
+  late DelayedAnimationController<double> _offsetController;
+  late List<DelayedAnimationController<double>> _openRankingControllers;
+  late DelayedAnimationController<Offset> _slideOutController;
 
   bool showRanking = false;
 
@@ -40,66 +38,79 @@ class _StoryRankingViewState extends State<StoryRankingView> with TickerProvider
   void initState() {
     super.initState();
 
-    _slideInController = AnimationController(
+    _slideInController = DelayedAnimationController(
       vsync: this,
-      duration: Duration(milliseconds: 500),
-    );
-    _slideInAnimation = Tween<Offset>(
       begin: Offset(1.5, 0.0),
       end: Offset.zero,
-    ).animate(CurvedAnimation(
-      parent: _slideInController,
+      delay: widget.delay,
+      duration: Duration(milliseconds: 500),
       curve: Curves.easeOut,
-    ));
-
-    _offsetController = AnimationController(
-      vsync: this,
-      duration: Duration(milliseconds: 300),
     );
-    _offsetAnimation = Tween<double>(
+
+    _offsetController = DelayedAnimationController(
+      vsync: this,
       begin: 0,
       end: -10,
-    ).animate(CurvedAnimation(
-      parent: _offsetController,
+      delay: widget.delay + Duration(seconds: 2),
+      duration: Duration(milliseconds: 300),
       curve: Curves.easeOut,
-    ));
-
-    _slideOutController = AnimationController(
-      vsync: this,
-      duration: Duration(milliseconds: 500),
     );
-    _slideOutAnimation = Tween<Offset>(
+
+    _openRankingControllers = List.generate(5, (i) {
+      return DelayedAnimationController(
+        vsync: this,
+        begin: 0,
+        end: 1,
+        delay: widget.delay + Duration(seconds: 2, milliseconds: 400*i),
+        duration: Duration(seconds: 1),
+        curve: Curves.easeOut,
+      );
+    });
+
+    _slideOutController = DelayedAnimationController(
+      vsync: this,
       begin: Offset.zero,
       end: Offset(-1.5, 0.0),
-    ).animate(CurvedAnimation(
-      parent: _slideOutController,
+      delay: widget.delay + Duration(seconds: 7),
+      duration: Duration(milliseconds: 500),
       curve: Curves.easeIn,
-    ));
+    );
 
     startAnimation();
   }
 
   Future<void> startAnimation() async {
-    await Future.delayed(widget.delay);
-    if (!mounted) return;
-    await _slideInController.forward();
-
-    await Future.delayed(Duration(seconds: 2));
-    if (!mounted) return;
-    _offsetController.forward();
-    setState(() {
-      showRanking = true;
-    });
-
-    await Future.delayed(Duration(seconds: 5));
-    if (!mounted) return;
-    await _slideOutController.forward();
+    _slideInController.start();
+    _offsetController.start();
+    for (final c in _openRankingControllers) {
+      c.start();
+    }
+    _slideOutController.start();
+  }
+  void pause() async {
+    _slideInController.pause();
+    _offsetController.pause();
+    for (final c in _openRankingControllers) {
+      c.pause();
+    }
+    _slideOutController.pause();
+  }
+  void resume() async {
+    _slideInController.resume();
+    _offsetController.resume();
+    for (final c in _openRankingControllers) {
+      c.resume();
+    }
+    _slideOutController.resume();
   }
 
   @override
   void dispose() {
     _slideInController.dispose();
     _offsetController.dispose();
+    for (final c in _openRankingControllers) {
+      c.dispose();
+    }
     _slideOutController.dispose();
     super.dispose();
   }
@@ -108,44 +119,39 @@ class _StoryRankingViewState extends State<StoryRankingView> with TickerProvider
   Widget build(BuildContext context) {
     return Center(
       child: SlideTransition(
-        position: _slideOutAnimation,
+        position: _slideOutController.animation,
         child: SlideTransition(
-          position: _slideInAnimation,
+          position: _slideInController.animation,
           child: AnimatedBuilder(
-            animation: _offsetController,
+            animation: _offsetController.animation,
             builder: (context, child) {
               return Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Transform.translate(
-                    offset: Offset(0, _offsetAnimation.value),
+                    offset: Offset(0, _offsetController.animation.value),
                     child: Text(
                       widget.title,
                       textAlign: TextAlign.center,
                       style: Theme.of(context).textTheme.headlineLarge?.copyWith(fontSize: 36),
                     ),
                   ),
-                  AnimatedOpacity(
-                    opacity: showRanking ? 1 : 0,
-                    duration: Duration(milliseconds: 500),
-                    child: Padding(
-                      padding: const EdgeInsets.only(top: 16),
-                      child: Column(
-                        children: widget.ranking.asMap().entries.map((entry) {
-                          final index = entry.key;
-                          final r = entry.value;
-                          return AnimatedSlide(
-                            offset: showRanking ? Offset.zero : Offset(0, 0.2 + index * 0.05),
-                            duration: Duration(milliseconds: 400 + index * 100),
-                            curve: Curves.easeOut,
+                  for (int i = 0; i < 5; i++)
+                    AnimatedBuilder(
+                      animation: _openRankingControllers[i].animation,
+                      builder: (context, child) {
+                        return Opacity(
+                          opacity: _openRankingControllers[i].animation.value,
+                          child: Transform.translate(
+                            offset: Offset(0, _openRankingControllers[i].animation.value * -00),
                             child: Padding(
                               padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 16),
                               child: Container(
                                 decoration: BoxDecoration(
                                   gradient: LinearGradient(
                                     colors: [
-                                      r.color.withAlpha(204),
-                                      r.color.withAlpha(128),
+                                      widget.ranking[i].color.withAlpha(204),
+                                      widget.ranking[i].color.withAlpha(128),
                                     ],
                                     begin: Alignment.topLeft,
                                     end: Alignment.bottomRight,
@@ -165,7 +171,7 @@ class _StoryRankingViewState extends State<StoryRankingView> with TickerProvider
                                       width: 50,
                                       alignment: Alignment.center,
                                       child: Text(
-                                        "${index + 1}",
+                                        "${i + 1}",
                                         style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                                           fontWeight: FontWeight.bold,
                                           color: Colors.white,
@@ -179,16 +185,16 @@ class _StoryRankingViewState extends State<StoryRankingView> with TickerProvider
                                           crossAxisAlignment: CrossAxisAlignment.start,
                                           children: [
                                             Text(
-                                              r.title,
+                                              widget.ranking[i].title,
                                               style: Theme.of(context).textTheme.titleLarge?.copyWith(
                                                 color: Colors.white,
                                                 fontSize: 20,
                                                 fontWeight: FontWeight.w600,
                                               ),
                                             ),
-                                            SizedBox(height: 4),
+                                            const SizedBox(height: 4),
                                             Text(
-                                              r.subtitle,
+                                              widget.ranking[i].subtitle,
                                               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                                                 color: Colors.white70,
                                               ),
@@ -201,11 +207,10 @@ class _StoryRankingViewState extends State<StoryRankingView> with TickerProvider
                                 ),
                               ),
                             ),
-                          );
-                        }).toList(),
-                      ),
+                          ),
+                        );
+                      },
                     ),
-                  ),
                 ],
               );
             },

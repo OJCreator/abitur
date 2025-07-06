@@ -1,6 +1,8 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 
+import '../delayed_animation_controller.dart';
+
 class StoryGraphView extends StatefulWidget {
   final String title;
   final Duration delay;
@@ -20,85 +22,86 @@ class StoryGraphView extends StatefulWidget {
   });
 
   @override
-  State<StoryGraphView> createState() => _StoryGraphViewState();
+  State<StoryGraphView> createState() => StoryGraphViewState();
 }
 
-class _StoryGraphViewState extends State<StoryGraphView> with TickerProviderStateMixin {
-  late AnimationController _slideInController;
-  late Animation<Offset> _slideInAnimation;
+class StoryGraphViewState extends State<StoryGraphView> with TickerProviderStateMixin {
 
-  late AnimationController _offsetController;
-  late Animation<double> _offsetAnimation;
-
-  late AnimationController _slideOutController;
-  late Animation<Offset> _slideOutAnimation;
-
-  bool showSubtitle = false;
+  late DelayedAnimationController<Offset> _slideInController;
+  late DelayedAnimationController<double> _offsetController;
+  late DelayedAnimationController<double> _graphOpacityController;
+  late DelayedAnimationController<Offset> _slideOutController;
 
   @override
   void initState() {
     super.initState();
 
-    _slideInController = AnimationController(
+    _slideInController = DelayedAnimationController(
       vsync: this,
-      duration: Duration(milliseconds: 500),
-    );
-    _slideInAnimation = Tween<Offset>(
       begin: Offset(1.5, 0.0),
       end: Offset.zero,
-    ).animate(CurvedAnimation(
-      parent: _slideInController,
+      delay: widget.delay,
+      duration: Duration(milliseconds: 500),
       curve: Curves.easeOut,
-    ));
-
-    _offsetController = AnimationController(
-      vsync: this,
-      duration: Duration(milliseconds: 300),
     );
-    _offsetAnimation = Tween<double>(
+
+    _offsetController = DelayedAnimationController(
+      vsync: this,
       begin: 0,
       end: -10,
-    ).animate(CurvedAnimation(
-      parent: _offsetController,
+      delay: widget.delay + Duration(seconds: 2),
+      duration: Duration(milliseconds: 300),
       curve: Curves.easeOut,
-    ));
-
-    _slideOutController = AnimationController(
-      vsync: this,
-      duration: Duration(milliseconds: 500),
     );
-    _slideOutAnimation = Tween<Offset>(
+
+    _graphOpacityController = DelayedAnimationController(
+      vsync: this,
+      begin: 0,
+      end: 1,
+      delay: widget.delay + Duration(seconds: 2),
+      duration: Duration(milliseconds: 150),
+      curve: Curves.easeOut,
+    );
+
+    _slideOutController = DelayedAnimationController(
+      vsync: this,
       begin: Offset.zero,
       end: Offset(-1.5, 0.0),
-    ).animate(CurvedAnimation(
-      parent: _slideOutController,
+      delay: widget.delay + Duration(seconds: 7),
+      duration: Duration(milliseconds: 500),
       curve: Curves.easeIn,
-    ));
+    );
 
     startAnimation();
   }
 
+
   Future<void> startAnimation() async {
-    await Future.delayed(widget.delay);
-    if (!mounted) return;
-    await _slideInController.forward();
+    _slideInController.start();
+    _offsetController.start();
+    _graphOpacityController.start();
+    _slideOutController.start();
+  }
 
-    await Future.delayed(Duration(seconds: 2));
-    if (!mounted) return;
-    _offsetController.forward();
-    setState(() {
-      showSubtitle = true;
-    });
+  Future<void> pause() async {
+    _slideInController.pause();
+    _offsetController.pause();
+    _graphOpacityController.pause();
+    _slideOutController.pause();
+  }
 
-    await Future.delayed(Duration(seconds: 5));
-    if (!mounted) return;
-    await _slideOutController.forward();
+  Future<void> resume() async {
+    _slideInController.resume();
+    _offsetController.resume();
+    _graphOpacityController.resume();
+    _slideOutController.resume();
   }
 
   @override
   void dispose() {
     _slideInController.dispose();
     _offsetController.dispose();
+    _graphOpacityController.dispose();
     _slideOutController.dispose();
     super.dispose();
   }
@@ -107,35 +110,39 @@ class _StoryGraphViewState extends State<StoryGraphView> with TickerProviderStat
   Widget build(BuildContext context) {
     return Center(
       child: SlideTransition(
-        position: _slideOutAnimation,
+        position: _slideOutController.animation,
         child: SlideTransition(
-          position: _slideInAnimation,
+          position: _slideInController.animation,
           child: AnimatedBuilder(
-            animation: _offsetController,
+            animation: _offsetController.animation,
             builder: (context, child) {
               return Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Transform.translate(
-                    offset: Offset(0, _offsetAnimation.value),
+                    offset: Offset(0, _offsetController.animation.value),
                     child: Text(
                       widget.title,
                       textAlign: TextAlign.center,
                       style: Theme.of(context).textTheme.headlineLarge,
                     ),
                   ),
-                  AnimatedOpacity(
-                    opacity: showSubtitle ? 1 : 0,
-                    duration: Duration(milliseconds: 500),
-                    child: Padding(
-                      padding: const EdgeInsets.only(top: 8),
-                      child: _StoryGraphViewGraph(
-                        widget.data,
-                        widget.xAxisTitle,
-                        widget.yAxisTitle,
-                        widget.xValues
-                      ),
-                    ),
+                  AnimatedBuilder(
+                    animation: _graphOpacityController.animation,
+                    builder: (context, child) {
+                      return Opacity(
+                        opacity: _graphOpacityController.animation.value,
+                        child: Padding(
+                          padding: const EdgeInsets.only(top: 8),
+                          child: _StoryGraphViewGraph(
+                              widget.data,
+                              widget.xAxisTitle,
+                              widget.yAxisTitle,
+                              widget.xValues
+                          ),
+                        ),
+                      );
+                    },
                   ),
                 ],
               );
@@ -171,7 +178,7 @@ class _StoryGraphViewGraph extends StatelessWidget {
 
             titlesData: FlTitlesData(
               bottomTitles: AxisTitles(
-                axisNameWidget: Text(yAxisTitle),
+                axisNameWidget: xAxisTitle == null ? null : Text(xAxisTitle!),
                 axisNameSize: 24,
                 sideTitles: SideTitles(
                   showTitles: true,
@@ -193,9 +200,9 @@ class _StoryGraphViewGraph extends StatelessWidget {
                 ),
               ),
               leftTitles: AxisTitles(
-                axisNameWidget: xAxisTitle == null ? null : Padding(
+                axisNameWidget: Padding(
                   padding: const EdgeInsets.only(right: 6),
-                  child: Text(xAxisTitle!),
+                  child: Text(yAxisTitle),
                 ),
                 axisNameSize: 24,
                 sideTitles: SideTitles(

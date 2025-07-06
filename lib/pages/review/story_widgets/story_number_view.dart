@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:vibration/vibration.dart';
 
+import '../delayed_animation_controller.dart';
+
 class StoryNumberView extends StatefulWidget {
   final int number;
   final String title;
@@ -16,198 +18,113 @@ class StoryNumberView extends StatefulWidget {
   });
 
   @override
-  State<StoryNumberView> createState() => _StoryNumberViewState();
+  State<StoryNumberView> createState() => StoryNumberViewState();
 }
 
-class _StoryNumberViewState extends State<StoryNumberView> with TickerProviderStateMixin {
+class StoryNumberViewState extends State<StoryNumberView> with TickerProviderStateMixin {
+  late DelayedAnimationController<double> _numberController;
+  late DelayedAnimationController<double> _titleOpacityController;
+  late DelayedAnimationController<double> _offsetController;
+  late DelayedAnimationController<double> _subtitleOpacityController;
+  late DelayedAnimationController<Offset> _slideOutController;
 
-  late AnimationController _offsetController;
-  late Animation<double> _offsetAnimation;
-
-  late AnimationController _slideOutController;
-  late Animation<Offset> _slideOutAnimation;
-
-  bool showTitle = false;
-  bool showSubtitle = false;
-
-  @override
-  void initState() {
-    super.initState();
-
-    _offsetController = AnimationController(
-      vsync: this,
-      duration: Duration(milliseconds: 300),
-    );
-    _offsetAnimation = Tween<double>(
-      begin: 0,
-      end: -10,
-    ).animate(CurvedAnimation(
-      parent: _offsetController,
-      curve: Curves.easeOut,
-    ));
-
-    _slideOutController = AnimationController(
-      vsync: this,
-      duration: Duration(milliseconds: 500),
-    );
-    _slideOutAnimation = Tween<Offset>(
-      begin: Offset.zero,
-      end: Offset(-1.5, 0.0),
-    ).animate(CurvedAnimation(
-      parent: _slideOutController,
-      curve: Curves.easeIn,
-    ));
-
-    startAnimation();
-  }
-
-  Future<void> startAnimation() async {
-
-    await Future.delayed(widget.delay);
-
-    await Future.delayed(Duration(seconds: 1)); // hochzählen (nur halb)
-    if (!mounted) return;
-    setState(() {
-      showTitle = true;
-    });
-
-    await Future.delayed(Duration(seconds: 2));
-    if (!mounted) return;
-    _offsetController.forward();
-    setState(() {
-      showSubtitle = true;
-    });
-
-    await Future.delayed(Duration(seconds: 3));
-    if (!mounted) return;
-    await _slideOutController.forward();
-  }
-
-  @override
-  void dispose() {
-    _offsetController.dispose();
-    _slideOutController.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-
-    return Center(
-      child: SlideTransition(
-        position: _slideOutAnimation,
-        child: AnimatedBuilder(
-          animation: _offsetController,
-          builder: (context, child) {
-            return Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Transform.translate(
-                  offset: Offset(0, _offsetAnimation.value),
-                  child: Column(
-                    children: [
-                      VibratingAnimatedNumber(
-                        targetNumber: widget.number,
-                        delay: widget.delay,
-                      ),
-                      AnimatedOpacity(
-                        opacity: showTitle ? 1 : 0,
-                        duration: Duration(milliseconds: 500),
-                        child: Text(
-                          widget.title,
-                          textAlign: TextAlign.center,
-                          style: Theme.of(context).textTheme.headlineLarge,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                AnimatedOpacity(
-                  opacity: showSubtitle ? 1 : 0,
-                  duration: Duration(milliseconds: 500),
-                  child: Padding(
-                    padding: const EdgeInsets.only(top: 8),
-                    child: Text(
-                      widget.subtitle,
-                      textAlign: TextAlign.center,
-                      style: Theme.of(context).textTheme.bodyMedium,
-                    ),
-                  ),
-                ),
-              ],
-            );
-          },
-        ),
-      ),
-    );
-  }
-}
-
-class VibratingAnimatedNumber extends StatefulWidget {
-  final int targetNumber;
-  final Duration delay;
-
-  const VibratingAnimatedNumber({required this.targetNumber, super.key, required this.delay});
-
-  @override
-  State<VibratingAnimatedNumber> createState() => _VibratingAnimatedNumberState();
-}
-
-class _VibratingAnimatedNumberState extends State<VibratingAnimatedNumber> with SingleTickerProviderStateMixin {
-  late final AnimationController _controller;
-  late final Animation<double> _animation;
   int? _currentValue;
 
   @override
   void initState() {
     super.initState();
-    _startAnimation();
-  }
-  Future<void> _startAnimation() async {
-    await Future.delayed(widget.delay);
 
-    double startValue = widget.targetNumber * 0.7;
-    if (widget.targetNumber > 100) {
-      startValue = widget.targetNumber - 30;
+    double startValue = widget.number * 0.7;
+    if (widget.number > 100) {
+      startValue = widget.number - 30;
     }
-    if (widget.targetNumber < 23) {
-      startValue = widget.targetNumber - 7;
+    if (widget.number < 23) {
+      startValue = widget.number - 7;
     }
-    if (widget.targetNumber < 7) {
+    if (widget.number < 7) {
       startValue = 0;
     }
 
-    setState(() {
-      _currentValue = startValue.toInt();
-    });
-
-    _controller = AnimationController(
+    _numberController = DelayedAnimationController(
       vsync: this,
-      duration: const Duration(seconds: 2),
+      begin: startValue,
+      end: widget.number.toDouble(),
+      delay: widget.delay,
+      duration: Duration(seconds: 3),
+      curve: Curves.decelerate,
     );
 
-    final curve = CurvedAnimation(parent: _controller, curve: Curves.easeOutCubic);
+    _titleOpacityController = DelayedAnimationController(
+      vsync: this,
+      begin: 0,
+      end: 1,
+      delay: widget.delay + Duration(seconds: 2),
+      duration: Duration(milliseconds: 500),
+      curve: Curves.easeOut,
+    );
 
-    _animation = Tween<double>(begin: startValue, end: widget.targetNumber.toDouble()).animate(curve)
-      ..addListener(() {
-        int newValue = _animation.value.toInt();
-        if (newValue != _currentValue) {
-          _currentValue = newValue;
-          // Vibrieren bei jedem Wertwechsel ganz leicht
-          _vibrateLight();
+    _offsetController = DelayedAnimationController(
+      vsync: this,
+      begin: 0,
+      end: -10,
+      delay: widget.delay + Duration(seconds: 4),
+      duration: Duration(milliseconds: 300),
+      curve: Curves.easeOut,
+    );
 
-          setState(() {}); // Update Text
-        }
-      });
+    _subtitleOpacityController = DelayedAnimationController(
+      vsync: this,
+      begin: 0,
+      end: 1,
+      delay: widget.delay + Duration(seconds: 4),
+      duration: Duration(milliseconds: 150),
+      curve: Curves.easeOut,
+    );
 
-    _controller.addStatusListener((status) {
-      if (status == AnimationStatus.completed) {
-        // Am Ende stärkere Vibration
-        _vibrateStrong();
-      }
-    });
+    _slideOutController = DelayedAnimationController(
+      vsync: this,
+      begin: Offset.zero,
+      end: Offset(-1.5, 0.0),
+      delay: widget.delay + Duration(seconds: 7),
+      duration: Duration(milliseconds: 500),
+      curve: Curves.easeIn,
+    );
 
-    _controller.forward();
+    startAnimation();
+  }
+
+  Future<void> startAnimation() async {
+    _numberController.start();
+    _titleOpacityController.start();
+    _offsetController.start();
+    _subtitleOpacityController.start();
+    _slideOutController.start();
+  }
+
+  Future<void> pause() async {
+    _numberController.pause();
+    _titleOpacityController.pause();
+    _offsetController.pause();
+    _subtitleOpacityController.pause();
+    _slideOutController.pause();
+  }
+
+  Future<void> resume() async {
+    _numberController.resume();
+    _titleOpacityController.resume();
+    _offsetController.resume();
+    _subtitleOpacityController.resume();
+    _slideOutController.resume();
+  }
+
+  @override
+  void dispose() {
+    _numberController.dispose();
+    _titleOpacityController.dispose();
+    _offsetController.dispose();
+    _subtitleOpacityController.dispose();
+    _slideOutController.dispose();
+    super.dispose();
   }
 
   Future<void> _vibrateLight() async {
@@ -223,16 +140,75 @@ class _VibratingAnimatedNumberState extends State<VibratingAnimatedNumber> with 
   }
 
   @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
-    return _currentValue == null ? Container() : Text(
-      _currentValue.toString(),
-      style: Theme.of(context).textTheme.displayLarge,
+    return Center(
+      child: SlideTransition(
+        position: _slideOutController.animation,
+        child: AnimatedBuilder(
+          animation: _offsetController.animation,
+          builder: (context, child) {
+            return Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Transform.translate(
+                  offset: Offset(0, _offsetController.animation.value),
+                  child: Column(
+                    children: [
+                      AnimatedBuilder(
+                        animation: _numberController.animation,
+                        builder: (context, child) {
+                          int newValue = _numberController.animation.value.toInt();
+                          if (newValue != _currentValue) {
+                            _currentValue = newValue;
+                            if (newValue == widget.number) {
+                              _vibrateStrong();
+                            } else {
+                              _vibrateLight();
+                            }
+                          }
+                          return (_numberController.animation.isAnimating || _numberController.animation.isCompleted) ? Text(
+                            newValue.toString(),
+                            style: Theme.of(context).textTheme.displayLarge,
+                          ) : Container();
+                        },
+                      ),
+                      AnimatedBuilder(
+                        animation: _titleOpacityController.animation,
+                        builder: (context, child) {
+                          return Opacity(
+                            opacity: _titleOpacityController.animation.value,
+                            child: Text(
+                              widget.title,
+                              textAlign: TextAlign.center,
+                              style: Theme.of(context).textTheme.headlineLarge,
+                            ),
+                          );
+                        },
+                      ),
+                    ],
+                  ),
+                ),
+                AnimatedBuilder(
+                  animation: _subtitleOpacityController.animation,
+                  builder: (context, child) {
+                    return Opacity(
+                      opacity: _subtitleOpacityController.animation.value,
+                      child: Padding(
+                        padding: const EdgeInsets.only(top: 8),
+                        child: Text(
+                          widget.subtitle,
+                          textAlign: TextAlign.center,
+                          style: Theme.of(context).textTheme.bodyMedium,
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ],
+            );
+          },
+        ),
+      ),
     );
   }
 }

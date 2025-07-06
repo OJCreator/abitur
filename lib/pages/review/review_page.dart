@@ -2,6 +2,7 @@ import 'package:abitur/pages/review/review_evaluation_types.dart';
 import 'package:abitur/pages/review/review_page_overlay.dart';
 import 'package:abitur/pages/review/stories/average_story.dart';
 import 'package:abitur/pages/review/stories/evaluations_story.dart';
+import 'package:abitur/pages/review/stories/story.dart';
 import 'package:abitur/pages/review/stories/subjects_story.dart';
 import 'package:abitur/pages/review/stories/welcome_story.dart';
 import 'package:flutter/material.dart';
@@ -18,19 +19,12 @@ class _ReviewPageState extends State<ReviewPage> {
 
   late AudioPlayer _audioPlayer;
 
-  final List<Widget> stories = [
+  final List<Story> stories = [
     WelcomeStory(),
     SubjectsStory(),
     EvaluationsStory(),
     AverageStory(),
-    ReviewEvaluationTypes(),
-  ];
-  List<Duration> storyDurations = [
-    Duration(seconds: 13),
-    Duration(seconds: 15),
-    Duration(seconds: 16),
-    Duration(seconds: 16),
-    Duration(seconds: 8),
+    //ReviewEvaluationTypes(),
   ];
   int _currentStoryIndex = 0;
   bool _pause = false;
@@ -55,10 +49,10 @@ class _ReviewPageState extends State<ReviewPage> {
     super.dispose();
   }
   void _seekAudioToStory(int storyIndex) {
-    if (storyIndex < 0 || storyIndex >= storyDurations.length) return;
+    if (storyIndex < 0 || storyIndex >= stories.length) return;
     Duration d = Duration();
     for (int i = 0; i < storyIndex; i++) {
-      d = d + storyDurations[i];
+      d = d + stories[i].getDuration();
     }
     if ((_audioPlayer.position - d).abs().compareTo(Duration(seconds: 1)) < 0) return; // es ist nur ein ganz kleiner Unterschied
     _audioPlayer.seek(d);
@@ -73,11 +67,11 @@ class _ReviewPageState extends State<ReviewPage> {
     if (pause) {
       // pause
       _audioPlayer.pause();
-      // todo pause story
+      stories[_currentStoryIndex].pause();
     } else {
       // resume
       _audioPlayer.play();
-      // todo resume story
+      stories[_currentStoryIndex].resume();
     }
   }
 
@@ -103,7 +97,7 @@ class _ReviewPageState extends State<ReviewPage> {
           ),
           SafeArea(
             child: ReviewPageOverlay(
-              storyDurations: storyDurations,
+              storyDurations: stories.map((s) => s.getDuration()).toList(),
               onChangePause: onPause,
               onChangeMusic: onMusic,
               onChangeStory: (int storyIndex) {
