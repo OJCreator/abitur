@@ -108,13 +108,19 @@ class StoryNumberViewState extends State<StoryNumberView> with TickerProviderSta
     _subtitleOpacityController.pause();
     _slideOutController.pause();
   }
-
   Future<void> resume() async {
     _numberController.resume();
     _titleOpacityController.resume();
     _offsetController.resume();
     _subtitleOpacityController.resume();
     _slideOutController.resume();
+  }
+  Future<void> restart() async {
+    _numberController.restart();
+    _titleOpacityController.restart();
+    _offsetController.restart();
+    _subtitleOpacityController.restart();
+    _slideOutController.restart();
   }
 
   @override

@@ -19,18 +19,30 @@ class _ReviewPageOverlayState extends State<ReviewPageOverlay> {
   bool _pause = false;
   bool _music = true;
 
+  final List<GlobalKey<StoryProgressBarElementState>> _storyKeys = [];
   int _currentStoryIndex = 0;
+
+  @override
+  void initState() {
+    for (Duration _ in widget.storyDurations) {
+      _storyKeys.add(GlobalKey());
+    }
+    super.initState();
+  }
 
   void _lastStory() {
     // todo an den Anfang zurückspringen, wenn man in der ersten halben Sekunde ist, eine Story zurückspringen
+    int newStoryIndex;
     if (_currentStoryIndex <= 0) {
-      return;
+      newStoryIndex = 0;
+    } else {
+      if (_storyKeys[_currentStoryIndex].currentState?.beenActiveForLessThanOneSecond() ?? true) {
+        newStoryIndex = _currentStoryIndex - 1;
+      } else {
+        newStoryIndex = _currentStoryIndex;
+      }
     }
-    setState(() {
-      _currentStoryIndex--;
-    });
-    widget.onChangeStory(_currentStoryIndex);
-    _setPause(false);
+    _changeStory(newStoryIndex);
   }
 
   void _nextStory() {
@@ -38,11 +50,16 @@ class _ReviewPageOverlayState extends State<ReviewPageOverlay> {
     if (_currentStoryIndex >= widget.storyDurations.length - 1) {
       return;
     }
+    _changeStory(_currentStoryIndex+1);
+  }
+
+  void _changeStory(int newStoryIndex) {
     setState(() {
-      _currentStoryIndex++;
+      _currentStoryIndex = newStoryIndex;
     });
     widget.onChangeStory(_currentStoryIndex);
     _setPause(false);
+    _storyKeys[_currentStoryIndex].currentState?.restart();
   }
 
   void _setPause(bool pause) {
@@ -62,6 +79,7 @@ class _ReviewPageOverlayState extends State<ReviewPageOverlay> {
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 2),
                 child: StoryProgressBarElement(
+                  key: _storyKeys[index],
                   index: index,
                   currentStory: _currentStoryIndex,
                   duration: widget.storyDurations[index],

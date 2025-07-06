@@ -34,6 +34,12 @@ class SubjectsStory extends StatelessWidget implements Story {
   }
 
   @override
+  void restart() {
+    key1.currentState?.restart();
+    key2.currentState?.restart();
+  }
+
+  @override
   Widget build(BuildContext context) {
     List<Pair<Subject, double>> subjectAvgs = [];
     for (Subject s in subjects) {

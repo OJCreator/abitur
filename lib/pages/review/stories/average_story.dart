@@ -41,6 +41,13 @@ class AverageStory extends StatelessWidget implements Story {
     key3.currentState?.resume();
   }
 
+  @override
+  void restart() {
+    key1.currentState?.restart();
+    key2.currentState?.restart();
+    key3.currentState?.restart();
+  }
+
   int _getMonthIndex(int identifier, DateTime startMonth) {
     final idYear = identifier ~/ 1000;
     final idMonth = identifier % 1000;

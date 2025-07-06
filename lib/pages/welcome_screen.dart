@@ -11,6 +11,7 @@ import 'package:abitur/storage/services/performance_service.dart';
 import 'package:abitur/storage/services/settings_service.dart';
 import 'package:abitur/storage/services/subject_category_service.dart';
 import 'package:abitur/storage/services/timetable_service.dart';
+import 'package:abitur/storage/storage.dart';
 import 'package:abitur/utils/brightness_notifier.dart';
 import 'package:abitur/utils/seed_notifier.dart';
 import 'package:file_picker/file_picker.dart';
@@ -127,6 +128,8 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
         NotificationService.scheduleAllNotifications();
 
         SettingsService.markWelcomeScreenAsViewed();
+
+        Storage.initialValues();
 
         // Theming
         Provider.of<BrightnessNotifier>(context, listen: false,).setThemeMode(SettingsService.loadSettings().themeMode);

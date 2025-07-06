@@ -89,12 +89,17 @@ class StoryGraphViewState extends State<StoryGraphView> with TickerProviderState
     _graphOpacityController.pause();
     _slideOutController.pause();
   }
-
   Future<void> resume() async {
     _slideInController.resume();
     _offsetController.resume();
     _graphOpacityController.resume();
     _slideOutController.resume();
+  }
+  Future<void> restart() async {
+    _slideInController.restart();
+    _offsetController.restart();
+    _graphOpacityController.restart();
+    _slideOutController.restart();
   }
 
   @override

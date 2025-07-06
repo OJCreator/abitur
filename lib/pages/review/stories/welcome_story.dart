@@ -28,6 +28,12 @@ class WelcomeStory extends StatelessWidget implements Story {
   }
 
   @override
+  void restart() {
+    key1.currentState?.restart();
+    key2.currentState?.restart();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Stack(
       children: [

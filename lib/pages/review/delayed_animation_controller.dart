@@ -33,7 +33,6 @@ class DelayedAnimationController<T> {
   void start() {
     if (_isStarted || _isDisposed) return;
 
-
     animationController = AnimationController(
       vsync: vsync,
       duration: duration,
@@ -56,6 +55,7 @@ class DelayedAnimationController<T> {
     if (_isDisposed) return;
     _delayStartTime = DateTime.now();
     _delayTimer = Timer(duration, () {
+      if (_isDisposed) return;
       _delayTimer = null;
       _elapsedDelay += delay;
       animationController.forward();
@@ -95,6 +95,20 @@ class DelayedAnimationController<T> {
       _startDelayTimer(remainingDelay);
     }
   }
+  void restart() {
+    if (!_isStarted || _isDisposed) return;
+
+    _delayTimer?.cancel();
+    _delayTimer = null;
+
+    _elapsedDelay = Duration.zero;
+    _delayStartTime = null;
+    _isPaused = false;
+
+    animationController.reset();
+    _startDelayTimer(delay);
+  }
+
 
   void dispose() {
     _isDisposed = true;

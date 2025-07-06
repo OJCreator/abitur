@@ -103,6 +103,14 @@ class StoryRankingViewState extends State<StoryRankingView> with TickerProviderS
     }
     _slideOutController.resume();
   }
+  void restart() async {
+    _slideInController.restart();
+    _offsetController.restart();
+    for (final c in _openRankingControllers) {
+      c.restart();
+    }
+    _slideOutController.restart();
+  }
 
   @override
   void dispose() {

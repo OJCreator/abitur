@@ -1,4 +1,3 @@
-import 'package:abitur/pages/review/review_evaluation_types.dart';
 import 'package:abitur/pages/review/review_page_overlay.dart';
 import 'package:abitur/pages/review/stories/average_story.dart';
 import 'package:abitur/pages/review/stories/evaluations_story.dart';
@@ -104,6 +103,7 @@ class _ReviewPageState extends State<ReviewPage> {
                 setState(() {
                   _currentStoryIndex = storyIndex;
                 });
+                stories[_currentStoryIndex].restart();
                 _seekAudioToStory(storyIndex);
               },
             ),

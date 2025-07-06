@@ -7,4 +7,5 @@ abstract class Story extends Widget {
   Duration getDuration();
   void pause();
   void resume();
+  void restart();
 }

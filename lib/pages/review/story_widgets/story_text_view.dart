@@ -84,6 +84,12 @@ class StoryTextViewState extends State<StoryTextView> with TickerProviderStateMi
     _subtitleOpacityController.resume();
     _slideOutController.resume();
   }
+  void restart() async {
+    _slideInController.restart();
+    _offsetController.restart();
+    _subtitleOpacityController.restart();
+    _slideOutController.restart();
+  }
 
   @override
   void dispose() {

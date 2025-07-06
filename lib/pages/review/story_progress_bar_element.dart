@@ -17,10 +17,10 @@ class StoryProgressBarElement extends StatefulWidget {
   });
 
   @override
-  State<StoryProgressBarElement> createState() => _StoryProgressBarElementState();
+  State<StoryProgressBarElement> createState() => StoryProgressBarElementState();
 }
 
-class _StoryProgressBarElementState extends State<StoryProgressBarElement> with SingleTickerProviderStateMixin {
+class StoryProgressBarElementState extends State<StoryProgressBarElement> with SingleTickerProviderStateMixin {
 
   late AnimationController _controller;
 
@@ -39,6 +39,14 @@ class _StoryProgressBarElementState extends State<StoryProgressBarElement> with 
     if (widget.index == widget.currentStory) {
       _controller.forward();
     }
+  }
+  void restart() {
+    _controller.forward(from: 0);
+  }
+
+  bool beenActiveForLessThanOneSecond() {
+    final elapsed = _controller.value * widget.duration.inMilliseconds;
+    return elapsed < 1000;
   }
 
   @override
