@@ -259,7 +259,6 @@ class SubjectService {
     for (Subject s in findAll()) {
       await deleteSubject(s);
     }
-    print("Hias");
     List<Subject> subjects = jsonData.map((e) => Subject.fromJson(e)).toList();
     for (Subject s in subjects) {
       await Storage.saveSubject(s);

@@ -14,7 +14,7 @@ class AverageStory extends StatelessWidget implements Story {
   final List<Subject> subjects = SubjectService.findAll();
 
   late final List<double> dayAverages = List.generate(5, (_) => 0);
-  late final List<double> monthAverages = List.generate(24, (_) => 0);
+  late final List<double?> monthAverages = List.generate(24, (_) => null);
 
   final GlobalKey<StoryNumberViewState> key1 = GlobalKey();
   final GlobalKey<StoryGraphViewState> key2 = GlobalKey();
@@ -72,7 +72,7 @@ class AverageStory extends StatelessWidget implements Story {
         dayAverages[day-1] = sum / notes.length;
       }
     });
-    final groupedEvaluationDatesByMonth = evaluationDates.where((e) => e.date != null).toList().groupBy((e) => (e.date!.year % 100) * 1000 + e.date!.month); // yyMM
+    final groupedEvaluationDatesByMonth = evaluationDates.where((e) => e.date != null && e.note != null).toList().groupBy((e) => (e.date!.year % 100) * 1000 + e.date!.month); // yyMM
     final startMonth = SettingsService.firstDayOfSchool;
     groupedEvaluationDatesByMonth.forEach((identifier, evaluationDates) {
       final notes = evaluationDates.map((e) => e.note).where((note) => note != null);

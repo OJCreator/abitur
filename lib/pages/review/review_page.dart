@@ -1,3 +1,4 @@
+import 'package:abitur/pages/review/review_final_export_page.dart';
 import 'package:abitur/pages/review/review_page_overlay.dart';
 import 'package:abitur/pages/review/stories/average_story.dart';
 import 'package:abitur/pages/review/stories/evaluations_story.dart';
@@ -6,6 +7,7 @@ import 'package:abitur/pages/review/stories/subjects_story.dart';
 import 'package:abitur/pages/review/stories/welcome_story.dart';
 import 'package:flutter/material.dart';
 import 'package:just_audio/just_audio.dart';
+import 'package:wakelock_plus/wakelock_plus.dart';
 
 class ReviewPage extends StatefulWidget {
   const ReviewPage({super.key});
@@ -23,7 +25,6 @@ class _ReviewPageState extends State<ReviewPage> {
     SubjectsStory(),
     EvaluationsStory(),
     AverageStory(),
-    //ReviewEvaluationTypes(),
   ];
   int _currentStoryIndex = 0;
   bool _pause = false;
@@ -33,6 +34,7 @@ class _ReviewPageState extends State<ReviewPage> {
     super.initState();
     _audioPlayer = AudioPlayer();
     _loadAudio();
+    WakelockPlus.enable();
   }
   Future<void> _loadAudio() async {
     try {
@@ -45,10 +47,11 @@ class _ReviewPageState extends State<ReviewPage> {
   @override
   void dispose() {
     _audioPlayer.dispose();
+    WakelockPlus.disable();
     super.dispose();
   }
   void _seekAudioToStory(int storyIndex) {
-    if (storyIndex < 0 || storyIndex >= stories.length) return;
+    if (storyIndex < 0 || storyIndex > stories.length) return;
     Duration d = Duration();
     for (int i = 0; i < storyIndex; i++) {
       d = d + stories[i].getDuration();
@@ -66,11 +69,15 @@ class _ReviewPageState extends State<ReviewPage> {
     if (pause) {
       // pause
       _audioPlayer.pause();
-      stories[_currentStoryIndex].pause();
+      if (_currentStoryIndex < stories.length) {
+        stories[_currentStoryIndex].pause();
+      }
     } else {
       // resume
       _audioPlayer.play();
-      stories[_currentStoryIndex].resume();
+      if (_currentStoryIndex < stories.length) {
+        stories[_currentStoryIndex].resume();
+      }
     }
   }
 
@@ -88,12 +95,17 @@ class _ReviewPageState extends State<ReviewPage> {
       body: Stack(
         children: [
           // todo background
-          SafeArea(
-            child: Padding(
-              padding: const EdgeInsets.only(top: 80),
-              child: stories[_currentStoryIndex],
+          if (_currentStoryIndex < stories.length)
+            SafeArea(
+              child: Padding(
+                padding: const EdgeInsets.only(top: 80),
+                child: stories[_currentStoryIndex],
+              ),
             ),
-          ),
+          if (_currentStoryIndex == stories.length)
+            SafeArea(
+              child: ReviewFinalExportPage(),
+            ),
           SafeArea(
             child: ReviewPageOverlay(
               storyDurations: stories.map((s) => s.getDuration()).toList(),
@@ -103,8 +115,10 @@ class _ReviewPageState extends State<ReviewPage> {
                 setState(() {
                   _currentStoryIndex = storyIndex;
                 });
-                stories[_currentStoryIndex].restart();
                 _seekAudioToStory(storyIndex);
+                if (_currentStoryIndex < stories.length) {
+                  stories[_currentStoryIndex].restart();
+                }
               },
             ),
           ),

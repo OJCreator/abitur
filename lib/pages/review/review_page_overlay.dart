@@ -31,7 +31,6 @@ class _ReviewPageOverlayState extends State<ReviewPageOverlay> {
   }
 
   void _lastStory() {
-    // todo an den Anfang zurückspringen, wenn man in der ersten halben Sekunde ist, eine Story zurückspringen
     int newStoryIndex;
     if (_currentStoryIndex <= 0) {
       newStoryIndex = 0;
@@ -47,9 +46,10 @@ class _ReviewPageOverlayState extends State<ReviewPageOverlay> {
 
   void _nextStory() {
     // todo ganz am Ende auf so eine Übersichtsseite springen
-    if (_currentStoryIndex >= widget.storyDurations.length - 1) {
+    if (_currentStoryIndex >= widget.storyDurations.length) {
       return;
     }
+    print("Next: ");
     _changeStory(_currentStoryIndex+1);
   }
 
@@ -59,7 +59,9 @@ class _ReviewPageOverlayState extends State<ReviewPageOverlay> {
     });
     widget.onChangeStory(_currentStoryIndex);
     _setPause(false);
-    _storyKeys[_currentStoryIndex].currentState?.restart();
+    if (_currentStoryIndex < widget.storyDurations.length) {
+      _storyKeys[_currentStoryIndex].currentState?.restart();
+    }
   }
 
   void _setPause(bool pause) {
@@ -95,12 +97,21 @@ class _ReviewPageOverlayState extends State<ReviewPageOverlay> {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.end,
             children: [
-              IconButton.filledTonal(
-                onPressed: () {
-                  _setPause(!_pause);
-                },
-                icon: Icon(_pause ? Icons.play_arrow : Icons.pause),
-              ),
+              if (_currentStoryIndex < widget.storyDurations.length)
+                IconButton.filledTonal(
+                  onPressed: () {
+                    _setPause(!_pause);
+                  },
+                  icon: Icon(_pause ? Icons.play_arrow : Icons.pause),
+                ),
+              if (_currentStoryIndex == widget.storyDurations.length)
+                FilledButton.tonalIcon(
+                  onPressed: () {
+                    _changeStory(0);
+                  },
+                  icon: Icon(Icons.replay),
+                  label: Text("Replay"),
+                ),
               IconButton.filledTonal(
                 onPressed: () {
                   setState(() {
@@ -119,32 +130,33 @@ class _ReviewPageOverlayState extends State<ReviewPageOverlay> {
             ],
           ),
         ),
-        Expanded(
-          child: Row(
-            children: [
-              Expanded(
-                child: GestureDetector(
-                  onTap: _lastStory,
-                  onLongPressStart: (_) => _setPause(true),
-                  onLongPressEnd: (_) => _setPause(false),
-                  child: Container(
-                    color: Colors.transparent,
+        if (_currentStoryIndex < widget.storyDurations.length)
+          Expanded(
+            child: Row(
+              children: [
+                Expanded(
+                  child: GestureDetector(
+                    onTap: _lastStory,
+                    onLongPressStart: (_) => _setPause(true),
+                    onLongPressEnd: (_) => _setPause(false),
+                    child: Container(
+                      color: Colors.transparent,
+                    ),
                   ),
                 ),
-              ),
-              Expanded(
-                child: GestureDetector(
-                  onTap: _nextStory,
-                  onLongPressStart: (_) => _setPause(true),
-                  onLongPressEnd: (_) => _setPause(false),
-                  child: Container(
-                    color: Colors.transparent,
+                Expanded(
+                  child: GestureDetector(
+                    onTap: _nextStory,
+                    onLongPressStart: (_) => _setPause(true),
+                    onLongPressEnd: (_) => _setPause(false),
+                    child: Container(
+                      color: Colors.transparent,
+                    ),
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
-        ),
       ],
     );
   }

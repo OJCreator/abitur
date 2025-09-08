@@ -1,3 +1,7 @@
+import 'package:abitur/storage/entities/calendar_event.dart';
+import 'package:abitur/storage/entities/calendar_event.dart';
+import 'package:abitur/storage/entities/calendar_event.dart';
+import 'package:abitur/storage/entities/calendar_event.dart';
 import 'package:abitur/storage/entities/evaluation_type.dart';
 import 'package:abitur/storage/entities/graduation/graduation_evaluation.dart';
 import 'package:abitur/storage/entities/settings.dart';
@@ -28,8 +32,8 @@ class Storage {
   static late Box<Subject> _subjectBox;
   static late Box<SubjectCategory> _subjectCategoryBox;
   static late Box<Settings> _settingsBox;
-  // static late Box<GraduationProfile> _graduationProfileBox;
   static late Box<GraduationEvaluation> _graduationEvaluationBox;
+  // static late Box<CalendarEvent> _calendarEventBox;
   static late Box<TimetableSettings> _timetableSettingsBox;
   static late Box<Timetable> _timetableBox;
   static late Box<TimetableEntry> _timetableEntryBox;
@@ -44,8 +48,8 @@ class Storage {
     Hive.registerAdapter(SubjectAdapter());
     Hive.registerAdapter(SubjectCategoryAdapter());
     Hive.registerAdapter(SettingsAdapter());
-    // Hive.registerAdapter(GraduationProfileAdapter());
     Hive.registerAdapter(GraduationEvaluationAdapter());
+    // Hive.registerAdapter(CalendarEventAdapter());
     Hive.registerAdapter(TimetableSettingsAdapter());
     Hive.registerAdapter(TimetableAdapter());
     Hive.registerAdapter(TimetableEntryAdapter());
@@ -57,8 +61,8 @@ class Storage {
     _subjectBox = await Hive.openBox<Subject>('subjects');
     _subjectCategoryBox = await Hive.openBox<SubjectCategory>('subjectCategories');
     _settingsBox = await Hive.openBox<Settings>('settings');
-    // _graduationProfileBox = await Hive.openBox<GraduationProfile>('graduationProfile');
     _graduationEvaluationBox = await Hive.openBox<GraduationEvaluation>('graduationEvaluations');
+    // _calendarEventBox = await Hive.openBox<CalendarEvent>('calendarEvents');
     _timetableSettingsBox = await Hive.openBox<TimetableSettings>('timetableSettings');
     _timetableBox = await Hive.openBox<Timetable>('timetables');
     _timetableEntryBox = await Hive.openBox<TimetableEntry>('timetableEntries');
@@ -238,15 +242,6 @@ class Storage {
     await _performanceBox.delete(p.id);
   }
 
-  // GraduationProfile
-  // static GraduationProfile loadGraduationProfile() {
-  //   return _graduationProfileBox.get("data", defaultValue: GraduationProfile())!;
-  // }
-  //
-  // static Future<void> saveGraduationProfile(GraduationProfile gp) async {
-  //   await _graduationProfileBox.put("data", gp);
-  // }
-
   // GraduationEvaluations
   static List<GraduationEvaluation> loadGraduationEvaluations() {
     return _graduationEvaluationBox.values.toList();
@@ -262,6 +257,22 @@ class Storage {
   static Future<void> deleteGraduationEvaluation(GraduationEvaluation ge) async {
     await _graduationEvaluationBox.delete(ge.id);
   }
+
+  // CalendarEvents
+  // static List<CalendarEvent> loadCalendarEvents() {
+  //   return _calendarEventBox.values.toList();
+  // }
+  // static CalendarEvent? loadCalendarEvent(String id) {
+  //   return _calendarEventBox.get(id);
+  // }
+  //
+  // static Future<void> saveCalendarEvent(CalendarEvent ce) async {
+  //   await _calendarEventBox.delete(ce.id);
+  //   await _calendarEventBox.put(ce.id, ce);
+  // }
+  // static Future<void> deleteCalendarEvent(CalendarEvent ce) async {
+  //   await _calendarEventBox.delete(ce.id);
+  // }
 
   // Settings
   static Settings loadSettings() {

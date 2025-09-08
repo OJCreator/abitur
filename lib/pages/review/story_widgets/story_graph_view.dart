@@ -6,7 +6,7 @@ import '../delayed_animation_controller.dart';
 class StoryGraphView extends StatefulWidget {
   final String title;
   final Duration delay;
-  final List<num> data;
+  final List<num?> data;
   final String? xAxisTitle;
   final String yAxisTitle;
   final String Function(int index)? xValues;
@@ -161,7 +161,7 @@ class StoryGraphViewState extends State<StoryGraphView> with TickerProviderState
 
 class _StoryGraphViewGraph extends StatelessWidget {
 
-  final List<num> data;
+  final List<num?> data;
   final String? xAxisTitle;
   final String yAxisTitle;
   final String Function(int index)? xValues;
@@ -179,7 +179,7 @@ class _StoryGraphViewGraph extends StatelessWidget {
             minX: 0,
             maxX: data.length.toDouble()-1,
             minY: 0,
-            maxY: data.map((e) => e.toDouble()).reduce((curr, next) => curr > next ? curr : next).toDouble(),
+            maxY: data.where((e) => e != null).map((e) => e!.toDouble()).reduce((curr, next) => curr > next ? curr : next).toDouble(),
 
             titlesData: FlTitlesData(
               bottomTitles: AxisTitles(
@@ -213,7 +213,7 @@ class _StoryGraphViewGraph extends StatelessWidget {
                 sideTitles: SideTitles(
                   showTitles: true,
                   reservedSize: 30,
-                  interval: (data.map((e) => e.toDouble()).reduce((curr, next) => curr > next ? curr : next) / 5).ceilToDouble(),
+                  interval: (data.where((e) => e != null).map((e) => e!.toDouble()).reduce((curr, next) => curr > next ? curr : next) / 5).ceilToDouble(),
                   getTitlesWidget: (value, meta) {
                     return Padding(
                       padding: const EdgeInsets.all(3),
@@ -238,7 +238,7 @@ class _StoryGraphViewGraph extends StatelessWidget {
               show: true,
               drawVerticalLine: true,
               verticalInterval: 1,
-              horizontalInterval: (data.map((e) => e.toDouble()).reduce((curr, next) => curr > next ? curr : next) / 5).ceilToDouble(),
+              horizontalInterval: (data.where((e) => e != null).map((e) => e!.toDouble()).reduce((curr, next) => curr > next ? curr : next) / 5).ceilToDouble(),
               getDrawingHorizontalLine: (value) {
                 return FlLine(
                   color: Colors.grey.withAlpha(77),
@@ -261,13 +261,12 @@ class _StoryGraphViewGraph extends StatelessWidget {
 
             lineBarsData: [
               LineChartBarData(
-                spots: List.generate(
-                  data.length,
-                      (index) => FlSpot(
-                    index.toDouble(),
-                    data[index].toDouble(),
-                  ),
-                ),
+                spots: data
+                    .asMap()
+                    .entries
+                    .where((entry) => entry.value != null)
+                    .map((entry) => FlSpot(entry.key.toDouble(), entry.value!.toDouble()))
+                    .toList(),
                 isCurved: true,
                 color: Colors.blue,
                 barWidth: 3,
