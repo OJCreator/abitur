@@ -1,7 +1,9 @@
 import 'package:abitur/pages/review/review_final_export_page.dart';
 import 'package:abitur/pages/review/review_page_overlay.dart';
 import 'package:abitur/pages/review/stories/average_story.dart';
+import 'package:abitur/pages/review/stories/differences_story.dart';
 import 'package:abitur/pages/review/stories/evaluations_story.dart';
+import 'package:abitur/pages/review/stories/filnal_story.dart';
 import 'package:abitur/pages/review/stories/story.dart';
 import 'package:abitur/pages/review/stories/subjects_story.dart';
 import 'package:abitur/pages/review/stories/welcome_story.dart';
@@ -24,7 +26,9 @@ class _ReviewPageState extends State<ReviewPage> {
     WelcomeStory(),
     SubjectsStory(),
     EvaluationsStory(),
+    DifferencesStory(),
     AverageStory(),
+    FinalStory(),
   ];
   int _currentStoryIndex = 0;
   bool _pause = false;

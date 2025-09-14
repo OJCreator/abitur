@@ -61,6 +61,15 @@ class AverageStory extends StatelessWidget implements Story {
   @override
   Widget build(BuildContext context) {
 
+
+    // RESET
+    for (int i = 0; i < dayAverages.length; i++) {
+      dayAverages[i] = 0;
+    }
+    for (int i = 0; i < monthAverages.length; i++) {
+      monthAverages[i] = null;
+    }
+
     final evaluationDates = EvaluationDateService.findAll();
     final groupedEvaluationDatesByDay = evaluationDates.where((e) => e.date != null).toList().groupBy((e) => e.date!.weekday);
     groupedEvaluationDatesByDay.forEach((day, evaluationDates) {

@@ -36,6 +36,8 @@ class StoryGraphViewState extends State<StoryGraphView> with TickerProviderState
   void initState() {
     super.initState();
 
+
+
     _slideInController = DelayedAnimationController(
       vsync: this,
       begin: Offset(1.5, 0.0),
@@ -48,7 +50,7 @@ class StoryGraphViewState extends State<StoryGraphView> with TickerProviderState
     _offsetController = DelayedAnimationController(
       vsync: this,
       begin: 0,
-      end: -10,
+      end: -1,
       delay: widget.delay + Duration(seconds: 2),
       duration: Duration(milliseconds: 300),
       curve: Curves.easeOut,
@@ -121,11 +123,12 @@ class StoryGraphViewState extends State<StoryGraphView> with TickerProviderState
           child: AnimatedBuilder(
             animation: _offsetController.animation,
             builder: (context, child) {
-              return Column(
-                mainAxisAlignment: MainAxisAlignment.center,
+              final maxOffset = MediaQuery.of(context).size.width / 3 * 2;
+              return Stack(
+                alignment: Alignment.center,
                 children: [
                   Transform.translate(
-                    offset: Offset(0, _offsetController.animation.value),
+                    offset: Offset(0, _offsetController.animation.value * maxOffset),
                     child: Text(
                       widget.title,
                       textAlign: TextAlign.center,
@@ -139,7 +142,7 @@ class StoryGraphViewState extends State<StoryGraphView> with TickerProviderState
                         opacity: _graphOpacityController.animation.value,
                         child: Padding(
                           padding: const EdgeInsets.only(top: 8),
-                          child: _StoryGraphViewGraph(
+                          child: _StoryGraphViewLineChart(
                               widget.data,
                               widget.xAxisTitle,
                               widget.yAxisTitle,
@@ -159,14 +162,14 @@ class StoryGraphViewState extends State<StoryGraphView> with TickerProviderState
   }
 }
 
-class _StoryGraphViewGraph extends StatelessWidget {
+class _StoryGraphViewLineChart extends StatelessWidget {
 
   final List<num?> data;
   final String? xAxisTitle;
   final String yAxisTitle;
   final String Function(int index)? xValues;
 
-  const _StoryGraphViewGraph(this.data, this.xAxisTitle, this.yAxisTitle, this.xValues);
+  const _StoryGraphViewLineChart(this.data, this.xAxisTitle, this.yAxisTitle, this.xValues);
 
   @override
   Widget build(BuildContext context) {

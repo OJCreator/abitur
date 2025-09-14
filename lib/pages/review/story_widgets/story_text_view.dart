@@ -29,7 +29,7 @@ class StoryTextViewState extends State<StoryTextView> with TickerProviderStateMi
 
     _slideInController = DelayedAnimationController<Offset>(
       vsync: this,
-      begin: Offset(1.5, 0.0),
+      begin: Offset(1.6, 0.0),
       end: Offset.zero,
       delay: widget.delay,
       duration: Duration(milliseconds: 500),
@@ -57,7 +57,7 @@ class StoryTextViewState extends State<StoryTextView> with TickerProviderStateMi
     _slideOutController = DelayedAnimationController(
       vsync: this,
       begin: Offset.zero,
-      end: Offset(-1.5, 0.0),
+      end: Offset(-1.6, 0.0),
       delay: widget.delay + Duration(seconds: 5),
       duration: Duration(milliseconds: 500),
       curve: Curves.easeIn,

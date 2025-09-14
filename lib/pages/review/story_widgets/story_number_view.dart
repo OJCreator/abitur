@@ -5,6 +5,8 @@ import '../delayed_animation_controller.dart';
 
 class StoryNumberView extends StatefulWidget {
   final int number;
+  final int decimalPlaces;
+  final bool countBackwards;
   final String title;
   final String subtitle;
   final Duration delay;
@@ -12,6 +14,8 @@ class StoryNumberView extends StatefulWidget {
   const StoryNumberView({
     super.key,
     required this.number,
+    this.decimalPlaces = 0,
+    this.countBackwards = false,
     required this.title,
     required this.subtitle,
     this.delay = const Duration(seconds: 0),
@@ -34,16 +38,29 @@ class StoryNumberViewState extends State<StoryNumberView> with TickerProviderSta
   void initState() {
     super.initState();
 
-    double startValue = widget.number * 0.7;
-    if (widget.number > 100) {
-      startValue = widget.number - 30;
+    double startValue;
+    if (!widget.countBackwards && widget.number > 1) {
+      startValue = widget.number * 0.7;
+      if (widget.number > 100) {
+        startValue = widget.number - 30;
+      }
+      if (widget.number < 23) {
+        startValue = widget.number - 7;
+      }
+      if (widget.number < 7) {
+        startValue = 0;
+      }
+    } else {
+      startValue = widget.number * 1.3;
+      if (widget.number < 40) {
+        startValue = widget.number * 1.7;
+      }
+      if (widget.number < 8) {
+        startValue = widget.number + 7;
+      }
     }
-    if (widget.number < 23) {
-      startValue = widget.number - 7;
-    }
-    if (widget.number < 7) {
-      startValue = 0;
-    }
+
+    startValue = startValue.roundToDouble();
 
     _numberController = DelayedAnimationController(
       vsync: this,
@@ -163,7 +180,8 @@ class StoryNumberViewState extends State<StoryNumberView> with TickerProviderSta
                       AnimatedBuilder(
                         animation: _numberController.animation,
                         builder: (context, child) {
-                          int newValue = _numberController.animation.value.toInt();
+                          double animationValue = _numberController.animation.value;
+                          int newValue = widget.countBackwards || widget.number < 2 ? animationValue.floor() : animationValue.ceil();
                           if (newValue != _currentValue) {
                             _currentValue = newValue;
                             if (newValue == widget.number) {
@@ -173,7 +191,7 @@ class StoryNumberViewState extends State<StoryNumberView> with TickerProviderSta
                             }
                           }
                           return (_numberController.animation.isAnimating || _numberController.animation.isCompleted) ? Text(
-                            newValue.toString(),
+                            insertComma(newValue, widget.decimalPlaces),
                             style: Theme.of(context).textTheme.displayLarge,
                           ) : Container();
                         },
@@ -217,4 +235,18 @@ class StoryNumberViewState extends State<StoryNumberView> with TickerProviderSta
       ),
     );
   }
+}
+
+String insertComma(int number, int decimalPlaces) {
+  String numStr = number.toString();
+  if (decimalPlaces == 0) {
+    return numStr;
+  }
+  if (decimalPlaces >= numStr.length) {
+    // Komma vor die ganze Zahl
+    return '0,${numStr.padLeft(decimalPlaces, '0')}';
+  }
+  String left = numStr.substring(0, numStr.length - decimalPlaces);
+  String right = numStr.substring(numStr.length - decimalPlaces);
+  return '$left,$right';
 }

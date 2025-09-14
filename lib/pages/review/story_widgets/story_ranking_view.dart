@@ -13,12 +13,14 @@ class RankingElement {
 class StoryRankingView extends StatefulWidget {
   final String title;
   final Duration delay;
+  final int startWithIndex;
   final List<RankingElement> ranking;
 
   const StoryRankingView({
     super.key,
     required this.title,
     required this.ranking,
+    this.startWithIndex = 1,
     this.delay = const Duration(seconds: 0),
   });
 
@@ -50,7 +52,7 @@ class StoryRankingViewState extends State<StoryRankingView> with TickerProviderS
     _offsetController = DelayedAnimationController(
       vsync: this,
       begin: 0,
-      end: -10,
+      end: -1,
       delay: widget.delay + Duration(seconds: 2),
       duration: Duration(milliseconds: 300),
       curve: Curves.easeOut,
@@ -133,92 +135,99 @@ class StoryRankingViewState extends State<StoryRankingView> with TickerProviderS
           child: AnimatedBuilder(
             animation: _offsetController.animation,
             builder: (context, child) {
-              return Column(
-                mainAxisAlignment: MainAxisAlignment.center,
+              final maxTextOffset = MediaQuery.of(context).size.width / 3 * 2;
+
+              return Stack(
+                alignment: Alignment.center,
                 children: [
                   Transform.translate(
-                    offset: Offset(0, _offsetController.animation.value),
+                    offset: Offset(0, _offsetController.animation.value * maxTextOffset),
                     child: Text(
                       widget.title,
                       textAlign: TextAlign.center,
                       style: Theme.of(context).textTheme.headlineLarge?.copyWith(fontSize: 36),
                     ),
                   ),
-                  for (int i = 0; i < 5; i++)
-                    AnimatedBuilder(
-                      animation: _openRankingControllers[i].animation,
-                      builder: (context, child) {
-                        return Opacity(
-                          opacity: _openRankingControllers[i].animation.value,
-                          child: Transform.translate(
-                            offset: Offset(0, _openRankingControllers[i].animation.value * -00),
-                            child: Padding(
-                              padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 16),
-                              child: Container(
-                                decoration: BoxDecoration(
-                                  gradient: LinearGradient(
-                                    colors: [
-                                      widget.ranking[i].color.withAlpha(204),
-                                      widget.ranking[i].color.withAlpha(128),
-                                    ],
-                                    begin: Alignment.topLeft,
-                                    end: Alignment.bottomRight,
+                  Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      for (int i = 0; i < 5; i++)
+                        AnimatedBuilder(
+                          animation: _openRankingControllers[i].animation,
+                          builder: (context, child) {
+                            return Opacity(
+                              opacity: _openRankingControllers[i].animation.value,
+                              child: Transform.translate(
+                                offset: Offset(0, _openRankingControllers[i].animation.value * -00),
+                                child: Padding(
+                                  padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 16),
+                                  child: Container(
+                                    decoration: BoxDecoration(
+                                      gradient: LinearGradient(
+                                        colors: [
+                                          widget.ranking[i].color.withAlpha(204),
+                                          widget.ranking[i].color.withAlpha(128),
+                                        ],
+                                        begin: Alignment.topLeft,
+                                        end: Alignment.bottomRight,
+                                      ),
+                                      borderRadius: BorderRadius.circular(16),
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: Colors.black26,
+                                          blurRadius: 4,
+                                          offset: Offset(2, 2),
+                                        ),
+                                      ],
+                                    ),
+                                    child: Row(
+                                      children: [
+                                        Container(
+                                          width: 50,
+                                          alignment: Alignment.center,
+                                          child: Text(
+                                            "${i + widget.startWithIndex}",
+                                            style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                                              fontWeight: FontWeight.bold,
+                                              color: Colors.white,
+                                            ),
+                                          ),
+                                        ),
+                                        Expanded(
+                                          child: Padding(
+                                            padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
+                                            child: Column(
+                                              crossAxisAlignment: CrossAxisAlignment.start,
+                                              children: [
+                                                Text(
+                                                  widget.ranking[i].title,
+                                                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                                                    color: Colors.white,
+                                                    fontSize: 20,
+                                                    fontWeight: FontWeight.w600,
+                                                  ),
+                                                ),
+                                                const SizedBox(height: 4),
+                                                Text(
+                                                  widget.ranking[i].subtitle,
+                                                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                                    color: Colors.white70,
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
                                   ),
-                                  borderRadius: BorderRadius.circular(16),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: Colors.black26,
-                                      blurRadius: 4,
-                                      offset: Offset(2, 2),
-                                    ),
-                                  ],
-                                ),
-                                child: Row(
-                                  children: [
-                                    Container(
-                                      width: 50,
-                                      alignment: Alignment.center,
-                                      child: Text(
-                                        "${i + 1}",
-                                        style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                                          fontWeight: FontWeight.bold,
-                                          color: Colors.white,
-                                        ),
-                                      ),
-                                    ),
-                                    Expanded(
-                                      child: Padding(
-                                        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
-                                        child: Column(
-                                          crossAxisAlignment: CrossAxisAlignment.start,
-                                          children: [
-                                            Text(
-                                              widget.ranking[i].title,
-                                              style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                                                color: Colors.white,
-                                                fontSize: 20,
-                                                fontWeight: FontWeight.w600,
-                                              ),
-                                            ),
-                                            const SizedBox(height: 4),
-                                            Text(
-                                              widget.ranking[i].subtitle,
-                                              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                                color: Colors.white70,
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    ),
-                                  ],
                                 ),
                               ),
-                            ),
-                          ),
-                        );
-                      },
-                    ),
+                            );
+                          },
+                        ),
+                    ],
+                  ),
                 ],
               );
             },
