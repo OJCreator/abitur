@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:abitur/pages/settings_pages/settings_app_info_page.dart';
 import 'package:abitur/pages/settings_pages/settings_appearance_page.dart';
 import 'package:abitur/pages/settings_pages/settings_calendar_page.dart';
 import 'package:abitur/pages/settings_pages/settings_evaluation_types_page.dart';
@@ -220,6 +221,18 @@ class _SettingsPageState extends State<SettingsPage> {
               leading: Icon(Icons.data_object),
               title: Text("Daten exportieren (JSON)"),
               onTap: _exportToJson,
+            ),
+            ListTile(
+              title: Text("App-Info"),
+              leading: Icon(Icons.info),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) {
+                    return SettingsAppInfoPage();
+                  }),
+                );
+              },
             ),
           ],
         ),

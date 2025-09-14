@@ -57,6 +57,8 @@ dependencies:
   synchronized: ^3.3.1
   app_settings: ^6.1.1
   static_shortcuts: ^0.0.2
+  package_info_plus: ^9.0.0
+  crypto: ^3.0.6
 
   # review
   just_audio: ^0.10.4
