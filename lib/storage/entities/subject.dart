@@ -2,13 +2,13 @@ import 'dart:ui';
 
 import 'package:abitur/isolates/serializer.dart';
 import 'package:abitur/storage/entities/performance.dart';
-import 'package:abitur/storage/entities/subject_category.dart';
 import 'package:abitur/storage/services/graduation_service.dart';
 import 'package:abitur/storage/services/performance_service.dart';
-import 'package:abitur/storage/services/subject_category_service.dart';
 import 'package:abitur/utils/constants.dart';
 import 'package:hive/hive.dart';
 
+import '../../utils/enums/subject_niveau.dart';
+import '../../utils/enums/subject_type.dart';
 import '../../utils/uuid.dart';
 import 'graduation/graduation_evaluation.dart';
 
@@ -32,15 +32,14 @@ class Subject implements Serializable {
   Color get color => Color(_color);
 
   @HiveField(4)
+  String _subjectNiveau;
+  SubjectNiveau get subjectNiveau => SubjectNiveau.fromCode(_subjectNiveau);
+  set subjectNiveau(SubjectNiveau newSubjectNiveau) => _subjectNiveau = newSubjectNiveau.code;
+
+  @HiveField(5)
   String _subjectType;
   SubjectType get subjectType => SubjectType.fromCode(_subjectType);
   set subjectType(SubjectType newSubjectType) => _subjectType = newSubjectType.code;
-
-  @HiveField(5)
-  String _subjectCategoryId;
-  String get subjectCategoryId => _subjectCategoryId;
-  SubjectCategory get subjectCategory => SubjectCategoryService.findById(_subjectCategoryId) ?? SubjectCategory.empty();
-  set subjectCategory(SubjectCategory newSubjectCategory) => _subjectCategoryId = newSubjectCategory.id;
 
   @HiveField(6)
   List<int> _terms;
@@ -72,8 +71,8 @@ class Subject implements Serializable {
     required this.name,
     required this.shortName,
     Color color = primaryColor,
-    SubjectType subjectType = SubjectType.basic,
-    String subjectCategoryId = "",
+    SubjectNiveau subjectNiveau = SubjectNiveau.basic,
+    SubjectType subjectType = SubjectType.standardPflichtfach,
     Set<int>? terms,
     this.manuallyEnteredTermNotes = const [null, null, null, null],
     required this.countingTermAmount,
@@ -82,8 +81,8 @@ class Subject implements Serializable {
     String? graduationEvaluationId,
   }) : _color = color.toARGB32(),
         id = id ?? Uuid.generate(),
+        _subjectNiveau = subjectNiveau.code,
         _subjectType = subjectType.code,
-        _subjectCategoryId = subjectCategoryId,
         _terms = terms?.toList() ?? [0,1,2,3],
         _performanceIds = performanceIds,
         _graduationEvaluationId = graduationEvaluationId;
@@ -102,8 +101,8 @@ class Subject implements Serializable {
     "name": name,
     "shortName": shortName,
     "color": _color,
+    "subjectNiveau": _subjectNiveau,
     "subjectType": _subjectType,
-    "subjectCategoryId": _subjectCategoryId,
     "terms": _terms,
     "countingTermAmount": countingTermAmount,
     "manuallyEnteredTermNotes": manuallyEnteredTermNotes,
@@ -117,8 +116,8 @@ class Subject implements Serializable {
       name: json["name"],
       shortName: json["shortName"],
       color: Color(json["color"]),
+      subjectNiveau: SubjectNiveau.fromCode(json["subjectNiveau"]),
       subjectType: SubjectType.fromCode(json["subjectType"]),
-      subjectCategoryId: json["subjectCategoryId"],
       terms: (json["terms"] as List).map((e) => e as int).toSet(),
       countingTermAmount: json["countingTermAmount"] as int,
       manuallyEnteredTermNotes: (json["manuallyEnteredTermNotes"] as List).map((e) => e as int?).toList(),
@@ -138,46 +137,4 @@ class Subject implements Serializable {
 
   @override
   int get hashCode => "@Subject $id".hashCode;
-}
-
-enum SubjectType {
-  basic("Grundlegendes Anforderungsniveau", "gA"),
-  advanced("Erhöhtes Anforderungsniveau", "eA"),
-  profile("Profilfach", "Profilfach"),
-  voluntary("Wahlfach", "Wahlfach"),
-  seminar("W-Seminar", "W-S");
-
-  final String name;
-  final String shortName;
-  String get code {
-    switch (this) {
-      case SubjectType.basic:
-        return "basic";
-      case SubjectType.advanced:
-        return "advanced";
-      case SubjectType.profile:
-        return "profile";
-      case SubjectType.voluntary:
-        return "voluntary";
-      case SubjectType.seminar:
-        return "seminar";
-    }
-  }
-
-  const SubjectType(this.name, this.shortName);
-
-  static SubjectType fromCode(String code) {
-    switch (code) {
-      case "basic":
-        return SubjectType.basic;
-      case "advanced":
-        return SubjectType.advanced;
-      case "profile":
-        return SubjectType.profile;
-      case "voluntary":
-        return SubjectType.voluntary;
-      default:
-        return SubjectType.seminar;
-    }
-  }
 }

@@ -20,6 +20,7 @@ import '../../storage/entities/evaluation.dart';
 import '../../storage/entities/graduation/graduation_evaluation.dart';
 import '../../storage/entities/subject.dart';
 import '../../utils/brightness_notifier.dart';
+import '../../utils/enums/subject_type.dart';
 import '../../widgets/graduation_date_list_tile.dart';
 import '../evaluation_pages/evaluation_input_page.dart';
 
@@ -51,12 +52,12 @@ class _SubjectPageState extends State<SubjectPage> with SingleTickerProviderStat
     if (!subject.terms.contains(currentTerm)) {
       currentTerm = 0;
     }
-    if (widget.openGraduationPage && (GraduationService.isGraduationSubject(subject) || subject.subjectType == SubjectType.seminar)) {
+    if (widget.openGraduationPage && (GraduationService.isGraduationSubject(subject) || subject.subjectType == SubjectType.wSeminar)) {
       currentTerm = subject.terms.length;
     }
     _tabKeys = subject.terms.map((e) => GlobalKey<_TermViewState>()).toList();
     int tabLength = subject.terms.length;
-    if (GraduationService.isGraduationSubject(subject) || subject.subjectType == SubjectType.seminar) {
+    if (GraduationService.isGraduationSubject(subject) || subject.subjectType == SubjectType.wSeminar) {
       tabLength++;
       _tabKeys.add(GlobalKey<_TermViewState>());
       graduationEvaluation = GraduationService.findEvaluationBySubject(subject)!;
@@ -168,7 +169,7 @@ class _SubjectPageState extends State<SubjectPage> with SingleTickerProviderStat
                 Tab(
                   text: "Abitur",
                 ),
-              if (subject.subjectType == SubjectType.seminar)
+              if (subject.subjectType == SubjectType.wSeminar)
                 Tab(
                   text: "Seminararbeit",
                 ),

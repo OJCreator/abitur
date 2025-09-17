@@ -6,6 +6,7 @@ import 'package:abitur/storage/storage.dart';
 import 'package:abitur/utils/constants.dart';
 import 'package:intl/intl.dart';
 
+import '../../utils/enums/subject_type.dart';
 import '../entities/subject.dart';
 import '../entities/timetable/timetable.dart';
 
@@ -189,7 +190,7 @@ class TimetableService {
       if (hour < entries.length && entries[hour] != null) {
         String entryId = entries[hour]!;
         Subject s = loadTimetableEntry(entryId).subject;
-        if (s.subjectType != SubjectType.voluntary) {
+        if (s.subjectType != SubjectType.wahlfach) {
           return s;
         }
       }

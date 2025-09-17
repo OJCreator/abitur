@@ -1,0 +1,295 @@
+{
+  "subjects": [
+    {
+      "id": "de",
+      "name": "Deutsch",
+      "belegung": [[0,1,2,3]],
+      "einbringungMin": 4,
+      "einbringungMax": 4
+    },
+    {
+      "id": "ma",
+      "name": "Mathematik",
+      "belegung": [[0,1,2,3]],
+      "einbringungMin": 4,
+      "einbringungMax": 4
+    },
+    {
+      "id": "ge",
+      "name": "Geschichte",
+      "belegung": [[0,1,2,3]],
+      "einbringungMin": 3,
+      "einbringungMax": 4
+    },
+    {
+      "id": "sport",
+      "name": "Sport",
+      "belegung": [[0,1,2,3]],
+      "einbringungMin": 0,
+      "einbringungMax": 4
+    },
+    {
+      "id": "reli",
+      "name": "Religion / Ethik",
+      "belegung": [[0,1,2,3]],
+      "einbringungMin": 3,
+      "einbringungMax": 4,
+      "alternatives": [
+        {"id":"ethik","name":"Ethik","replaceTerms":[0,1,2,3]},
+        {"id":"kr","name":"Katholische Religion","replaceTerms":[0,1,2,3]},
+        {"id":"er","name":"Evangelische Religion","replaceTerms":[0,1,2,3]}
+      ]
+    },
+    {
+      "id": "bio",
+      "name": "Biologie",
+      "belegung": [[0,1,2,3]],
+      "einbringungMin": 3,
+      "einbringungMax": 4
+    },
+    {
+      "id": "phy",
+      "name": "Physik",
+      "belegung": [[0,1,2,3]],
+      "einbringungMin": 3,
+      "einbringungMax": 4,
+      "alternatives": [
+        {"id":"phy_norm","name":"Normale Physik","replaceTerms":[]},
+        {"id":"biophy","name":"Biophysik","replaceTerms":[0,1]},
+        {"id":"astro","name":"Astrophysik","replaceTerms":[2,3]}
+      ]
+    },
+    {
+      "id": "che",
+      "name": "Chemie",
+      "belegung": [[0,1,2,3]],
+      "einbringungMin": 3,
+      "einbringungMax": 4
+    },
+    {
+      "id": "inf",
+      "name": "Informatik",
+      "belegung": [[0,1,2,3]],
+      "einbringungMin": 3,
+      "einbringungMax": 4
+    },
+    {
+      "id": "inf_spaet",
+      "name": "Spät beginnende Informatik",
+      "belegung": [[0,1,2,3]],
+      "einbringungMin": 3,
+      "einbringungMax": 4
+    },
+    {
+      "id": "en",
+      "name": "Englisch",
+      "belegung": [[0,1,2,3]],
+      "einbringungMin": 3,
+      "einbringungMax": 4
+    },
+    {
+      "id": "fr",
+      "name": "Französisch",
+      "belegung": [[0,1,2,3]],
+      "einbringungMin": 3,
+      "einbringungMax": 4
+    },
+    {
+      "id": "la",
+      "name": "Latein",
+      "belegung": [[0,1,2,3]],
+      "einbringungMin": 3,
+      "einbringungMax": 4
+    },
+    {
+      "id": "es",
+      "name": "Spanisch",
+      "belegung": [[0,1,2,3]],
+      "einbringungMin": 3,
+      "einbringungMax": 4
+    },
+    {
+      "id": "gr",
+      "name": "Altgriechisch",
+      "belegung": [[0,1,2,3]],
+      "einbringungMin": 3,
+      "einbringungMax": 4
+    },
+    {
+      "id": "it",
+      "name": "Italienisch",
+      "belegung": [[0,1,2,3]],
+      "einbringungMin": 3,
+      "einbringungMax": 4
+    },
+    {
+      "id": "fs_spaet",
+      "name": "Spät beginnende Fremdsprache",
+      "belegung": [[0,1,2,3]],
+      "einbringungMin": 3,
+      "einbringungMax": 4
+    },
+    {
+      "id": "pug",
+      "name": "Politik und Gesellschaft",
+      "belegung": [[0,1],[0,1,2,3]]
+    },
+    {
+      "id": "geo",
+      "name": "Geographie",
+      "belegung": [[0,1],[0,1,2,3]]
+    },
+    {
+      "id": "wur",
+      "name": "Wirtschaft und Recht",
+      "belegung": [[0,1],[0,1,2,3]]
+    },
+    {
+      "id": "inst",
+      "name": "Instrumentalensemble",
+      "belegung": [[0,1],[0,1,2,3],[2,3]],
+      "einbringungMin": 0,
+      "einbringungMax": 4
+    },
+    {
+      "id": "voc",
+      "name": "Vokalensemble",
+      "belegung": [[0,1],[0,1,2,3],[2,3]],
+      "einbringungMin": 0,
+      "einbringungMax": 4
+    },
+    {
+      "id": "photo",
+      "name": "Photographie",
+      "belegung": [[0,1],[0,1,2,3],[2,3]],
+      "einbringungMin": 0,
+      "einbringungMax": 4
+    },
+    {
+      "id": "psy",
+      "name": "Psychologie",
+      "belegung": [[0,1],[0,1,2,3],[2,3]],
+      "einbringungMin": 0,
+      "einbringungMax": 4
+    },
+    {
+      "id": "mathe_v",
+      "name": "Mathematik Vertiefungskurs",
+      "belegung": [[0,1]]
+    },
+    {
+      "id": "deutsch_v",
+      "name": "Deutsch Vertiefungskurs",
+      "belegung": [[0,1]]
+    },
+    {
+      "id": "wahl_sonst",
+      "name": "Wahlfach Sonstiges",
+      "einbringungMin": 0,
+      "einbringungMax": 4
+    }
+  ],
+
+  "groups": [
+    {
+      "id": "g_pflicht",
+      "name": "Pflichtfächer",
+      "subjectsMin": 5,
+      "subjectsMax": 5,
+      "children": ["de","ma","sport","reli","ge"],
+      "errorMessage": "Deutsch, Mathe, Sport, Religion und Geschichte sind verpflichtend."
+    },
+    {
+      "id": "g_science",
+      "name": "Naturwissenschaften",
+      "subjectsMin": 1,
+      "subjectsMax": 2,
+      "children": ["bio","phy","che"],
+      "errorMessage": "Du brauchst ein bis zwei Naturwissenschaften."
+    },
+    {
+      "id": "g_mint",
+      "name": "Naturwissenschaften und Informatik",
+      "subjectsMin": 1,
+      "subjectsMax": 2,
+      "children": ["g_science","inf","inf_spaet"],
+      "errorMessage": "Du brauchst ein bis zwei Naturwissenschaften oder Informatik."
+    },
+    {
+      "id": "g_fs",
+      "name": "Fremdsprachen",
+      "subjectsMin": 1,
+      "subjectsMax": 2,
+      "children": ["en","fr","la","es","gr","it"],
+      "errorMessage": "Du brauchst ein bis zwei Fremdsprachen."
+    },
+    {
+      "id": "g_fs_spaet",
+      "name": "spät beginnende Fremdsprachen",
+      "subjectsMin": 1,
+      "subjectsMax": 2,
+      "children": ["g_s","fs_spaet"],
+      "errorMessage": "Du brauchst ein bis zwei fortgeführte oder spät beginnende Fremdsprachen."
+    },
+    {
+      "id": "g_fs_und_mint",
+      "name": "Sprachen und Naturwissenschaften",
+      "subjectsMin": 3,
+      "subjectsMax": 3,
+      "children": ["g_fs", "g_mint"]
+    },
+    {
+      "id": "profil",
+      "name": "Profilkurse",
+      "subjectsMin": 0,
+      "subjectsMax": 2,
+      "children": ["inst","voc","photo","psy"]
+    },
+    {
+      "id": "g_geo_wur",
+      "name": "Geographie und Wirschaft und Recht",
+      "subjectsMin": 1,
+      "subjectsMax": 1,
+      "children": ["geo","wur"],
+      "errorMessage": "Du musst dich zwischen Geographie und Wirtschaft und Recht entscheiden."
+    },
+    {
+      "id": "g_gesellschaft",
+      "name": "Gesellschaftswissenschaften",
+      "subjectsMin": 2,
+      "subjectsMax": 2,
+      "children": ["pug","g_geo_wur"],
+      "errorMessage": "Du musst dich zwischen Geographie und Wirtschaft und Recht entscheiden. Politik und Gesellschaft ist Pflicht."
+    },
+    {
+      "id": "g_vertiefung",
+      "name": "Vertiefungskurse",
+      "subjectsMin": 0,
+      "subjectsMax": 1,
+      "children": ["mathe_v","deutsch_v"],
+      "errorMessage": "Du kannst nur einen Vertiefungskurs wählen."
+    },
+    {
+      "id": "g_wahl",
+      "name": "Wahlfächer",
+      "subjectsMin": 0,
+      "subjectsMax": 2,
+      "children": ["wahl_sonst"]
+    }
+  ],
+
+  "rules": [
+    {
+      "type": "replacement",
+      "target": "mint",
+      "replacer": "mathe_v",
+      "replaceTerms": [2,3]
+    },
+    {
+      "type": "replacement",
+      "target": "fs",
+      "replacer": "deutsch_v",
+      "replaceTerms": [2,3]
+    }
+  ]
+}

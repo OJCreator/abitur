@@ -24,8 +24,8 @@ class SubjectAdapter extends TypeAdapter<Subject> {
       id: fields[0] as String?,
     )
       .._color = fields[3] as int
-      .._subjectType = fields[4] as String
-      .._subjectCategoryId = fields[5] as String
+      .._subjectNiveau = fields[4] as String
+      .._subjectType = fields[5] as String
       .._terms = (fields[6] as List).cast<int>()
       .._performanceIds = (fields[9] as List).cast<String>()
       .._graduationEvaluationId = fields[10] as String?;
@@ -44,9 +44,9 @@ class SubjectAdapter extends TypeAdapter<Subject> {
       ..writeByte(3)
       ..write(obj._color)
       ..writeByte(4)
-      ..write(obj._subjectType)
+      ..write(obj._subjectNiveau)
       ..writeByte(5)
-      ..write(obj._subjectCategoryId)
+      ..write(obj._subjectType)
       ..writeByte(6)
       ..write(obj._terms)
       ..writeByte(7)

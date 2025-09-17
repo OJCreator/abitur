@@ -89,11 +89,11 @@ class _ProjectionAnalyticsPageState extends State<ProjectionAnalyticsPage> {
               FutureBuilder(
                 future: projection,
                 builder: (context, snapshot) {
-                  Map<String, List<ProjectionTermModel>> data;
+                  List<ProjectionSubjectBlock1Model> data;
                   if (snapshot.hasData) {
                     data = snapshot.data!.block1;
                   } else {
-                    data = {};
+                    data = [];
                   }
                   return Table(
                     columnWidths: {
@@ -115,7 +115,7 @@ class _ProjectionAnalyticsPageState extends State<ProjectionAnalyticsPage> {
                           ],
                         );
                       }
-                      Subject s = SubjectService.findById(data.keys.toList()[row - 1]) ?? Subject.empty();
+                      Subject s = SubjectService.findById(data[row - 1].subjectId) ?? Subject.empty();
                       return TableRow(
                         decoration: BoxDecoration(
                           color: row%2 == 0 ? Theme.of(context).colorScheme.surface : Theme.of(context).colorScheme.surfaceContainer,
@@ -125,7 +125,7 @@ class _ProjectionAnalyticsPageState extends State<ProjectionAnalyticsPage> {
                           if (col == 0) {
                             return SubjectTableLabel(subject: s);
                           }
-                          ProjectionTermModel termNoteDto = data[s.id]![col - 1];
+                          ProjectionTermModel termNoteDto = data[row - 1].terms[col - 1];
                           return NoteProjection(
                             background: termNoteDto.counting,
                             note: termNoteDto.noteString,
@@ -167,11 +167,11 @@ class _ProjectionAnalyticsPageState extends State<ProjectionAnalyticsPage> {
               FutureBuilder(
                 future: projection,
                 builder: (context, snapshot) {
-                  Map<String, ProjectionTermModel> data;
+                  List<ProjectionSubjectBlock2Model> data;
                   if (snapshot.hasData) {
                     data = snapshot.data!.block2;
                   } else {
-                    data = {};
+                    data = [];
                   }
                   return Table(
                     columnWidths: {
@@ -179,7 +179,7 @@ class _ProjectionAnalyticsPageState extends State<ProjectionAnalyticsPage> {
                       2: FlexColumnWidth(1),
                     },
                     children: List.generate(data.length, (row) {
-                      Subject s = SubjectService.findById(data.keys.toList()[row]) ?? Subject.empty();
+                      Subject s = SubjectService.findById(data[row].subjectId) ?? Subject.empty();
                       return TableRow(
                         decoration: BoxDecoration(
                           color: row%2 == 0 ? Theme.of(context).colorScheme.surface : Theme.of(context).colorScheme.surfaceContainer,
@@ -189,7 +189,7 @@ class _ProjectionAnalyticsPageState extends State<ProjectionAnalyticsPage> {
                           if (col == 0) {
                             return SubjectTableLabel(subject: s);
                           }
-                          ProjectionTermModel dto = data[s.id]!;
+                          ProjectionTermModel dto = data[row].result;
                           return NoteProjection(
                             background: dto.counting,
                             note: dto.noteString,

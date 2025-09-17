@@ -1,4 +1,4 @@
-import 'package:abitur/pages/settings_pages/setting_app_info_unlock_review_mode_page.dart';
+import 'package:abitur/pages/settings_pages/settings_app_info_unlock_review_mode_page.dart';
 import 'package:flutter/material.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 
@@ -34,15 +34,16 @@ class _SettingsAppInfoPageState extends State<SettingsAppInfoPage> {
     });
   }
 
-  void onTapBuildNumber() {
+  Future<void> onTapBuildNumber() async {
     buildNumberTapCounter++;
     if (buildNumberTapCounter >= 10) {
-      Navigator.push(
+      await Navigator.push(
         context,
         MaterialPageRoute(builder: (context) {
-          return SettingAppInfoUnlockReviewModePage();
+          return SettingsAppInfoUnlockReviewModePage();
         }),
       );
+      buildNumberTapCounter = 0;
     }
   }
 

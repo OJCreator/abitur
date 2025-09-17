@@ -6,6 +6,7 @@ import 'package:abitur/storage/services/settings_service.dart';
 import 'package:abitur/storage/storage.dart';
 import 'package:abitur/utils/constants.dart';
 
+import '../../utils/enums/subject_type.dart';
 import '../entities/evaluation_date.dart';
 import '../entities/performance.dart';
 import '../entities/subject.dart';
@@ -79,7 +80,7 @@ class EvaluationService {
     return _createNewEvaluation(subject, performance, term, name, evaluationDates, evaluationType);
   }
   static Future<Evaluation> newGraduationEvaluation(Subject subject) {
-    String name = subject.subjectType == SubjectType.seminar ? "Seminararbeit" : "Abitur";
+    String name = subject.subjectType == SubjectType.wSeminar ? "Seminararbeit" : "Abitur";
     EvaluationDate e = EvaluationDate(date: null);
     return _createNewEvaluation(subject, null, 5, name, [e], null);
   }

@@ -154,7 +154,7 @@ class SubjectListTile extends StatelessWidget {
   Widget build(BuildContext context) {
     return ListTile(
       title: shimmer ? Shimmer(height: 20, width: 50) : Text(subject.name),
-      subtitle: shimmer ? Shimmer(height: 15, width: 40) : Text(subject.subjectType.name),
+      subtitle: shimmer ? Shimmer(height: 15, width: 40) : Text(subject.subjectType.canBeLeistungsfach ? subject.subjectNiveau.name : subject.subjectType.displayName),
       onTap: onTap,
       leading: Container(
         margin: const EdgeInsets.only(left: 10),

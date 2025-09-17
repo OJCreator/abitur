@@ -9,14 +9,15 @@ import 'package:abitur/isolates/models/subject/subjects_model.dart';
 import 'package:abitur/isolates/serializer.dart';
 import 'package:abitur/isolates/subject_isolates.dart';
 import 'package:abitur/storage/entities/graduation/graduation_evaluation.dart';
-import 'package:abitur/storage/entities/subject_category.dart';
 import 'package:abitur/storage/services/graduation_service.dart';
 import 'package:abitur/storage/services/settings_service.dart';
 import 'package:abitur/storage/services/timetable_service.dart';
 import 'package:abitur/storage/storage.dart';
 import 'package:abitur/utils/constants.dart';
+import 'package:abitur/utils/enums/subject_niveau.dart';
 import 'package:flutter/foundation.dart';
 
+import '../../utils/enums/subject_type.dart';
 import '../../utils/pair.dart';
 import '../entities/evaluation.dart';
 import '../entities/evaluation_date.dart';
@@ -29,23 +30,23 @@ import 'performance_service.dart';
 
 class SubjectService {
 
-  static Future<Subject> newSubject(String name, String shortName, Color color, Set<int> terms, int countingTermAmount, SubjectType subjectType, SubjectCategory subjectCategory, List<String> performanceIds) async {
+  static Future<Subject> newSubject(String name, String shortName, Color color, Set<int> terms, int countingTermAmount, SubjectNiveau subjectNiveau, SubjectType subjectType, List<String> performanceIds) async {
 
     List<Subject> existingSubjects = findAll();
     Land land = SettingsService.land;
-    int advancedSubjectAmount = existingSubjects.countWhere((s) => s.subjectType == SubjectType.advanced);
-    if ([Land.bw, Land.by, Land.rp, Land.sh, Land.th, Land.st, Land.hh].contains(land) && subjectType == SubjectType.advanced && advancedSubjectAmount >= 3) {
+    int advancedSubjectAmount = existingSubjects.countWhere((s) => s.subjectNiveau == SubjectNiveau.advanced);
+    if ([Land.bw, Land.by, Land.rp, Land.sh, Land.th, Land.st, Land.hh].contains(land) && subjectNiveau == SubjectNiveau.advanced && advancedSubjectAmount >= 3) {
       throw InvalidFormException("Es gibt bereits 3 Fächer auf erhöhtem Anforderungsniveau. Du kannst keine weiteren hinzufügen.");
     }
-    if ([Land.ni, Land.he, Land.sn, Land.be, Land.bb, Land.nw, Land.mv, Land.sl, Land.hb].contains(land) && subjectType == SubjectType.advanced && advancedSubjectAmount >= 2) {
+    if ([Land.ni, Land.he, Land.sn, Land.be, Land.bb, Land.nw, Land.mv, Land.sl, Land.hb].contains(land) && subjectNiveau == SubjectNiveau.advanced && advancedSubjectAmount >= 2) {
       throw InvalidFormException("Es gibt bereits 2 Fächer auf erhöhtem Anforderungsniveau. Du kannst keine weiteren hinzufügen.");
     }
 
     Subject s = Subject(
       name: name,
       shortName: shortName,
+      subjectNiveau: subjectNiveau,
       subjectType: subjectType,
-      subjectCategoryId: subjectCategory.id,
       terms: terms,
       countingTermAmount: countingTermAmount,
       performanceIds: performanceIds,
@@ -53,22 +54,22 @@ class SubjectService {
     );
     await Storage.saveSubject(s);
 
-    if (subjectType == SubjectType.seminar) {
+    if (subjectType == SubjectType.wSeminar) {
       await GraduationService.setGraduationEvaluation(s, GraduationEvaluationType.seminar);
     }
 
     return s;
   }
 
-  static Future<Subject> editSubject(Subject subject, {required String name, required String shortName, required Color color, required Set<int> terms, required int countingTermAmount, required SubjectType subjectType, required SubjectCategory subjectCategory, required List<Performance> performances}) async {
+  static Future<Subject> editSubject(Subject subject, {required String name, required String shortName, required Color color, required Set<int> terms, required int countingTermAmount, required SubjectNiveau subjectNiveau, required SubjectType subjectType, required List<Performance> performances}) async {
 
     List<Subject> existingSubjects = findAll().where((s) => s != subject).toList();
     Land land = SettingsService.land;
-    int advancedSubjectAmount = existingSubjects.countWhere((s) => s.subjectType == SubjectType.advanced);
-    if ([Land.bw, Land.by, Land.rp, Land.sh, Land.th, Land.st, Land.hh].contains(land) && subjectType == SubjectType.advanced && advancedSubjectAmount >= 3) {
+    int advancedSubjectAmount = existingSubjects.countWhere((s) => s.subjectNiveau == SubjectNiveau.advanced);
+    if ([Land.bw, Land.by, Land.rp, Land.sh, Land.th, Land.st, Land.hh].contains(land) && subjectNiveau == SubjectNiveau.advanced && advancedSubjectAmount >= 3) {
       throw InvalidFormException("Es gibt bereits 3 Fächer auf erhöhtem Anforderungsniveau. Du kannst keine weiteren hinzufügen.");
     }
-    if ([Land.ni, Land.he, Land.sn, Land.be, Land.bb, Land.nw, Land.mv, Land.sl, Land.hb].contains(land) && subjectType == SubjectType.advanced && advancedSubjectAmount >= 2) {
+    if ([Land.ni, Land.he, Land.sn, Land.be, Land.bb, Land.nw, Land.mv, Land.sl, Land.hb].contains(land) && subjectNiveau == SubjectNiveau.advanced && advancedSubjectAmount >= 2) {
       throw InvalidFormException("Es gibt bereits 2 Fächer auf erhöhtem Anforderungsniveau. Du kannst keine weiteren hinzufügen.");
     }
 
@@ -81,12 +82,12 @@ class SubjectService {
     subject.color = color;
     subject.terms = terms;
     subject.countingTermAmount = countingTermAmount;
+    subject.subjectNiveau = subjectType.canBeLeistungsfach ? subjectNiveau : SubjectNiveau.basic;
     subject.subjectType = subjectType;
-    subject.subjectCategory = subjectCategory;
     subject.performances = performances;
     await Storage.saveSubject(subject);
 
-    if (subjectType == SubjectType.seminar) {
+    if (subjectType == SubjectType.wSeminar) {
       await GraduationService.setGraduationEvaluation(subject, GraduationEvaluationType.seminar);
     }
 
@@ -123,7 +124,7 @@ class SubjectService {
   }
 
   static List<Subject> findAllGradable() {
-    return findAll().where((s) => s.subjectType != SubjectType.voluntary).toList();
+    return findAll().where((s) => s.subjectType != SubjectType.wahlfach).toList();
   }
 
   static Future<double?> getCurrentAverageIsolated() async {
@@ -211,7 +212,7 @@ class SubjectService {
     if (all.length != all.toSet().length) {
       throw InvalidFormException("Du darfst kein Fach mehrfach wählen.");
     }
-    if (all.any((s) => s.subjectType == SubjectType.seminar)) {
+    if (all.any((s) => s.subjectType == SubjectType.wSeminar)) {
       throw InvalidFormException("Subjects dürfen kein Seminarfach sein!");
     }
     for (Subject subjectToRemove in GraduationService.graduationSubjects().where((s) => !all.contains(s))) {

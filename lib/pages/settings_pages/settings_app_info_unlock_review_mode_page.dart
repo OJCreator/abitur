@@ -3,16 +3,16 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:crypto/crypto.dart';
 
-class SettingAppInfoUnlockReviewModePage extends StatefulWidget {
-  const SettingAppInfoUnlockReviewModePage({super.key});
+class SettingsAppInfoUnlockReviewModePage extends StatefulWidget {
+  const SettingsAppInfoUnlockReviewModePage({super.key});
 
   @override
-  State<SettingAppInfoUnlockReviewModePage> createState() =>
-      _SettingAppInfoUnlockReviewModePageState();
+  State<SettingsAppInfoUnlockReviewModePage> createState() =>
+      _SettingsAppInfoUnlockReviewModePageState();
 }
 
-class _SettingAppInfoUnlockReviewModePageState
-    extends State<SettingAppInfoUnlockReviewModePage> {
+class _SettingsAppInfoUnlockReviewModePageState
+    extends State<SettingsAppInfoUnlockReviewModePage> {
 
   final TextEditingController _controller = TextEditingController();
   final String passwordHash = "50273c4a89c709e1a9d35fcbf36d8da777593a2fee56f4c43e159a7c085113b7";

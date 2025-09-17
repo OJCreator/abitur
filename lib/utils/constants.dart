@@ -309,10 +309,6 @@ extension ListExtensions<T> on List<T> {
   int countWhere(bool Function(T element) test) {
     return where(test).length;
   }
-  /// Summiert die Werte, die durch die Transformationsfunktion [selector] bestimmt werden.
-  num sumBy(num Function(T element) selector) {
-    return fold(0, (previousValue, element) => previousValue + selector(element));
-  }
 }
 extension FindNLargestIndices on List<int?> {
   List<int> findNLargestIndices(int n) {
@@ -361,5 +357,11 @@ extension Sum<E> on Iterable<num> {
   /// Summiert die Werte einer Liste an Zahlen
   num sum() {
     return toList().sumBy((i) => i);
+  }
+}
+extension SumBy<T> on Iterable<T> {
+  /// Summiert die Werte, die durch die Transformationsfunktion [selector] bestimmt werden.
+  num sumBy(num Function(T element) selector) {
+    return fold(0, (previousValue, element) => previousValue + selector(element));
   }
 }

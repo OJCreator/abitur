@@ -1,6 +1,7 @@
 import 'package:abitur/storage/entities/graduation/graduation_evaluation.dart';
 import 'package:abitur/storage/services/settings_service.dart';
 
+import '../../utils/enums/subject_type.dart';
 import '../entities/settings.dart';
 import '../entities/subject.dart';
 import '../storage.dart';
@@ -26,13 +27,13 @@ class GraduationService {
     return findAllEvaluations().any((g) => g.subjectId == subject.id);
   }
   static bool isGraduationSubject(Subject subject) {
-    return hasGraduationEvaluation(subject) && subject.subjectType != SubjectType.seminar;
+    return hasGraduationEvaluation(subject) && subject.subjectType != SubjectType.wSeminar;
   }
   static List<Subject> graduationSubjects() {
-    return findAllEvaluations().map((e) => e.subject).toSet().where((s) => s.subjectType != SubjectType.seminar).toList();
+    return findAllEvaluations().map((e) => e.subject).toSet().where((s) => s.subjectType != SubjectType.wSeminar).toList();
   }
   static List<Subject> graduationSubjectsFiltered(GraduationEvaluationType filter) {
-    return findAllEvaluations().where((e) => e.graduationEvaluationType == filter).map((e) => e.subject).toSet().where((s) => s.subjectType != SubjectType.seminar).toList();
+    return findAllEvaluations().where((e) => e.graduationEvaluationType == filter).map((e) => e.subject).toSet().where((s) => s.subjectType != SubjectType.wSeminar).toList();
   }
 
 
@@ -63,7 +64,7 @@ class GraduationService {
 
 
   static bool canDisableGraduation(Subject s) {
-    if (s.subjectType == SubjectType.seminar) {
+    if (s.subjectType == SubjectType.wSeminar) {
       return false;
     }
     return true;
@@ -73,7 +74,7 @@ class GraduationService {
   static bool canAddSecondGraduationDate(GraduationEvaluation graduationEvaluation) {
     Land land = SettingsService.land;
     if (land == Land.by) {
-      return graduationEvaluation.subject.subjectType == SubjectType.seminar;
+      return graduationEvaluation.subject.subjectType == SubjectType.wSeminar;
     }
     if ([Land.bw, Land.nw, Land.rp, Land.hh].contains(land)) {
       return graduationEvaluation.graduationEvaluationType == GraduationEvaluationType.written;

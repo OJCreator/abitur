@@ -14,7 +14,6 @@ import 'package:abitur/storage/services/evaluation_service.dart';
 import 'package:abitur/storage/services/graduation_service.dart';
 import 'package:abitur/storage/services/performance_service.dart';
 import 'package:abitur/storage/services/settings_service.dart';
-import 'package:abitur/storage/services/subject_category_service.dart';
 import 'package:abitur/storage/services/subject_service.dart';
 import 'package:abitur/storage/services/timetable_service.dart';
 import 'package:abitur/storage/storage.dart';
@@ -30,7 +29,6 @@ import '../../storage/entities/evaluation_date.dart';
 import '../../storage/entities/performance.dart';
 import '../../storage/entities/settings.dart';
 import '../../storage/entities/subject.dart';
-import '../../storage/entities/subject_category.dart';
 import '../../storage/entities/timetable/timetable.dart';
 import '../../storage/entities/timetable/timetable_settings.dart';
 import '../../storage/services/evaluation_date_service.dart';
@@ -246,7 +244,6 @@ class _SettingsPageState extends State<SettingsPage> {
     List<EvaluationDate> evaluationDates = EvaluationDateService.findAll();
     List<EvaluationType> evaluationTypes = EvaluationTypeService.findAll();
     List<Subject> subjects = SubjectService.findAll();
-    List<SubjectCategory> subjectCategories = SubjectCategoryService.findAll();
     List<Performance> performances = PerformanceService.findAll();
     Settings settings = SettingsService.loadSettings();
     List<GraduationEvaluation> graduationEvaluations = GraduationService.findAllEvaluations();
@@ -254,15 +251,14 @@ class _SettingsPageState extends State<SettingsPage> {
     List<Timetable> timetables = TimetableService.loadTimetables();
     List<TimetableEntry> timetableEntries = TimetableService.loadTimetableEntries();
 
-    String jsonContent = exportDataToJson(subjects, subjectCategories, performances, evaluations, evaluationDates, evaluationTypes, settings, graduationEvaluations, timetableSettings, timetables, timetableEntries);
+    String jsonContent = exportDataToJson(subjects, performances, evaluations, evaluationDates, evaluationTypes, settings, graduationEvaluations, timetableSettings, timetables, timetableEntries);
     File f = await _saveToFile("abitur_data", jsonContent);
     Share.shareXFiles([XFile(f.path)], text: "Hier sind die Abitur-Daten!");
   }
 
-  String exportDataToJson(List<Subject> subjects, List<SubjectCategory> subjectCategories, List<Performance> performances, List<Evaluation> evaluations, List<EvaluationDate> evaluationDates, List<EvaluationType> evaluationTypes, Settings settings, List<GraduationEvaluation> graduationEvaluations, TimetableSettings timetableSettings, List<Timetable> timetables, List<TimetableEntry> timetableEntries) {
+  String exportDataToJson(List<Subject> subjects, List<Performance> performances, List<Evaluation> evaluations, List<EvaluationDate> evaluationDates, List<EvaluationType> evaluationTypes, Settings settings, List<GraduationEvaluation> graduationEvaluations, TimetableSettings timetableSettings, List<Timetable> timetables, List<TimetableEntry> timetableEntries) {
     final Map<String, dynamic> data = {
       "subjects": subjects.map((s) => s.toJson()).toList(),
-      "subjectCategories": subjectCategories.map((s) => s.toJson()).toList(),
       "performances": performances.map((p) => p.toJson()).toList(),
       "evaluations": evaluations.map((e) => e.toJson()).toList(),
       "evaluationDates": evaluationDates.map((e) => e.toJson()).toList(),

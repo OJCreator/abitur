@@ -9,7 +9,6 @@ import 'package:abitur/storage/services/evaluation_type_service.dart';
 import 'package:abitur/storage/services/notification_service.dart';
 import 'package:abitur/storage/services/performance_service.dart';
 import 'package:abitur/storage/services/settings_service.dart';
-import 'package:abitur/storage/services/subject_category_service.dart';
 import 'package:abitur/storage/services/timetable_service.dart';
 import 'package:abitur/storage/storage.dart';
 import 'package:abitur/utils/brightness_notifier.dart';
@@ -104,8 +103,6 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
         print("Extracted Performances from JSON.");
         await SubjectService.buildFromJson((jsonData["subjects"] as List).map((e) => e as Map<String, dynamic>).toList());
         print("Extracted Subjects from JSON.");
-        await SubjectCategoryService.buildFromJson((jsonData["subjectCategories"] as List).map((e) => e as Map<String, dynamic>).toList());
-        print("Extracted SubjectCategories from JSON.");
         await EvaluationService.buildFromJson((jsonData["evaluations"] as List).map((e) => e as Map<String, dynamic>).toList());
         print("Extracted Evaluations from JSON.");
         await EvaluationDateService.buildFromJson((jsonData["evaluationDates"] as List).map((e) => e as Map<String, dynamic>).toList());

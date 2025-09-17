@@ -1,22 +1,22 @@
 import 'package:abitur/exceptions/invalid_form_input_exception.dart';
 import 'package:abitur/storage/entities/performance.dart';
 import 'package:abitur/storage/services/evaluation_service.dart';
-import 'package:abitur/storage/services/subject_category_service.dart';
 import 'package:abitur/storage/services/subject_service.dart';
+import 'package:abitur/utils/enums/subject_niveau.dart';
 import 'package:abitur/widgets/forms/form_gap.dart';
 import 'package:abitur/widgets/forms/form_page.dart';
 import 'package:abitur/widgets/forms/performance_form.dart';
 import 'package:abitur/widgets/forms/subject_name_and_color_input.dart';
-import 'package:abitur/widgets/forms/subject_type_selector.dart';
+import 'package:abitur/widgets/forms/subject_niveau_selector.dart';
 import 'package:abitur/widgets/forms/terms_multiple_choice.dart';
 import 'package:flutter/material.dart';
 
 import '../../storage/entities/subject.dart';
-import '../../storage/entities/subject_category.dart';
 import '../../storage/services/performance_service.dart';
 import '../../utils/constants.dart';
+import '../../utils/enums/subject_type.dart';
 import '../../widgets/confirm_dialog.dart';
-import '../../widgets/forms/subject_category_dropdown.dart';
+import '../../widgets/forms/subject_type_dropdown.dart';
 
 class SubjectInputPage extends StatefulWidget {
 
@@ -29,8 +29,8 @@ class SubjectInputPage extends StatefulWidget {
   Color get initialColor => subject?.color ?? primaryColor;
   int get initialCountingTerms => subject?.countingTermAmount ?? 4;
   Set<int> get initialTerms => subject?.terms ?? {0,1,2,3};
-  SubjectType get initialSubjectType => subject?.subjectType ?? SubjectType.basic;
-  SubjectCategory get initialSubjectCategory => subject?.subjectCategory ?? SubjectCategoryService.findAll().first;
+  SubjectNiveau get initialSubjectNiveau => subject?.subjectNiveau ?? SubjectNiveau.basic;
+  SubjectType get initialSubjectType => subject?.subjectType ?? SubjectType.standardPflichtfach;
   List<Performance> get initialPerformances => subject?.performances ?? [
     Performance(name: "Klausuren", weighting: 0.5),
     Performance(name: "Kleine Noten", weighting: 0.5),
@@ -48,15 +48,15 @@ class _SubjectInputPageState extends State<SubjectInputPage> {
 
   late final TextEditingController _name;
   late final TextEditingController _shortName;
-  late final List<SubjectCategory> _allSubjectCategories;
 
   late Color _color;
   late int _countingTerms;
   late Set<int> _terms;
+  late SubjectNiveau _subjectNiveau;
   late SubjectType _subjectType;
-  late SubjectCategory _subjectCategory;
   late List<Performance> _performances;
 
+  bool _subjectNiveauDisabled = false;
   bool _unsavedChanges = false;
 
   @override
@@ -67,13 +67,14 @@ class _SubjectInputPageState extends State<SubjectInputPage> {
     _shortName = TextEditingController(text: widget.initialShortName)..addListener(() {
       _unsavedChanges = true;
     });
-    _allSubjectCategories = SubjectCategoryService.findAll();
     _color = widget.initialColor;
     _countingTerms = widget.initialCountingTerms;
     _terms = widget.initialTerms;
+    _subjectNiveau = widget.initialSubjectNiveau;
     _subjectType = widget.initialSubjectType;
-    _subjectCategory = widget.initialSubjectCategory;
     _performances = widget.initialPerformances;
+
+    _subjectNiveauDisabled = !widget.initialSubjectType.canBeLeistungsfach;
     super.initState();
   }
 
@@ -102,27 +103,33 @@ class _SubjectInputPageState extends State<SubjectInputPage> {
 
         FormGap(),
 
-        SubjectTypeSelector(
+        SubjectTypeDropdown(
           selectedSubjectType: _subjectType,
-          onSelected: (SubjectType newSelection) {
+          onSelected: (SubjectType? newSubjectType) {
+            if (newSubjectType == null) {
+              return;
+            }
             setState(() {
-              _subjectType = newSelection;
+              _subjectType = newSubjectType;
               _unsavedChanges = true;
+
+              if (_subjectType.canBeLeistungsfach) {
+                _subjectNiveauDisabled = false;
+              } else {
+                _subjectNiveauDisabled = true;
+                _subjectNiveau = SubjectNiveau.basic;
+              }
             });
           },
         ),
 
         FormGap(),
 
-        SubjectCategoryDropdown(
-          selectedSubjectCategory: _subjectCategory,
-          subjectCategories: _allSubjectCategories,
-          onSelected: (SubjectCategory? newSubjectCategory) {
-            if (newSubjectCategory == null) {
-              return;
-            }
+        SubjectNiveauSelector(
+          selectedSubjectNiveau: _subjectNiveau,
+          onSelected: _subjectNiveauDisabled ? null : (SubjectNiveau newSelection) {
             setState(() {
-              _subjectCategory = newSubjectCategory;
+              _subjectNiveau = newSelection;
               _unsavedChanges = true;
             });
           },
@@ -136,6 +143,10 @@ class _SubjectInputPageState extends State<SubjectInputPage> {
             setState(() {
               _terms = newSelection;
               _unsavedChanges = true;
+
+              if (_countingTerms > _terms.length) {
+                _countingTerms = _terms.length;
+              }
             });
           },
         ),
@@ -198,8 +209,8 @@ class _SubjectInputPageState extends State<SubjectInputPage> {
           color: _color,
           terms: _terms,
           countingTermAmount: _countingTerms,
+          subjectNiveau: _subjectNiveau,
           subjectType: _subjectType,
-          subjectCategory: _subjectCategory,
           performances: _performances,
         );
 
@@ -215,8 +226,8 @@ class _SubjectInputPageState extends State<SubjectInputPage> {
           _color,
           _terms,
           _countingTerms,
+          _subjectNiveau,
           _subjectType,
-          _subjectCategory,
           _performances.map((p) => p.id).toList(),
         );
         await PerformanceService.savePerformances(_performances);
