@@ -27,11 +27,13 @@ class _TimetableEditEventPageState extends State<TimetableEditEventPage> {
 
   Subject? _selectedSubject;
   final TextEditingController _roomController = TextEditingController();
+  late final List<Subject?> subjects;
 
   @override
   void initState() {
     _selectedSubject = widget.initialSubject;
     _roomController.text = widget.initialRoom ?? "";
+    subjects = [null, ...SubjectService.findAll().where((s) => s.terms.contains(widget.term))];
     super.initState();
   }
 
@@ -54,7 +56,7 @@ class _TimetableEditEventPageState extends State<TimetableEditEventPage> {
             child: Column(
               children: [
                 SubjectDropdown(
-                  subjects: [null, ...SubjectService.findAll()],
+                  subjects: subjects,
                   selectedSubject: _selectedSubject,
                   onSelected: (s) {
                     setState(() {

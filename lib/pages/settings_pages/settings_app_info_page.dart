@@ -57,6 +57,7 @@ class _SettingsAppInfoPageState extends State<SettingsAppInfoPage> {
           ListTile(title: Text("Package-Name"), subtitle: Text(packageName)),
           ListTile(title: Text("Version"), subtitle: Text(version)),
           ListTile(
+            splashColor: Colors.transparent,
             enableFeedback: false,
             title: Text("Build number"),
             subtitle: Text(buildNumber),
