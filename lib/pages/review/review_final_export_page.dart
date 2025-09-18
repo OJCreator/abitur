@@ -1,12 +1,13 @@
 import 'dart:io';
 import 'dart:typed_data';
 import 'dart:ui';
-import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
+
+import 'image_generator.dart';
 
 
 class ReviewFinalExportPage extends StatefulWidget {
@@ -21,24 +22,31 @@ class _ReviewFinalExportPageState extends State<ReviewFinalExportPage> {
   Uint8List? imageBytes;
 
   @override
+  void initState() {
+    _generateImage();
+    super.initState();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
       child: Column(
         children: [
-          RepaintBoundary(
-            key: repaintKey,
+          const SizedBox(height: 20),
+          Container(
+            padding: const EdgeInsets.all(16),
             child: Container(
-              color: Colors.white,
-              padding: const EdgeInsets.all(16),
-              child: AbiSummaryWidget(
-                abijahrgang: "2026",
-                abischnitt: "1,4",
-                topFaecherLeft: ["Englisch", "Mathe", "Kunst"],
-                topFaecherRight: ["Deutsch", "Physik", "Geschichte"],
+              decoration: BoxDecoration(
+                color: Colors.green,
+                borderRadius: BorderRadius.circular(10),
+                boxShadow: [
+                  BoxShadow(color: Theme.of(context).colorScheme.inverseSurface, spreadRadius: 2, blurRadius: 4, offset: Offset(0, 0)),
+                ],
               ),
+              clipBehavior: Clip.hardEdge,
+              child: imageBytes == null ? CircularProgressIndicator() : Image.memory(imageBytes!),
             ),
           ),
-          const SizedBox(height: 20),
           ElevatedButton(
             onPressed: () async {
               await _generateImage();
@@ -55,15 +63,9 @@ class _ReviewFinalExportPageState extends State<ReviewFinalExportPage> {
   }
 
   Future<void> _generateImage() async {
-    final boundary = repaintKey.currentContext?.findRenderObject() as RenderRepaintBoundary?;
-    if (boundary == null) return;
-
-    final image = await boundary.toImage(pixelRatio: 1.0);
-    final byteData = await image.toByteData(format: ImageByteFormat.png);
-    if (byteData == null) return;
-
+    final bytes = await ImageGenerator.generateImage();
     setState(() {
-      imageBytes = byteData.buffer.asUint8List();
+      imageBytes = bytes;
     });
   }
 
@@ -75,66 +77,5 @@ class _ReviewFinalExportPageState extends State<ReviewFinalExportPage> {
     await file.writeAsBytes(imageBytes!);
 
     await Share.shareXFiles([XFile(file.path)], text: "Mein Abitur Rückblick!");
-  }
-}
-class AbiSummaryWidget extends StatelessWidget {
-  final String abijahrgang;
-  final String abischnitt;
-  final List<String> topFaecherLeft;
-  final List<String> topFaecherRight;
-
-  const AbiSummaryWidget({
-    super.key,
-    required this.abijahrgang,
-    required this.abischnitt,
-    required this.topFaecherLeft,
-    required this.topFaecherRight,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      mainAxisSize: MainAxisSize.min, // wächst mit Inhalt
-      crossAxisAlignment: CrossAxisAlignment.center,
-      children: [
-        Text(
-          "Abijahrgang $abijahrgang",
-          style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-        ),
-        const SizedBox(height: 10),
-        Text(
-          "Abischnitt $abischnitt",
-          style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-        ),
-        const SizedBox(height: 20),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _buildFachColumn("Deine Top-Fächer:", topFaecherLeft),
-            _buildFachColumn("Deine Top-Fächer:", topFaecherRight),
-          ],
-        )
-      ],
-    );
-  }
-
-  Widget _buildFachColumn(String title, List<String> faecher) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          title,
-          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-        ),
-        ...faecher.map((fach) => Padding(
-          padding: const EdgeInsets.only(top: 5),
-          child: Text(
-            fach,
-            style: const TextStyle(fontSize: 18),
-          ),
-        )),
-      ],
-    );
   }
 }

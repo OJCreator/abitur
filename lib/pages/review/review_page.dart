@@ -42,8 +42,12 @@ class _ReviewPageState extends State<ReviewPage> {
   }
   Future<void> _loadAudio() async {
     try {
-      await _audioPlayer.setAsset("assets/mp3/embrace-364091.mp3");
-      _audioPlayer.play();
+      _audioPlayer.processingStateStream.firstWhere((state) => state == ProcessingState.ready).then((_) {
+        if (!_pause) {
+          _audioPlayer.play();
+        }
+      });
+      _audioPlayer.setAsset("assets/mp3/embrace-364091.mp3");
     } catch (e) {
       print("Error loading audio: $e");
     }
