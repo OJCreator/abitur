@@ -1,3 +1,4 @@
+import 'package:abitur/pages/review/review_page.dart';
 import 'package:flutter/material.dart';
 import 'package:in_app_purchase/in_app_purchase.dart';
 import '../../in_app_purchases/purchase_service.dart';
@@ -71,7 +72,14 @@ class ReviewLockedPage extends StatelessWidget {
                 ? null
                 : () async {
               await PurchaseService.buy(product);
-              // TODO weiterleiten
+
+              Navigator.pushReplacement(context,
+                  MaterialPageRoute(
+                    builder: (context) {
+                      return ReviewPage();
+                    },
+                  ));
+
             },
             icon: Icon(Icons.shopping_cart),
             label: Text(

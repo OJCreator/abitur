@@ -99,7 +99,15 @@ class FullVersionPage extends StatelessWidget {
                 ? null
                 : () async {
               await PurchaseService.buy(product);
-              // TODO weiterleiten
+
+
+              Navigator.push(context,
+                  MaterialPageRoute(
+                    builder: (context) {
+                      return nextPage;
+                    },
+                  ));
+
             },
             icon: Icon(Icons.shopping_cart),
             label: Text(
