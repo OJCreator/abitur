@@ -1,3 +1,4 @@
+import 'package:abitur/in_app_purchases/purchase_service.dart';
 import 'package:abitur/pages/evaluation_pages/evaluation_input_page.dart';
 import 'package:abitur/pages/evaluation_pages/evaluations_page.dart';
 import 'package:abitur/pages/analytics_page.dart';
@@ -9,6 +10,7 @@ import 'package:abitur/storage/storage.dart';
 import 'package:abitur/utils/brightness_notifier.dart';
 import 'package:abitur/utils/seed_notifier.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/date_symbol_data_local.dart';
@@ -29,6 +31,7 @@ Future<void> main() async {
   await NotificationService.init();
   initializeTimeZones();
   await Storage.init();
+  await PurchaseService.init();
 
   runApp(
     ChangeNotifierProvider(

@@ -1,6 +1,8 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:abitur/in_app_purchases/purchase_service.dart';
+import 'package:abitur/pages/in_app_purchase_pages/full_version_page.dart';
 import 'package:abitur/pages/settings_pages/settings_app_info_page.dart';
 import 'package:abitur/pages/settings_pages/settings_appearance_page.dart';
 import 'package:abitur/pages/settings_pages/settings_calendar_page.dart';
@@ -182,11 +184,21 @@ class _SettingsPageState extends State<SettingsPage> {
               title: Text("Kalender-Synchronisierung"),
               leading: Icon(Icons.calendar_month),
               onTap: () {
-                Navigator.of(context).push(
-                  MaterialPageRoute(builder: (context) {
-                    return SettingsCalendarPage();
-                  })
-                );
+                if (PurchaseService.fullAccess) {
+                  Navigator.of(context).push(
+                      MaterialPageRoute(builder: (context) {
+                        return SettingsCalendarPage();
+                      })
+                  );
+                } else {
+                  Navigator.of(context).push(
+                      MaterialPageRoute(builder: (context) {
+                        return FullVersionPage(
+                          nextPage: SettingsCalendarPage(),
+                        );
+                      })
+                  );
+                }
               },
             ),
             ListTile(

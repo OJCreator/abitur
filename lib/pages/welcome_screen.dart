@@ -35,42 +35,78 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Container(
-        padding: EdgeInsets.all(20),
+      appBar: AppBar(),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            Text(
-              "Dein Weg zum Abitur",
-              style: Theme.of(context).textTheme.headlineLarge
+            const Text(
+              "Willkommen in deiner Abitur-App.",
+              style: TextStyle(
+                fontSize: 40,
+                fontWeight: FontWeight.bold,
+              ),
             ),
-            SizedBox(height: 20),
-            Text(
-              "Plane, lerne und bereite dich optimal vor – alles an einem Ort.",
-              style: Theme.of(context).textTheme.bodyLarge,
-              textAlign: TextAlign.center,
+            const SizedBox(height: 12),
+
+            ListTile(
+              leading: Icon(Icons.remove_red_eye, color: Theme.of(context).colorScheme.primary, size: 32),
+              title: Text(
+                "Behalte die Übersicht",
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
+              subtitle: Text("Über Prüfungen, Noten und Fächer"),
             ),
-            SizedBox(height: 40),
-            FilledButton(
-              onPressed: () {
-                if (loading) {
-                  return;
-                }
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) {
-                    return SetupLandPage();
-                  }),
-                );
-              },
-              child: Text("Loslegen"),
+            ListTile(
+              leading: Icon(Icons.notifications, color: Theme.of(context).colorScheme.primary, size: 32),
+              title: Text(
+                "Vergiss nie mehr einen Termin",
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
+              subtitle: Text("Du wirst automatisch an alles Wichtige erinnert"),
             ),
-            FilledButton.tonal(
-              onPressed: () => _pickAndImportJson(context),
-              child: Text("Daten importieren"),
+            ListTile(
+              leading: Icon(Icons.query_stats, color: Theme.of(context).colorScheme.primary, size: 32),
+              title: Text(
+                "Wie gut wird dein Abi?",
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
+              subtitle: Text("Sieh dir dynamische Hochrechnungen für deinen Abischnitt an"),
             ),
           ],
+        ),
+      ),
+      bottomNavigationBar: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              FilledButton.icon(
+                onPressed: () {
+                  if (loading) {
+                    return;
+                  }
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) {
+                      return SetupLandPage();
+                    }),
+                  );
+                },
+                icon: Icon(Icons.double_arrow),
+                label: Text("Loslegen"),
+                style: FilledButton.styleFrom(minimumSize: Size(double.infinity, 56)),
+              ),
+              const SizedBox(height: 16.0,),
+              FilledButton.tonalIcon(
+                onPressed: () => _pickAndImportJson(context),
+                icon: Icon(Icons.folder),
+                label: Text("Daten importieren"),
+                style: FilledButton.styleFrom(minimumSize: Size(double.infinity, 56)),
+              ),
+            ],
+          ),
         ),
       ),
     );

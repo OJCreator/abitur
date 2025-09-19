@@ -1,3 +1,5 @@
+import 'package:abitur/in_app_purchases/purchase_service.dart';
+import 'package:abitur/pages/review/review_locked_page.dart';
 import 'package:abitur/pages/review/review_page.dart';
 import 'package:abitur/pages/settings_pages/settings_page.dart';
 import 'package:abitur/pages/subject_pages/subject_chose_graduation_page.dart';
@@ -64,12 +66,21 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
                     "Dein persönliches Abitur-Review ist fertig!",
                     action: "Ansehen",
                     onAction: () {
-                      Navigator.push(context,
-                          MaterialPageRoute(
-                            builder: (context) {
-                              return ReviewPage();
-                            },
-                          ));
+                      if (PurchaseService.abiturReviewAccess) {
+                        Navigator.push(context,
+                            MaterialPageRoute(
+                              builder: (context) {
+                                return ReviewPage();
+                              },
+                            ));
+                      } else {
+                        Navigator.push(context,
+                            MaterialPageRoute(
+                              builder: (context) {
+                                return ReviewLockedPage();
+                              },
+                            ));
+                      }
                     },
                   )
               ),

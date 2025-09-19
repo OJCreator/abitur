@@ -47,7 +47,7 @@ class _ReviewFinalExportPageState extends State<ReviewFinalExportPage> {
               child: imageBytes == null ? CircularProgressIndicator() : Image.memory(imageBytes!),
             ),
           ),
-          ElevatedButton(
+          FilledButton.icon(
             onPressed: () async {
               await _generateImage();
               // Hier könntest du z.B. das Bild teilen, in der Galerie speichern etc.
@@ -55,7 +55,8 @@ class _ReviewFinalExportPageState extends State<ReviewFinalExportPage> {
               print("Bild generiert mit ${imageBytes?.length} bytes.");
               _shareImage();
             },
-            child: const Text("Bild erstellen & teilen"),
+            icon: Icon(Icons.share),
+            label: const Text("Bild erstellen & teilen"),
           )
         ],
       ),

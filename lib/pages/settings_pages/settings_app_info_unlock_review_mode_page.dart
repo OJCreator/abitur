@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:abitur/in_app_purchases/purchase_service.dart';
 import 'package:flutter/material.dart';
 import 'package:crypto/crypto.dart';
 
@@ -32,8 +33,9 @@ class _SettingsAppInfoUnlockReviewModePageState
       );
       return;
     }
-    // TODO: Hier Review-Mode freischalten
-    debugPrint("Entwicklermodus freischalten");
+
+    PurchaseService.activateReviewMode();
+
     Navigator.pop(context);
   }
 
