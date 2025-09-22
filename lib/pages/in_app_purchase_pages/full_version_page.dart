@@ -1,12 +1,22 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:in_app_purchase/in_app_purchase.dart';
 import '../../in_app_purchases/purchase_service.dart';
 
-class FullVersionPage extends StatelessWidget {
+class FullVersionPage extends StatefulWidget {
 
   final Widget nextPage;
 
   const FullVersionPage({super.key, required this.nextPage});
+
+  @override
+  State<FullVersionPage> createState() => _FullVersionPageState();
+}
+
+class _FullVersionPageState extends State<FullVersionPage> {
+
+  bool purchaseInProgress = false;
 
   @override
   Widget build(BuildContext context) {
@@ -100,16 +110,37 @@ class FullVersionPage extends StatelessWidget {
                 : () async {
               await PurchaseService.buy(product);
 
+              late final StreamSubscription<PurchaseDetails> sub;
+              sub = PurchaseService.purchaseUpdates.listen((purchase) async {
+                if (purchase.productID != product.id) {
+                  return;
+                }
+                if (purchase.status == PurchaseStatus.purchased) {
+                  if (purchase.pendingCompletePurchase) {
+                    await InAppPurchase.instance.completePurchase(purchase);
+                  }
 
-              Navigator.push(context,
-                  MaterialPageRoute(
-                    builder: (context) {
-                      return nextPage;
-                    },
-                  ));
+                  sub.cancel();
 
+                  if (context.mounted) {
+                    Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(builder: (_) => widget.nextPage),
+                    );
+                  }
+                } else if (purchase.status == PurchaseStatus.pending) {
+                  setState(() {
+                    purchaseInProgress = true;
+                  });
+                } else if (purchase.status == PurchaseStatus.error) {
+                  sub.cancel();
+                  setState(() {
+                    purchaseInProgress = false;
+                  });
+                }
+              });
             },
-            icon: Icon(Icons.shopping_cart),
+            icon: purchaseInProgress ? CircularProgressIndicator(color: Colors.grey, constraints: BoxConstraints(minHeight: 20, minWidth: 20, maxHeight: 20, maxWidth: 20),) : Icon(Icons.shopping_cart),
             label: Text(
               product == null
                   ? "Vollversion kaufen"

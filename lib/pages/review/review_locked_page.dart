@@ -1,11 +1,21 @@
+import 'dart:async';
+
 import 'package:abitur/pages/review/review_page.dart';
 import 'package:flutter/material.dart';
 import 'package:in_app_purchase/in_app_purchase.dart';
 import '../../in_app_purchases/purchase_service.dart';
 
-class ReviewLockedPage extends StatelessWidget {
+class ReviewLockedPage extends StatefulWidget {
 
   const ReviewLockedPage({super.key});
+
+  @override
+  State<ReviewLockedPage> createState() => _ReviewLockedPageState();
+}
+
+class _ReviewLockedPageState extends State<ReviewLockedPage> {
+
+  bool purchaseInProgress = false;
 
   @override
   Widget build(BuildContext context) {
@@ -73,15 +83,37 @@ class ReviewLockedPage extends StatelessWidget {
                 : () async {
               await PurchaseService.buy(product);
 
-              Navigator.pushReplacement(context,
-                  MaterialPageRoute(
-                    builder: (context) {
-                      return ReviewPage();
-                    },
-                  ));
+              late final StreamSubscription<PurchaseDetails> sub;
+              sub = PurchaseService.purchaseUpdates.listen((purchase) async {
+                if (purchase.productID != product.id) {
+                  return;
+                }
+                if (purchase.status == PurchaseStatus.purchased) {
+                  if (purchase.pendingCompletePurchase) {
+                    await InAppPurchase.instance.completePurchase(purchase);
+                  }
 
+                  sub.cancel();
+
+                  if (context.mounted) {
+                    Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(builder: (_) => ReviewPage()),
+                    );
+                  }
+                } else if (purchase.status == PurchaseStatus.pending) {
+                  setState(() {
+                    purchaseInProgress = true;
+                  });
+                } else if (purchase.status == PurchaseStatus.error) {
+                  sub.cancel();
+                  setState(() {
+                    purchaseInProgress = false;
+                  });
+                }
+              });
             },
-            icon: Icon(Icons.shopping_cart),
+            icon: purchaseInProgress ? CircularProgressIndicator(color: Colors.grey, constraints: BoxConstraints(minHeight: 20, minWidth: 20, maxHeight: 20, maxWidth: 20),) : Icon(Icons.shopping_cart),
             label: Text(
               product == null
                   ? "Review freischalten"

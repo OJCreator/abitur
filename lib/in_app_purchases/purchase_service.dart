@@ -13,6 +13,7 @@ class PurchaseService {
   static List<PurchaseDetails> _purchases = [];
 
   static StreamSubscription<List<PurchaseDetails>>? _subscription;
+  static Stream<PurchaseDetails> get purchaseUpdates => _iap.purchaseStream.expand((purchases) => purchases);
 
   /// Für Google-Mitarbeiter: Schalter für erzwungenen Vollzugriff
   static bool _reviewMode = false;
@@ -20,10 +21,13 @@ class PurchaseService {
 
   static Future<void> init() async {
     final available = await _iap.isAvailable();
-    debugPrint("Ist der Purchase-Service erreichbar? -> $available");
     if (!available) return;
 
-    _subscription = _iap.purchaseStream.listen((purchases) {
+    _subscription = _iap.purchaseStream.listen((purchases) async {
+      for (PurchaseDetails p in purchases) {
+        debugPrint("Product '${p.productID}' purchased (${p.purchaseID}), status: ${p.status}");
+        await _iap.completePurchase(p);
+      }
       _purchases = purchases;
     });
 
@@ -49,15 +53,13 @@ class PurchaseService {
   static bool get abiturReviewAccess {
     if (_reviewMode || fullAccess) return true;
     return _purchases.any((p) =>
-    p.productID == abiturReviewProductId &&
-        p.status == PurchaseStatus.purchased);
+    p.productID == abiturReviewProductId && [PurchaseStatus.purchased, PurchaseStatus.restored].contains(p.status));
   }
 
   static bool get fullAccess {
     if (_reviewMode) return true;
     return _purchases.any((p) =>
-    p.productID == fullVersionProductId &&
-        p.status == PurchaseStatus.purchased);
+    p.productID == fullVersionProductId && [PurchaseStatus.purchased, PurchaseStatus.restored].contains(p.status));
   }
 
   static Future<void> buy(ProductDetails product) async {
