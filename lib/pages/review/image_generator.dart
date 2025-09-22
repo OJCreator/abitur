@@ -1,172 +1,199 @@
+import 'dart:math';
 import 'dart:ui';
+import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import '../../utils/constants.dart';
+
+class AbiturImageData {
+  final String title;
+  final List<InfoCard> cards;
+  final List<PieSlice> pieData;
+
+  AbiturImageData({
+    required this.title,
+    required this.cards,
+    required this.pieData,
+  });
+}
+
+class InfoCard {
+  final String title;
+  final String value;
+  InfoCard(this.title, this.value);
+}
+
+class PieSlice {
+  final String label;
+  final double value;
+
+  PieSlice(this.label, this.value);
+}
+
 class ImageGenerator {
+  static const double width = 1080;
+  static const double height = 1920;
 
-  static final double width = 1080;
-  static final double height = 1920;
-
-  static Future<Uint8List> generateImage() async {
-
-    // DATA
-    final Color backgroundColor = const Color(0xFFFFFDEA);
-    final List<Color> foregroundColors = [
-      Colors.yellow,
-      Colors.blue,
-      Colors.red,
-      Colors.green,
-    ];
-    // END DATA
+  static Future<Uint8List> generateImage(
+      ColorScheme colorScheme,
+      AbiturImageData data,
+      ) async {
+    final backgroundColor = colorScheme.surface;
+    final foregroundColors = colorScheme.surface.generatePalette(4);
 
     final recorder = PictureRecorder();
-    final canvas = Canvas(
-      recorder,
-      Rect.fromLTWH(0, 0, width.toDouble(), height.toDouble()),
-    );
+    final canvas = Canvas(recorder, Rect.fromLTWH(0, 0, width, height));
 
-    final paint = Paint()..color = backgroundColor;
+    // Hintergrund
     canvas.drawRect(
-      Rect.fromLTWH(0, 0, width.toDouble(), height.toDouble()),
-      paint,
+      Rect.fromLTWH(0, 0, width, height),
+      Paint()..color = backgroundColor,
     );
 
-    drawText(
+    // Titel
+    _drawText(
       canvas,
-      "Mein Abi in Zahlen",
+      data.title,
+      offset: const Offset(width / 2, 100),
       style: TextStyle(
         fontSize: 80,
-        color: Colors.black,
-        fontWeight: FontWeight.bold,
-      ),
-      offset: Offset(width/2, 100),
-    );
-    
-    await drawImage(canvas, "assets/abitur_icon.png", offset: Offset(20, 20), label: "Abitur");
-
-    final double rectWidth = 430;
-    final double rectHeight = rectWidth * 0.7;
-    final double rectDistance = (width/2 - rectWidth) / 1.5;
-    final double rectMarginTop = 290;
-    drawRoundedRect(
-      canvas,
-      offset: Offset(rectDistance, rectMarginTop),
-      width: rectWidth,
-      height: rectHeight,
-      color: foregroundColors[0],
-    );
-    drawRoundedRect(
-      canvas,
-      offset: Offset(2*rectDistance + rectWidth, rectMarginTop),
-      width: rectWidth,
-      height: rectHeight,
-      color: foregroundColors[1],
-    );
-    drawRoundedRect(
-      canvas,
-      offset: Offset(rectDistance, rectHeight + rectDistance + rectMarginTop),
-      width: rectWidth,
-      height: rectHeight,
-      color: foregroundColors[2],
-    );
-    drawRoundedRect(
-      canvas,
-      offset: Offset(2*rectDistance + rectWidth, rectHeight + rectDistance + rectMarginTop),
-      width: rectWidth,
-      height: rectHeight,
-      color: foregroundColors[3],
-    );
-
-    drawText(canvas, "Bester Wochentag",
-      offset: Offset(rectDistance + 0.5 * rectWidth, rectMarginTop + 30),
-      style: TextStyle(
-        color: Colors.black,
-        fontSize: 45,
-      ),
-    );
-    drawText(canvas, "Montag",
-      offset: Offset(rectDistance + 0.5 * rectWidth, rectMarginTop + (rectHeight-30) / 2),
-      style: TextStyle(
-        color: Colors.black,
-        fontSize: 70,
+        color: getContrastingTextColor(backgroundColor),
         fontWeight: FontWeight.bold,
       ),
     );
 
-    drawText(canvas, "Bester Monat",
-      offset: Offset(2*rectDistance + 1.5 * rectWidth, rectMarginTop + 30),
-      style: TextStyle(
-        color: Colors.black,
-        fontSize: 45,
-      ),
-    );
-    drawText(canvas, "Mai 2026",
-      offset: Offset(2*rectDistance + 1.5 * rectWidth, rectMarginTop + (rectHeight-30) / 2),
-      style: TextStyle(
-        color: Colors.black,
-        fontSize: 70,
-        fontWeight: FontWeight.bold,
-      ),
-    );
+    // Karten zeichnen (max. 4)
+    _drawCards(canvas, data.cards, foregroundColors);
 
-    drawText(canvas, "Meistgeprüftes Fach",
-      offset: Offset(rectDistance + 0.5 * rectWidth, rectMarginTop + rectDistance + rectHeight + 30),
-      style: TextStyle(
-        color: Colors.black,
-        fontSize: 45,
-      ),
-    );
-    drawText(canvas, "Mathematik",
-      offset: Offset(rectDistance + 0.5 * rectWidth, rectMarginTop + rectDistance + rectHeight + (rectHeight-30) / 2),
-      style: TextStyle(
-        color: Colors.black,
-        fontSize: 70,
-        fontWeight: FontWeight.bold,
-      ),
-    );
+    // PieChart zeichnen
+    _drawPieChart(canvas, data.pieData, const Offset(width / 2, 1400), 350, foregroundColors);
 
-    drawText(canvas, "Unterschied mdl / schr",
-      offset: Offset(2*rectDistance + 1.5 * rectWidth, rectMarginTop + rectDistance + rectHeight + 30),
-      style: TextStyle(
-        color: Colors.black,
-        fontSize: 45,
-      ),
-    );
-    drawText(canvas, "0,64",
-      offset: Offset(2*rectDistance + 1.5 * rectWidth, rectMarginTop + rectDistance + rectHeight + (rectHeight-30) / 2),
-      style: TextStyle(
-        color: Colors.black,
-        fontSize: 70,
-        fontWeight: FontWeight.bold,
-      ),
-    );
+    // Logo
+    await _drawLogo(canvas, "assets/abitur_icon.png", getContrastingTextColor(backgroundColor));
 
     final picture = recorder.endRecording();
     final img = await picture.toImage(width.round(), height.round());
-
     final byteData = await img.toByteData(format: ImageByteFormat.png);
     return byteData!.buffer.asUint8List();
   }
 
-  static Future<void> drawImage(
-      Canvas canvas,
-      String path,
-      {Offset offset = const Offset(0, 0), double radius = 20, String? label, TextStyle? textStyle}) async {
+  static void _drawCards(Canvas canvas, List<InfoCard> cards, List<Color> colors) {
+    final rectWidth = 430.0;
+    final rectHeight = rectWidth * 0.7;
+    final rectDistance = (width / 2 - rectWidth) / 1.5;
+    final rectMarginTop = 290.0;
 
+    for (int i = 0; i < cards.length && i < 4; i++) {
+      final row = i ~/ 2;
+      final col = i % 2;
+      final x = (col + 1) * rectDistance + col * rectWidth;
+      final y = rectMarginTop + row * (rectHeight + rectDistance);
+
+      final card = cards[i];
+      final color = colors[i % colors.length];
+
+      _drawRoundedRect(canvas, Offset(x, y), rectWidth, rectHeight, color);
+
+      _drawText(
+        canvas,
+        card.title,
+        offset: Offset(x + rectWidth / 2, y + 30),
+        style: TextStyle(
+          color: getContrastingTextColor(color),
+          fontSize: 45,
+        ),
+      );
+      _drawText(
+        canvas,
+        card.value,
+        offset: Offset(x + rectWidth / 2, y + (rectHeight - 30) / 2),
+        style: TextStyle(
+          color: getContrastingTextColor(color),
+          fontSize: 70,
+          fontWeight: FontWeight.bold,
+        ),
+      );
+    }
+  }
+
+  static void _drawPieChart(
+      Canvas canvas,
+      List<PieSlice> slices,
+      Offset center,
+      double radius,
+      List<Color> foregroundColors,
+      ) {
+
+    slices.sort((a,b) => b.value.compareTo(a.value));
+
+    final total = slices.fold<double>(0, (sum, e) => sum + e.value);
+    double startAngle = -pi / 2;
+
+    for (int i = 0; i < slices.length; i++) {
+      final slice = slices[i];
+      final sweep = (slice.value / total) * 2 * pi;
+      final paint = Paint()..color = foregroundColors[i % foregroundColors.length];
+
+      // Slice zeichnen
+      canvas.drawArc(
+        Rect.fromCircle(center: center, radius: radius),
+        startAngle,
+        sweep,
+        true,
+        paint,
+      );
+
+      // Nur Label zeichnen, wenn >= 10%
+      if (slice.value / total >= 0.1) {
+        final midAngle = startAngle + sweep / 2;
+        final labelRadius = radius * 0.6;
+
+        final labelPos = Offset(
+          center.dx + cos(midAngle) * labelRadius,
+          center.dy + sin(midAngle) * labelRadius,
+        );
+
+        final textPainter = TextPainter(
+          text: TextSpan(
+            text: slice.label,
+            style: TextStyle(
+              color: getContrastingTextColor(paint.color),
+              fontSize: 40,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          textDirection: TextDirection.ltr,
+        );
+        textPainter.layout();
+
+        // zentriert auf labelPos
+        final textOffset = Offset(
+          labelPos.dx - textPainter.width / 2,
+          labelPos.dy - textPainter.height / 2,
+        );
+
+        textPainter.paint(canvas, textOffset);
+      }
+
+      startAngle += sweep;
+    }
+  }
+
+
+  static Future<void> _drawLogo(Canvas canvas, String path, Color textColor) async {
     const double imgHeight = 75;
     const double imgWidth = 75;
 
-    final data = await
-    rootBundle.load(path);
+    final data = await rootBundle.load(path);
     final codec = await instantiateImageCodec(data.buffer.asUint8List());
     final frame = await codec.getNextFrame();
     final image = frame.image;
 
-    final pos = Offset(0 + offset.dx, height - imgHeight - offset.dy);
-
+    final pos = Offset(20, height - imgHeight - 20);
     final dst = Rect.fromLTWH(pos.dx, pos.dy, imgWidth, imgHeight);
-    final rrect = RRect.fromRectAndRadius(dst, Radius.circular(radius));
+    final rrect = RRect.fromRectAndRadius(dst, Radius.circular(20));
 
     canvas.save();
     canvas.clipRRect(rrect);
@@ -175,52 +202,52 @@ class ImageGenerator {
     canvas.drawImageRect(image, src, dst, Paint());
     canvas.restore();
 
-    if (label != null) {
-      final textPainter = TextPainter(
-        text: TextSpan(text: label, style: textStyle ?? TextStyle(color: Colors.black, fontSize: 40)),
-        textDirection: TextDirection.ltr,
-      );
-      textPainter.layout();
+    final textPainter = TextPainter(
+      text: TextSpan(text: "Abitur", style: TextStyle(color: textColor, fontSize: 40)),
+      textDirection: TextDirection.ltr,
+    );
+    textPainter.layout();
 
-      final textOffset = Offset(pos.dx + imgHeight + 10, pos.dy + (imgHeight - textPainter.height) / 2);
-      textPainter.paint(canvas, textOffset);
-    }
+    final textOffset = Offset(pos.dx + imgHeight + 10, pos.dy + (imgHeight - textPainter.height) / 2);
+    textPainter.paint(canvas, textOffset);
   }
 
-  static void drawText(Canvas canvas, String text, {TextStyle? style, Offset offset = const Offset(100, 100), bool center = true}) {
+  static void _drawText(Canvas canvas, String text,
+      {required Offset offset, TextStyle? style, bool center = true}) {
     final textPainter = TextPainter(
       text: TextSpan(
         text: text,
-        style: style ?? TextStyle(
-          color: Color(0xFFFFFFFF),
-          fontSize: 150,
-        ),
+        style: style ??
+            const TextStyle(
+              color: Colors.white,
+              fontSize: 150,
+            ),
       ),
       textDirection: TextDirection.ltr,
     );
     textPainter.layout();
+
     Offset pos;
     if (center) {
-      pos = Offset(offset.dx - (textPainter.width) / 2, offset.dy);
+      pos = Offset(offset.dx - textPainter.width / 2, offset.dy);
     } else {
       pos = offset;
     }
     textPainter.paint(canvas, pos);
   }
 
-  static void drawRoundedRect(Canvas canvas, {
-        required Offset offset,
-        required double width,
-        required double height,
-        double radius = 20,
-        Color color = Colors.blue,
-      }) {
+  static void _drawRoundedRect(
+      Canvas canvas,
+      Offset offset,
+      double width,
+      double height,
+      Color color,
+      ) {
     final paint = Paint()..color = color;
     final rrect = RRect.fromRectAndRadius(
       Rect.fromLTWH(offset.dx, offset.dy, width, height),
-      Radius.circular(radius),
+      const Radius.circular(20),
     );
-
     canvas.drawRRect(rrect, paint);
   }
 }

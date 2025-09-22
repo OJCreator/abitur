@@ -1,25 +1,20 @@
 import 'package:abitur/pages/review/stories/story.dart';
 import 'package:abitur/pages/review/story_widgets/story_number_view.dart';
 import 'package:abitur/pages/review/story_widgets/story_ranking_view.dart';
-import 'package:abitur/storage/entities/evaluation_date.dart';
-import 'package:abitur/storage/services/evaluation_date_service.dart';
-import 'package:abitur/utils/pair.dart';
 import 'package:flutter/material.dart';
 
-import '../../../storage/entities/subject.dart';
-import '../../../storage/services/subject_service.dart';
+import '../review_data.dart';
 
 class SubjectsStory extends StatelessWidget implements Story {
-
-  final List<Subject> subjects = SubjectService.findAll();
-  final List<EvaluationDate> evaluationDates = EvaluationDateService.findAll();
 
   final GlobalKey<StoryNumberViewState> key1 = GlobalKey();
   final GlobalKey<StoryRankingViewState> key2 = GlobalKey();
   final GlobalKey<StoryNumberViewState> key3 = GlobalKey();
   final GlobalKey<StoryRankingViewState> key4 = GlobalKey();
 
-  SubjectsStory({super.key});
+  final ReviewData data;
+
+  SubjectsStory({super.key, required this.data});
 
   @override
   Duration getDuration() {
@@ -53,26 +48,11 @@ class SubjectsStory extends StatelessWidget implements Story {
   @override
   Widget build(BuildContext context) {
 
-    List<Pair<Subject, double>> subjectAvgs = [];
-    for (Subject s in subjects) {
-      double? avg = SubjectService.getAverage(s);
-      if (avg == null) continue;
-      subjectAvgs.add(Pair(s, avg));
-    }
-    subjectAvgs.sort((a,b) => b.second.compareTo(a.second));
-
-    Map<Subject, int> evaluationDatesPerSubject = {};
-    for (EvaluationDate e in evaluationDates) {
-      evaluationDatesPerSubject[e.evaluation.subject] = (evaluationDatesPerSubject[e.evaluation.subject] ?? 0) + 1;
-    }
-    List<Subject> subjectNames = evaluationDatesPerSubject.keys.toList();
-    subjectNames.sort((a,b) => evaluationDatesPerSubject[b]?.compareTo(evaluationDatesPerSubject[a]!) ?? 0);
-
     return Stack(
       children: [
         StoryNumberView(
           key: key1,
-          number: subjects.length,
+          number: data.subjects.length,
           title: "Fächer hast du belegt",
           subtitle: "Ein solides Grundwissen fürs Leben",
           delay: Duration(seconds: 0),
@@ -81,7 +61,7 @@ class SubjectsStory extends StatelessWidget implements Story {
           key: key2,
           title: "Die hier scheinen richtig dein Ding zu sein!",
           delay: Duration(seconds: 8),
-          ranking: subjectAvgs.take(5).map((pair) {
+          ranking: data.subjectAvgs.take(5).map((pair) {
             return RankingElement(
               title: pair.first.name,
               subtitle: "Ø ${pair.second.toStringAsFixed(2)}",
@@ -91,8 +71,8 @@ class SubjectsStory extends StatelessWidget implements Story {
         ),
         StoryNumberView(
           key: key3,
-          number: evaluationDatesPerSubject[subjectNames.first]!,
-          title: "Prüfungen hattest du in ${subjectNames.first.name}",
+          number: data.evaluationDatesPerSubject[data.subjectsSortedByEvaluationDescending.first]!,
+          title: "Prüfungen hattest du in ${data.subjectsSortedByEvaluationDescending.first.name}",
           subtitle: "Das Fach sollte damit die präziseste Note haben",
           delay: Duration(seconds: 16),
         ),
@@ -101,10 +81,10 @@ class SubjectsStory extends StatelessWidget implements Story {
           title: "Und die hier folgen nur knapp dahinter",
           delay: Duration(seconds: 24),
           startWithIndex: 2,
-          ranking: subjectNames.skip(1).take(5).map((subject) {
+          ranking: data.subjectsSortedByEvaluationDescending.skip(1).take(5).map((subject) {
             return RankingElement(
               title: subject.name,
-              subtitle: "${evaluationDatesPerSubject[subject]} Prüfungen",
+              subtitle: "${data.evaluationDatesPerSubject[subject]} Prüfungen",
               color: subject.color,
             );
           }).toList(),

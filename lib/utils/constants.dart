@@ -20,22 +20,26 @@ extension ListExtension<T> on List<T> {
     }
     return getRange(0, maxSize).toList();
   }
-}
-extension MaxIndexExtension on List<num> {
+}extension MaxIndexExtension on List<num?> {
   int indexOfMax() {
     if (isEmpty) {
       throw StateError(
           "Kann den Index des Maximums nicht bestimmen, Liste ist leer.");
     }
 
-    int maxIndex = 0;
-    num maxValue = this[0];
+    int? maxIndex;
+    num? maxValue;
 
-    for (int i = 1; i < length; i++) {
-      if (this[i] > maxValue) {
-        maxValue = this[i];
+    for (int i = 0; i < length; i++) {
+      final value = this[i];
+      if (value != null && (maxValue == null || value > maxValue)) {
+        maxValue = value;
         maxIndex = i;
       }
+    }
+
+    if (maxIndex == null) {
+      throw StateError("Alle Werte sind null.");
     }
 
     return maxIndex;
@@ -98,6 +102,14 @@ extension ColorExtension on Color {
       return Color.fromARGB(255, r.clamp(0, 255), g.clamp(0, 255), b.clamp(0, 255));
     }
     throw FormatException("Invalid RGB color format");
+  }
+
+  List<Color> generatePalette(int count) {
+    final hslBase = HSLColor.fromColor(this);
+    return List.generate(count, (index) {
+      final lightness = 0.3 + (0.5 * index / (count - 1));
+      return hslBase.withLightness(lightness).toColor();
+    });
   }
 }
 extension IntExtension on int {

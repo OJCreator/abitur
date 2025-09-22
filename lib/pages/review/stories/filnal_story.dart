@@ -1,18 +1,19 @@
 import 'package:abitur/pages/review/stories/story.dart';
 import 'package:abitur/pages/review/story_widgets/story_number_view.dart';
-import 'package:abitur/storage/services/projection_service.dart';
 import 'package:flutter/cupertino.dart';
 
-import '../../../isolates/models/projection/projection_model.dart';
+import '../review_data.dart';
 import '../story_widgets/story_text_view.dart';
 
 class FinalStory extends StatelessWidget implements Story {
+
+  final ReviewData data;
 
   final GlobalKey<StoryNumberViewState> key1 = GlobalKey();
   final GlobalKey<StoryTextViewState> key2 = GlobalKey();
   final GlobalKey<StoryNumberViewState> key3 = GlobalKey();
 
-  FinalStory({super.key});
+  FinalStory({super.key, required this.data});
 
   @override
   Duration getDuration() {
@@ -43,8 +44,6 @@ class FinalStory extends StatelessWidget implements Story {
   @override
   Widget build(BuildContext context) {
 
-    Future<ProjectionModel> projection = ProjectionService.computeProjectionIsolated();
-
     return Stack(
       children: [
         StoryNumberView(
@@ -61,7 +60,7 @@ class FinalStory extends StatelessWidget implements Story {
           delay: Duration(seconds: 8),
         ),
         FutureBuilder(
-          future: projection,
+          future: data.projection,
           builder: (context, snapshot) {
             if (!snapshot.hasData) return Container();
             return StoryNumberView(

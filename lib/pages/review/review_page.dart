@@ -1,3 +1,4 @@
+import 'package:abitur/pages/review/review_data.dart';
 import 'package:abitur/pages/review/review_final_export_page.dart';
 import 'package:abitur/pages/review/review_page_overlay.dart';
 import 'package:abitur/pages/review/stories/average_story.dart';
@@ -20,26 +21,36 @@ class ReviewPage extends StatefulWidget {
 
 class _ReviewPageState extends State<ReviewPage> {
 
+  late ReviewData _reviewData;
+
   late AudioPlayer _audioPlayer;
 
-  final List<Story> stories = [
-    WelcomeStory(),
-    SubjectsStory(),
-    EvaluationsStory(),
-    DifferencesStory(),
-    AverageStory(),
-    FinalStory(),
-  ];
+  late List<Story> _stories;
   int _currentStoryIndex = 0;
-  bool _pause = false;
+  bool _pause = true;
 
   @override
   void initState() {
     super.initState();
-    _audioPlayer = AudioPlayer();
-    _loadAudio();
-    WakelockPlus.enable();
+    _loadReview();
   }
+
+  Future<void> _loadReview() async {
+    _reviewData = ReviewData();
+    _stories = [
+      WelcomeStory(),
+      SubjectsStory(data: _reviewData),
+      EvaluationsStory(data: _reviewData),
+      DifferencesStory(data: _reviewData),
+      AverageStory(data: _reviewData),
+      FinalStory(data: _reviewData),
+    ];
+    await WakelockPlus.enable();
+    _audioPlayer = AudioPlayer();
+    await _loadAudio();
+    _pause = false;
+  }
+
   Future<void> _loadAudio() async {
     try {
       _audioPlayer.processingStateStream.firstWhere((state) => state == ProcessingState.ready).then((_) {
@@ -59,10 +70,10 @@ class _ReviewPageState extends State<ReviewPage> {
     super.dispose();
   }
   void _seekAudioToStory(int storyIndex) {
-    if (storyIndex < 0 || storyIndex > stories.length) return;
+    if (storyIndex < 0 || storyIndex > _stories.length) return;
     Duration d = Duration();
     for (int i = 0; i < storyIndex; i++) {
-      d = d + stories[i].getDuration();
+      d = d + _stories[i].getDuration();
     }
     if ((_audioPlayer.position - d).abs().compareTo(Duration(seconds: 1)) < 0) return; // es ist nur ein ganz kleiner Unterschied
     _audioPlayer.seek(d);
@@ -77,14 +88,14 @@ class _ReviewPageState extends State<ReviewPage> {
     if (pause) {
       // pause
       _audioPlayer.pause();
-      if (_currentStoryIndex < stories.length) {
-        stories[_currentStoryIndex].pause();
+      if (_currentStoryIndex < _stories.length) {
+        _stories[_currentStoryIndex].pause();
       }
     } else {
       // resume
       _audioPlayer.play();
-      if (_currentStoryIndex < stories.length) {
-        stories[_currentStoryIndex].resume();
+      if (_currentStoryIndex < _stories.length) {
+        _stories[_currentStoryIndex].resume();
       }
     }
   }
@@ -102,21 +113,20 @@ class _ReviewPageState extends State<ReviewPage> {
     return Scaffold(
       body: Stack(
         children: [
-          // todo background
-          if (_currentStoryIndex < stories.length)
+          if (_currentStoryIndex < _stories.length)
             SafeArea(
               child: Padding(
                 padding: const EdgeInsets.only(top: 80),
-                child: stories[_currentStoryIndex],
+                child: _stories[_currentStoryIndex],
               ),
             ),
-          if (_currentStoryIndex == stories.length)
+          if (_currentStoryIndex == _stories.length)
             SafeArea(
-              child: ReviewFinalExportPage(),
+              child: ReviewFinalExportPage(data: _reviewData),
             ),
           SafeArea(
             child: ReviewPageOverlay(
-              storyDurations: stories.map((s) => s.getDuration()).toList(),
+              storyDurations: _stories.map((s) => s.getDuration()).toList(),
               onChangePause: onPause,
               onChangeMusic: onMusic,
               onChangeStory: (int storyIndex) {
@@ -124,8 +134,8 @@ class _ReviewPageState extends State<ReviewPage> {
                   _currentStoryIndex = storyIndex;
                 });
                 _seekAudioToStory(storyIndex);
-                if (_currentStoryIndex < stories.length) {
-                  stories[_currentStoryIndex].restart();
+                if (_currentStoryIndex < _stories.length) {
+                  _stories[_currentStoryIndex].restart();
                 }
               },
             ),

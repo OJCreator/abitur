@@ -171,7 +171,7 @@ class _StoryGraphViewPieChart extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
 
-    final colors = generatePalette(Theme.of(context).colorScheme.surface, min(data.keys.length, 8));
+    final colors = Theme.of(context).colorScheme.surface.generatePalette(min(data.keys.length, 8));
 
     final sortedDataKeys = data.keys.toList();
     sortedDataKeys.sort((a,b) => data[b]?.compareTo(data[a]!) ?? 0);
@@ -210,13 +210,4 @@ class _StoryGraphViewPieChart extends StatelessWidget {
       ),
     );
   }
-}
-
-List<Color> generatePalette(Color baseColor, int count) {
-  final hslBase = HSLColor.fromColor(baseColor);
-  return List.generate(count, (index) {
-    // Helligkeit zwischen 0.4 und 0.8 variieren
-    final lightness = 0.3 + (0.5 * index / (count - 1));
-    return hslBase.withLightness(lightness).toColor();
-  });
 }

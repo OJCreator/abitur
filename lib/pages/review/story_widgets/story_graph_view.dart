@@ -271,7 +271,7 @@ class _StoryGraphViewLineChart extends StatelessWidget {
                     .map((entry) => FlSpot(entry.key.toDouble(), entry.value!.toDouble()))
                     .toList(),
                 isCurved: true,
-                color: Colors.blue,
+                color: Theme.of(context).colorScheme.primary,
                 barWidth: 3,
                 dotData: FlDotData(
                   show: true,

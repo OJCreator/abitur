@@ -1,26 +1,20 @@
+import 'package:abitur/pages/review/review_data.dart';
 import 'package:abitur/pages/review/stories/story.dart';
 import 'package:abitur/pages/review/story_widgets/story_number_view.dart';
-import 'package:abitur/storage/services/settings_service.dart';
 import 'package:abitur/utils/constants.dart';
 import 'package:flutter/material.dart';
 
-import '../../../storage/entities/subject.dart';
-import '../../../storage/services/evaluation_date_service.dart';
-import '../../../storage/services/subject_service.dart';
 import '../story_widgets/story_graph_view.dart';
 
 class AverageStory extends StatelessWidget implements Story {
 
-  final List<Subject> subjects = SubjectService.findAll();
-
-  late final List<double> dayAverages = List.generate(5, (_) => 0);
-  late final List<double?> monthAverages = List.generate(24, (_) => null);
+  final ReviewData data;
 
   final GlobalKey<StoryNumberViewState> key1 = GlobalKey();
   final GlobalKey<StoryGraphViewState> key2 = GlobalKey();
   final GlobalKey<StoryGraphViewState> key3 = GlobalKey();
 
-  AverageStory({super.key});
+  AverageStory({super.key, required this.data});
 
   @override
   Duration getDuration() {
@@ -48,64 +42,17 @@ class AverageStory extends StatelessWidget implements Story {
     key3.currentState?.restart();
   }
 
-  int _getMonthIndex(int identifier, DateTime startMonth) {
-    final idYear = identifier ~/ 1000;
-    final idMonth = identifier % 1000;
-
-    final startYear = startMonth.year % 100;
-    final startMonthValue = startMonth.month;
-
-    return (idYear - startYear) * 12 + (idMonth - startMonthValue);
-  }
-
   @override
   Widget build(BuildContext context) {
 
-
-    // RESET
-    for (int i = 0; i < dayAverages.length; i++) {
-      dayAverages[i] = 0;
-    }
-    for (int i = 0; i < monthAverages.length; i++) {
-      monthAverages[i] = null;
-    }
-
-    final evaluationDates = EvaluationDateService.findAll();
-    final groupedEvaluationDatesByDay = evaluationDates.where((e) => e.date != null).toList().groupBy((e) => e.date!.weekday);
-    groupedEvaluationDatesByDay.forEach((day, evaluationDates) {
-      final notes = evaluationDates.map((e) => e.note).where((note) => note != null);
-      if (notes.isEmpty) {
-        dayAverages[day-1] = 0.0;
-      } else {
-        final sum = notes.fold<double>(0.0, (total, note) => total + note!);
-        dayAverages[day-1] = sum / notes.length;
-      }
-    });
-    final groupedEvaluationDatesByMonth = evaluationDates.where((e) => e.date != null && e.note != null).toList().groupBy((e) => (e.date!.year % 100) * 1000 + e.date!.month); // yyMM
-    final startMonth = SettingsService.firstDayOfSchool;
-    groupedEvaluationDatesByMonth.forEach((identifier, evaluationDates) {
-      final notes = evaluationDates.map((e) => e.note).where((note) => note != null);
-
-      final index = _getMonthIndex(identifier, startMonth);
-      if (index < 0 || index >= monthAverages.length) return; // ignorieren, falls außerhalb der 24 Monate
-
-      if (notes.isEmpty) {
-        monthAverages[index] = 0.0;
-      } else {
-        final sum = notes.fold<double>(0.0, (total, note) => total + note!);
-        monthAverages[index] = sum / notes.length;
-      }
-    });
-
     String bestDay;
-    switch (dayAverages.indexOfMax()) {
+    switch (data.weekdayAverages.indexOfMax()) {
       case 0: bestDay = "Montags";
       case 1: bestDay = "Dienstags";
       case 2: bestDay = "Mittwochs";
       case 3: bestDay = "Donnerstags";
       default: bestDay = "Freitags";
     }
-
 
     return Stack(
       children: [
@@ -120,7 +67,7 @@ class AverageStory extends StatelessWidget implements Story {
           key: key2,
           title: "$bestDay hast du am besten performed",
           delay: Duration(seconds: 8),
-          data: dayAverages,
+          data: data.weekdayAverages,
           xAxisTitle: null,
           yAxisTitle: "Durchschnitt",
           xValues: (index) {
@@ -137,12 +84,12 @@ class AverageStory extends StatelessWidget implements Story {
           key: key3,
           title: "Und über die ganze Zeit:",
           delay: Duration(seconds: 16),
-          data: monthAverages,
+          data: data.monthAverages,
           xAxisTitle: null,
           yAxisTitle: "Durchschnitt",
           xValues: (index) {
             if (index % 2 != 0) return "";
-            final monthNumber = (startMonth.month - 1 + index) % 12 + 1;
+            final monthNumber = (data.startMonth.month - 1 + index) % 12 + 1;
             return monthNumber.monthShort();
           }
         ),

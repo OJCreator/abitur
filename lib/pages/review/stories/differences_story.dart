@@ -1,18 +1,18 @@
 import 'package:abitur/pages/review/stories/story.dart';
 import 'package:abitur/pages/review/story_widgets/story_number_view.dart';
-import 'package:abitur/storage/entities/evaluation_date.dart';
-import 'package:abitur/storage/entities/evaluation_type.dart';
-import 'package:abitur/storage/services/evaluation_date_service.dart';
 import 'package:flutter/cupertino.dart';
 
+import '../review_data.dart';
 import '../story_widgets/story_text_view.dart';
 
 class DifferencesStory extends StatelessWidget implements Story {
 
+  final ReviewData data;
+
   final GlobalKey<StoryTextViewState> key1 = GlobalKey();
   final GlobalKey<StoryNumberViewState> key2 = GlobalKey();
 
-  DifferencesStory({super.key});
+  DifferencesStory({super.key, required this.data});
 
   @override
   Duration getDuration() {
@@ -40,19 +40,6 @@ class DifferencesStory extends StatelessWidget implements Story {
   @override
   Widget build(BuildContext context) {
 
-    List<EvaluationDate> evaluationDates = EvaluationDateService.findAll();
-    List<EvaluationDate> oral = evaluationDates.where((e) => e.note != null && e.evaluation.evaluationType.assessmentType == AssessmentType.oral).toList();
-    List<EvaluationDate> written = evaluationDates.where((e) => e.note != null && e.evaluation.evaluationType.assessmentType == AssessmentType.written).toList();
-
-    double oralAvg = oral.isEmpty
-        ? 0
-        : oral.map((e) => e.note).reduce((a, b) => a! + b!)! / oral.length;
-    double writtenAvg = written.isEmpty
-        ? 0
-        : written.map((e) => e.note).reduce((a, b) => a! + b!)! / written.length;
-
-    int difference = ((oralAvg - writtenAvg) * 100).toInt();
-
     return Stack(
       children: [
         StoryTextView(
@@ -63,10 +50,10 @@ class DifferencesStory extends StatelessWidget implements Story {
         ),
         StoryNumberView(
           key: key2,
-          number: difference.abs(),
+          number: (data.difference * 100).toInt().abs(),
           decimalPlaces: 2,
-          title: difference == 0 ? "War der Unterschied zwischen mündlich und schriftlich" : (difference > 0 ? "Notenpunkte warst du mündlich besser als schriftlich" : "Notenpunkte warst du schriftlich besser als mündlich"),
-          subtitle: difference == 0 ? "Du kannst deine Leistung beeindruckend gut halten" : ("Kriss krass"),
+          title: data.difference == 0 ? "War der Unterschied zwischen mündlich und schriftlich" : (data.difference > 0 ? "Notenpunkte warst du mündlich besser als schriftlich" : "Notenpunkte warst du schriftlich besser als mündlich"),
+          subtitle: data.difference == 0 ? "Du kannst deine Leistung beeindruckend gut halten" : ("Kriss krass"),
           delay: Duration(seconds: 6),
         ),
       ],
