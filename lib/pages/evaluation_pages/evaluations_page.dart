@@ -37,7 +37,7 @@ class _EvaluationsPageState extends State<EvaluationsPage> {
 
   Future<void> loadHolidays(DateTime date) async {
     focusedDay = date;
-    holidays = await ApiService.loadHolidays(date.year, date.month);
+    holidays = await ApiService.loadHolidays(date.year);
     setState(() { });
   }
 
@@ -187,7 +187,7 @@ class _EvaluationsPageState extends State<EvaluationsPage> {
   String? isHoliday(DateTime date) {
     List<Holiday> possibleHolidays = holidays.where((holiday) => holiday.begin.isBefore(date.add(Duration(days: 1))) && holiday.end.isAfter(date.add(Duration(days: -1)))).toList();
     if (possibleHolidays.isNotEmpty) {
-      return possibleHolidays.first.name;
+      return "Ferien";
     }
     if (date.weekday > 5) {
       return "Wochenende";

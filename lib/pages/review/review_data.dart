@@ -1,3 +1,4 @@
+import 'package:abitur/storage/services/api_service.dart';
 import 'package:abitur/utils/constants.dart';
 
 import '../../isolates/models/projection/projection_model.dart';
@@ -28,6 +29,7 @@ class ReviewData {
   late final double difference;
 
   // AVG
+  late final int schoolDays;
   late final List<double> weekdayAverages = List.generate(5, (_) => 0);
   late final List<double?> monthAverages = List.generate(24, (_) => null);
   late final DateTime startMonth;
@@ -83,7 +85,20 @@ class ReviewData {
     difference = ((oralAvg - writtenAvg) * 100).roundToDouble() / 100;
   }
 
-  void _fillAverageData() {
+  Future<void> _fillAverageData() async {
+
+    DateTime? lastDate;
+    for (final eval in evaluationDates) {
+      final current = eval.date;
+      if (current != null) {
+        if (lastDate == null || current.isAfter(lastDate)) {
+          lastDate = current;
+        }
+      }
+    }
+    lastDate ??= SettingsService.lastDayOfSchool;
+    schoolDays = await ApiService.countSchoolDaysBetween(SettingsService.firstDayOfSchool, lastDate);
+
     final groupedEvaluationDatesByDay = evaluationDates.where((e) => e.date != null).toList().groupBy((e) => e.date!.weekday);
     groupedEvaluationDatesByDay.forEach((day, evaluationDates) {
       final notes = evaluationDates.map((e) => e.note).where((note) => note != null);

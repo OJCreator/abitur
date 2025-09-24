@@ -47,7 +47,7 @@ dependencies:
   path_provider: ^2.1.5
   share_plus: ^10.1.4
   file_picker: ^8.1.7
-  shared_preferences: ^2.3.5
+  shared_preferences: ^2.5.3
   http: ^1.2.2
   device_calendar: ^4.3.3
   flutter_localization: ^0.3.1

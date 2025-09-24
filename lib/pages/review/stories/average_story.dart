@@ -58,7 +58,7 @@ class AverageStory extends StatelessWidget implements Story {
       children: [
         StoryNumberView(
           key: key1,
-          number: 12345,
+          number: data.schoolDays,
           title: "Tage in die Schule gegangen",
           subtitle: "Klar, dass da mancher besser war als der andere...",
           delay: Duration(seconds: 0),
