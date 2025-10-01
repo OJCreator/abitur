@@ -1,8 +1,11 @@
+import 'package:abitur/pages/analytics_pages/analytics_average_page.dart';
 import 'package:abitur/storage/services/subject_service.dart';
 import 'package:abitur/utils/constants.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 
+import '../../in_app_purchases/purchase_service.dart';
+import '../../pages/in_app_purchase_pages/full_version_page.dart';
 import '../../storage/entities/subject.dart';
 import '../../utils/pair.dart';
 
@@ -68,46 +71,84 @@ class _AverageAnalyticsState extends State<AverageAnalytics> {
             ],
           ),
           const SizedBox(height: 38,),
-          AspectRatio(
-            aspectRatio: 1.5,
-            child: FutureBuilder(
-              future: averageHistory,
-              builder: (context, snapshot) {
-                if (!snapshot.hasData) {
-                  return Center(child: CircularProgressIndicator());
-                }
-                return LineChart(
-                  LineChartData(
-                    lineTouchData: LineTouchData(enabled: false),
-                    gridData: FlGridData(show: false),
-                    titlesData: FlTitlesData(
-                      bottomTitles: AxisTitles(
-                        sideTitles: SideTitles(
-                          showTitles: true,
-                          reservedSize: 32,
-                          interval: 1,
-                          getTitlesWidget: bottomTitleWidgets,
-                        ),
-                      ),
-                      rightTitles: const AxisTitles(),
-                      topTitles: const AxisTitles(),
-                      leftTitles: AxisTitles(
-                        sideTitles: SideTitles(
-                          getTitlesWidget: leftTitles,
-                          showTitles: true,
-                          interval: 1,
-                        ),
-                      ),
-                    ),
-                    borderData: FlBorderData(show: false),
-                    lineBarsData: snapshot.data!.mapToIterable((key, value) => generateAverageData(key, value)).toList(),
-                    minX: 0,
-                    maxX: DateTime.now().difference(startDate).inDays.toDouble(),
-                    maxY: 15,
-                    minY: 0,
-                  ),
+          GestureDetector(
+            onTap: () async {
+              Feedback.forTap(context);
+              if (PurchaseService.fullAccess) {
+                await Navigator.of(context).push(
+                    MaterialPageRoute(builder: (context) {
+                      return AnalyticsAveragePage();
+                    })
+                );
+              } else {
+                Navigator.of(context).push(
+                    MaterialPageRoute(builder: (context) {
+                      return FullVersionPage(
+                        nextPage: AnalyticsAveragePage(),
+                      );
+                    })
                 );
               }
+            },
+            child: AspectRatio(
+              aspectRatio: 1.5,
+              child: FutureBuilder(
+                future: averageHistory,
+                builder: (context, snapshot) {
+                  if (!snapshot.hasData) {
+                    return Center(child: CircularProgressIndicator());
+                  }
+                  return LineChart(
+                    LineChartData(
+                      lineTouchData: LineTouchData(enabled: false),
+                      gridData: FlGridData(
+                        show: true,
+                        drawVerticalLine: false,
+                        horizontalInterval: 1,
+                        getDrawingHorizontalLine: (value) {
+                          return FlLine(
+                            color: Colors.grey.withAlpha(77),
+                            strokeWidth: 1,
+                            dashArray: [5, 5],
+                          );
+                        },
+                        getDrawingVerticalLine: (value) {
+                          return FlLine(
+                            color: Colors.grey.withAlpha(77),
+                            strokeWidth: 1,
+                            dashArray: [5, 5],
+                          );
+                        },
+                      ),
+                      titlesData: FlTitlesData(
+                        bottomTitles: AxisTitles(
+                          sideTitles: SideTitles(
+                            showTitles: true,
+                            reservedSize: 32,
+                            interval: 1,
+                            getTitlesWidget: bottomTitleWidgets,
+                          ),
+                        ),
+                        rightTitles: const AxisTitles(),
+                        topTitles: const AxisTitles(),
+                        leftTitles: AxisTitles(
+                          sideTitles: SideTitles(
+                            getTitlesWidget: leftTitles,
+                            showTitles: true,
+                            interval: 1,
+                          ),
+                        ),
+                      ),
+                      borderData: FlBorderData(show: false),
+                      lineBarsData: snapshot.data!.mapToIterable((key, value) => generateAverageData(key, value)).toList(),
+                      minX: 0,
+                      maxX: DateTime.now().difference(startDate).inDays.toDouble(),
+                      maxY: 15,
+                      minY: 0,
+                    ),
+                  );
+                }
+              ),
             ),
           ),
         ],

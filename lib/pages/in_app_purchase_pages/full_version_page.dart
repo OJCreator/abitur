@@ -73,11 +73,6 @@ class _FullVersionPageState extends State<FullVersionPage> {
                     "Analysen",
                     style: TextStyle(fontWeight: FontWeight.bold),
                   ),
-                  SizedBox(width: 10,),
-                  Badge(
-                    label: Text("Demnächst"),
-                    backgroundColor: Theme.of(context).colorScheme.primary,
-                  ),
                 ],
               ),
               subtitle: Text("Profitiere von zusätzlichen Statistiken"),

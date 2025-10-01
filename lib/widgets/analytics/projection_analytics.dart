@@ -1,5 +1,5 @@
 import 'package:abitur/isolates/models/projection/projection_model.dart';
-import 'package:abitur/pages/analytics_pages/projection_analytics_page.dart';
+import 'package:abitur/pages/analytics_pages/analytics_projection_page.dart';
 import 'package:abitur/widgets/percent_indicator.dart';
 import 'package:flutter/material.dart';
 

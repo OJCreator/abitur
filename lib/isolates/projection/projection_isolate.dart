@@ -14,6 +14,8 @@ import '../average_isolates.dart';
 import '../models/projection/evaluations_subjects_performances_evaluation_dates_model.dart';
 import '../models/projection/projection_model.dart';
 
+const List<Land> landsWithProjection = [Land.by];
+
 class ProjectionIsolate {
 
   static ProjectionModel calculateProjection(EvaluationsSubjectsPerformancesEvaluationDatesModel model) {
@@ -60,8 +62,8 @@ class ProjectionIsolate {
       ProjectionByTransformer.transform(block1, workModel);
     } else {
       // TODO: Hochrechnung für andere Länder
-      debugPrint("TODO: Hochrechnung für andere Länder");
-      throw ArgumentError("Das Bundesland kann nicht bearbeitet werden.");
+      debugPrint("Keine Hochrechnung: Das Bundesland kann nicht bearbeitet werden.");
+      // throw ArgumentError("Das Bundesland kann nicht bearbeitet werden.");
     }
 
     return block1;

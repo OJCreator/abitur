@@ -1,18 +1,18 @@
 enum SubjectType {
-  wahlfach("Wahlfach", "Orchester, BigBand, ...", false, null),
-  profilfach("Profilfach", "Instrumentalensemble, Psychologie, ...", false, 2),
-  wSeminar("W-Seminar", "W-Seminar", false, 1),
-  naturwissenschaftOhneInf("Naturwissenschaft (ohne Informatik)", "Physik, Biologie, ...", true, 2),
-  informatik("Informatik", "Informatik", true, 1),
-  fortgefuehrteFremdsprache("Fortgeführte Fremdsprache", "Englisch, Französisch, ...", true, 2),
-  spaetBeginnendeFremdsprache("Spät beginnende Fremdsprache", "Türkisch, Russisch, ...", true, 1),
-  standardPflichtfach("Standard-Pflichtfach", "Deutsch, Mathematik, Geschichte, Religion, Sport, Kunst, Musik", true, 6),
-  gesellschaftswissenschaften("Gesellschaftswissenschaft", "PuG, Geographie, Wirtschaft", true, 2),
-  mathevk("Vertiefungskurs Mathematik", "Mathe VK", false, 1),
-  deutschvk("Vertiefungskurs Deutsch", "Deutsch VK", false, 1);
+  wahlfach("Wahlfach", ["Orchester", "BigBand", "Theater"], false, null),
+  profilfach("Profilfach", ["Instrumentalensemble", "Vokalensemble", "Psychologie"], false, 2),
+  wSeminar("W-Seminar", ["W-Seminar"], false, 1),
+  naturwissenschaftOhneInf("Naturwissenschaft (ohne Informatik)", ["Physik", "Biologie", "Chemie", "Biophysik", "Astrophysik"], true, 2),
+  informatik("Informatik", ["Informatik"], true, 1),
+  fortgefuehrteFremdsprache("Fortgeführte Fremdsprache", ["Englisch", "Französisch", "Latein", "Spanisch"], true, 2),
+  spaetBeginnendeFremdsprache("Spät beginnende Fremdsprache", ["Türkisch", "Russisch", "Japanisch"], true, 1),
+  standardPflichtfach("Standard-Pflichtfach", ["Deutsch", "Mathematik", "Geschichte", "Religion", "Ethik", "Sport", "Kunst", "Musik"], true, 6),
+  gesellschaftswissenschaften("Gesellschaftswissenschaft", ["PuG", "Geographie", "Wirtschaft"], true, 2),
+  mathevk("Vertiefungskurs Mathematik", ["Mathe VK"], false, 1),
+  deutschvk("Vertiefungskurs Deutsch", ["Deutsch VK"], false, 1);
 
   final String displayName;
-  final String examples;
+  final List<String> examples;
   final bool canBeLeistungsfach;
   final int? maxAmount;
 

@@ -35,11 +35,15 @@ class SubjectService {
     List<Subject> existingSubjects = findAll();
     Land land = SettingsService.land;
     int advancedSubjectAmount = existingSubjects.countWhere((s) => s.subjectNiveau == SubjectNiveau.advanced);
+    int subjectAmountWithSameType = existingSubjects.countWhere((s) => s.subjectType == subjectType);
     if ([Land.bw, Land.by, Land.rp, Land.sh, Land.th, Land.st, Land.hh].contains(land) && subjectNiveau == SubjectNiveau.advanced && advancedSubjectAmount >= 3) {
       throw InvalidFormException("Es gibt bereits 3 Fächer auf erhöhtem Anforderungsniveau. Du kannst keine weiteren hinzufügen.");
     }
     if ([Land.ni, Land.he, Land.sn, Land.be, Land.bb, Land.nw, Land.mv, Land.sl, Land.hb].contains(land) && subjectNiveau == SubjectNiveau.advanced && advancedSubjectAmount >= 2) {
       throw InvalidFormException("Es gibt bereits 2 Fächer auf erhöhtem Anforderungsniveau. Du kannst keine weiteren hinzufügen.");
+    }
+    if (subjectType.maxAmount != null && subjectAmountWithSameType >= subjectType.maxAmount!) {
+      throw InvalidFormException("Es gibt bereits ${subjectType.maxAmount} Fächer mit dem Fächertyp \"${subjectType.displayName}\". Du kannst keine weiteren hinzufügen.");
     }
 
     Subject s = Subject(
@@ -66,11 +70,15 @@ class SubjectService {
     List<Subject> existingSubjects = findAll().where((s) => s != subject).toList();
     Land land = SettingsService.land;
     int advancedSubjectAmount = existingSubjects.countWhere((s) => s.subjectNiveau == SubjectNiveau.advanced);
+    int subjectAmountWithSameType = existingSubjects.countWhere((s) => s.subjectType == subjectType);
     if ([Land.bw, Land.by, Land.rp, Land.sh, Land.th, Land.st, Land.hh].contains(land) && subjectNiveau == SubjectNiveau.advanced && advancedSubjectAmount >= 3) {
       throw InvalidFormException("Es gibt bereits 3 Fächer auf erhöhtem Anforderungsniveau. Du kannst keine weiteren hinzufügen.");
     }
     if ([Land.ni, Land.he, Land.sn, Land.be, Land.bb, Land.nw, Land.mv, Land.sl, Land.hb].contains(land) && subjectNiveau == SubjectNiveau.advanced && advancedSubjectAmount >= 2) {
       throw InvalidFormException("Es gibt bereits 2 Fächer auf erhöhtem Anforderungsniveau. Du kannst keine weiteren hinzufügen.");
+    }
+    if (subjectType.maxAmount != null && subjectAmountWithSameType >= subjectType.maxAmount!) {
+      throw InvalidFormException("Es gibt bereits ${subjectType.maxAmount} Fächer mit dem Fächertyp \"${subjectType.displayName}\". Du kannst keine weiteren hinzufügen.");
     }
 
     await PerformanceService.savePerformances(performances);

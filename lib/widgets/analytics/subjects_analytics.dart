@@ -1,10 +1,13 @@
 import 'dart:math';
 
+import 'package:abitur/pages/analytics_pages/analytics_subjects_page.dart';
 import 'package:abitur/storage/services/subject_service.dart';
 import 'package:abitur/utils/constants.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 
+import '../../in_app_purchases/purchase_service.dart';
+import '../../pages/in_app_purchase_pages/full_version_page.dart';
 import '../../storage/entities/subject.dart';
 
 class SubjectsAnalytics extends StatefulWidget {
@@ -42,19 +45,37 @@ class SubjectsAnalyticsState extends State<SubjectsAnalytics> {
 
   @override
   Widget build(BuildContext context) {
-    return AspectRatio(
-      aspectRatio: 1.25,
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Text(
-              "Fächerübersicht",
-              style: Theme.of(context).textTheme.titleMedium,
-            ),
-            const SizedBox(height: 38,),
-            Expanded(
+    return Padding(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Text(
+            "Fächerübersicht",
+            style: Theme.of(context).textTheme.titleMedium,
+          ),
+          const SizedBox(height: 38,),
+          GestureDetector(
+            onTap: () async {
+              Feedback.forTap(context);
+              if (PurchaseService.fullAccess) {
+                await Navigator.of(context).push(
+                    MaterialPageRoute(builder: (context) {
+                      return AnalyticsSubjectsPage();
+                    })
+                );
+              } else {
+                Navigator.of(context).push(
+                    MaterialPageRoute(builder: (context) {
+                      return FullVersionPage(
+                        nextPage: AnalyticsSubjectsPage(),
+                      );
+                    })
+                );
+              }
+            },
+            child: AspectRatio(
+              aspectRatio: 1.5,
               child: BarChart(
                 BarChartData(
                   maxY: 15,
@@ -84,8 +105,8 @@ class SubjectsAnalyticsState extends State<SubjectsAnalytics> {
                 ),
               ),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
