@@ -72,14 +72,17 @@ class _AnalyticsSubjectsPageState extends State<AnalyticsSubjectsPage> {
               ListTile(
                 leading: Badge(
                   backgroundColor: s.first.color,
-                  label: Text(s.second.toString()),
-                  textStyle: TextStyle(
-                    fontWeight: FontWeight.bold,
+                  label: Text(
+                    s.second.withDecimals(1),
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: getContrastingTextColor(s.first.color),
+                    ),
                   ),
                   padding: const EdgeInsets.all(4),
                 ),
                 title: Text(s.first.name),
-              )
+              ),
           ],
         ),
       ),

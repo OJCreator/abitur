@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:math';
 
 import 'package:abitur/utils/pair.dart';
 import 'package:flutter/material.dart';
@@ -139,6 +140,13 @@ extension IntExtension on int {
       case 11: return "Nov";
       default: return "Dez";
     }
+  }
+}
+extension DoubleExtension on double {
+  String withDecimals(int decimals) {
+    final factor = pow(10, decimals);
+    final value = (this * factor).round() / factor;
+    return value.toStringAsFixed(decimals);
   }
 }
 
