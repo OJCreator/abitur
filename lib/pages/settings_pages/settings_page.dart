@@ -19,7 +19,7 @@ import 'package:abitur/storage/services/settings_service.dart';
 import 'package:abitur/storage/services/subject_service.dart';
 import 'package:abitur/storage/services/timetable_service.dart';
 import 'package:abitur/storage/storage.dart';
-import 'package:abitur/utils/constants.dart';
+import 'package:abitur/utils/extensions/date_extension.dart';
 import 'package:abitur/widgets/info_card.dart';
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
@@ -35,6 +35,7 @@ import '../../storage/entities/timetable/timetable.dart';
 import '../../storage/entities/timetable/timetable_settings.dart';
 import '../../storage/services/evaluation_date_service.dart';
 import '../../storage/services/evaluation_type_service.dart';
+import '../../utils/enums/land.dart';
 
 class SettingsPage extends StatefulWidget {
   const SettingsPage({super.key});

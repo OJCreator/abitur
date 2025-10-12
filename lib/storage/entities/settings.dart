@@ -4,6 +4,7 @@ import 'package:abitur/isolates/serializer.dart';
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
 
+import '../../utils/enums/land.dart';
 import '../../utils/constants.dart';
 
 part 'settings.g.dart';
@@ -103,52 +104,4 @@ class Settings implements Serializable {
   }
 }
 
-enum Land {
-  bw("Baden-Württemberg"),
-  by("Bayern"),
-  be("Berlin"),
-  bb("Brandenburg"),
-  hb("Bremen"),
-  hh("Hamburg"),
-  he("Hessen"),
-  mv("Mecklenburg-Vorpommern"),
-  ni("Niedersachsen"),
-  nw("Nordrhein-Westfalen"),
-  rp("Rheinland-Pfalz"),
-  sl("Saarland"),
-  sn("Sachsen"),
-  st("Sachsen-Anhalt"),
-  sh("Schleswig-Holstein"),
-  th("Thüringen"),
-  none("Kein Land");
 
-  final String name;
-
-  const Land(this.name);
-
-  String get code => toString().split('.').last;
-
-  static Land fromCode(String code) {
-    return Land.values.firstWhere((land) => land.code == code,
-      orElse: () => throw ArgumentError("Invalid Land code: $code"),
-    );
-  }
-}
-
-extension GraduationExtension on Land {
-  int get writtenAmount {
-    if (this == Land.sl || this == Land.st) {
-      return 4;
-    }
-    return 3;
-  }
-  int get oralAmount {
-    if ([Land.bb, Land.hb, Land.hh, Land.nw, Land.rp, Land.sl, Land.st, Land.sh].contains(this)) {
-      return 1;
-    }
-    return 2;
-  }
-  bool get extraGraduationSubject {
-    return [Land.nw, Land.rp, Land.sh, Land.nw].contains(this);
-  }
-}

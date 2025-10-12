@@ -3,6 +3,8 @@ import 'dart:math';
 import 'package:abitur/isolates/models/projection/projection_model.dart';
 import 'package:abitur/isolates/projection/projection_isolate.dart';
 import 'package:abitur/utils/constants.dart';
+import 'package:abitur/utils/extensions/lists/iterable_extension.dart';
+import 'package:abitur/utils/extensions/lists/nullable_num_list_extension.dart';
 
 import '../../storage/entities/subject.dart';
 import '../../storage/services/graduation_service.dart';

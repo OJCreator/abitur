@@ -1,14 +1,16 @@
 import 'package:abitur/isolates/projection/projection_by_transformer.dart';
 import 'package:abitur/utils/constants.dart';
+import 'package:abitur/utils/extensions/lists/int_iterable_extension.dart';
+import 'package:abitur/utils/extensions/lists/iterable_extension.dart';
 import 'package:flutter/cupertino.dart';
 
 import '../../storage/entities/evaluation.dart';
 import '../../storage/entities/evaluation_date.dart';
 import '../../storage/entities/graduation/graduation_evaluation.dart';
 import '../../storage/entities/performance.dart';
-import '../../storage/entities/settings.dart';
 import '../../storage/entities/subject.dart';
 import '../../storage/services/graduation_service.dart';
+import '../../utils/enums/land.dart';
 import '../../utils/enums/subject_type.dart';
 import '../average_isolates.dart';
 import '../models/projection/evaluations_subjects_performances_evaluation_dates_model.dart';

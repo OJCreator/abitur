@@ -1,14 +1,12 @@
 
-import 'package:abitur/utils/constants.dart';
+
+import 'package:abitur/utils/extensions/lists/iterable_extension.dart';
 
 class ProjectionModel {
 
   final double graduationAverage;
   final int resultBlock1;
   final int resultBlock2;
-
-  // final Map<String, List<ProjectionTermModel>> block1; // subjectId -> TermModelList
-  // final Map<String, ProjectionTermModel> block2; // subjectId -> Model
 
   final List<ProjectionSubjectBlock1Model> block1; // subjectId -> TermModelList
   final List<ProjectionSubjectBlock2Model> block2; // subjectId -> Model

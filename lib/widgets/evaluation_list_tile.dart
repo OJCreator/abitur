@@ -1,7 +1,7 @@
 import 'package:abitur/storage/entities/evaluation.dart';
 import 'package:abitur/storage/services/evaluation_service.dart';
 import 'package:abitur/storage/services/settings_service.dart';
-import 'package:abitur/utils/constants.dart';
+import 'package:abitur/utils/extensions/date_extension.dart';
 import 'package:flutter/material.dart';
 
 class EvaluationListTile extends StatelessWidget {

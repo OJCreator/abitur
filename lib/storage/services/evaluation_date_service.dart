@@ -2,7 +2,7 @@ import 'package:abitur/isolates/evaluation_date_isolates.dart';
 import 'package:abitur/isolates/serializer.dart';
 import 'package:abitur/storage/services/calendar_service.dart';
 import 'package:abitur/storage/services/notification_service.dart';
-import 'package:abitur/utils/constants.dart';
+import 'package:abitur/utils/extensions/date_extension.dart';
 import 'package:flutter/foundation.dart';
 
 import '../../isolates/models/evaluation_dates/evaluation_dates_model.dart';

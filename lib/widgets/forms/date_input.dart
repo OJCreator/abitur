@@ -1,5 +1,5 @@
 import 'package:abitur/storage/services/settings_service.dart';
-import 'package:abitur/utils/constants.dart';
+import 'package:abitur/utils/extensions/date_extension.dart';
 import 'package:flutter/material.dart';
 
 class DateInput extends StatelessWidget {

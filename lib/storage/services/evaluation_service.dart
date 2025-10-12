@@ -5,6 +5,7 @@ import 'package:abitur/storage/services/notification_service.dart';
 import 'package:abitur/storage/services/settings_service.dart';
 import 'package:abitur/storage/storage.dart';
 import 'package:abitur/utils/constants.dart';
+import 'package:abitur/utils/extensions/lists/int_iterable_extension.dart';
 
 import '../../utils/enums/subject_type.dart';
 import '../entities/evaluation_date.dart';

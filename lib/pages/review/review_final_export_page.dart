@@ -2,7 +2,8 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:abitur/pages/review/review_data.dart';
-import 'package:abitur/utils/constants.dart';
+import 'package:abitur/utils/extensions/int_extension.dart';
+import 'package:abitur/utils/extensions/lists/nullable_num_list_extension.dart';
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';

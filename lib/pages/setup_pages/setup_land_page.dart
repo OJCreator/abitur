@@ -4,6 +4,8 @@ import 'package:abitur/storage/services/settings_service.dart';
 import 'package:abitur/storage/storage.dart';
 import 'package:flutter/material.dart';
 
+import '../../utils/enums/land.dart';
+
 class SetupLandPage extends StatelessWidget {
   const SetupLandPage({super.key});
 

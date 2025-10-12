@@ -3,7 +3,8 @@ import 'package:abitur/storage/entities/timetable/timetable_settings.dart';
 import 'package:abitur/storage/services/settings_service.dart';
 import 'package:abitur/storage/services/subject_service.dart';
 import 'package:abitur/storage/storage.dart';
-import 'package:abitur/utils/constants.dart';
+import 'package:abitur/utils/extensions/lists/expand_to_list_extension.dart';
+import 'package:abitur/utils/extensions/lists/list_extension.dart';
 import 'package:intl/intl.dart';
 
 import '../../utils/enums/subject_type.dart';

@@ -5,7 +5,7 @@ import 'package:abitur/storage/services/evaluation_service.dart';
 import 'package:abitur/storage/services/graduation_service.dart';
 import 'package:abitur/storage/services/settings_service.dart';
 import 'package:abitur/storage/services/subject_service.dart';
-import 'package:abitur/utils/constants.dart';
+import 'package:abitur/utils/extensions/lists/iterable_extension.dart';
 import 'package:abitur/widgets/section_heading_list_tile.dart';
 import 'package:abitur/widgets/confirm_dialog.dart';
 import 'package:abitur/widgets/evaluation_list_tile.dart';

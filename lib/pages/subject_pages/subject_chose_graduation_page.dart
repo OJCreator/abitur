@@ -2,12 +2,13 @@ import 'package:abitur/exceptions/invalid_form_input_exception.dart';
 import 'package:abitur/storage/entities/graduation/graduation_evaluation.dart';
 import 'package:abitur/storage/services/graduation_service.dart';
 import 'package:abitur/storage/services/settings_service.dart';
+import 'package:abitur/utils/extensions/land_extension.dart';
 import 'package:abitur/widgets/forms/subject_dropdown.dart';
 import 'package:flutter/material.dart';
 
-import '../../storage/entities/settings.dart';
 import '../../storage/entities/subject.dart';
 import '../../storage/services/subject_service.dart';
+import '../../utils/enums/land.dart';
 import '../../widgets/forms/form_gap.dart';
 
 class SubjectChoseGraduationPage extends StatefulWidget {

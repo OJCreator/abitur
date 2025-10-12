@@ -1,6 +1,8 @@
 import 'dart:math';
 
 import 'package:abitur/utils/constants.dart';
+import 'package:abitur/utils/extensions/double_extension.dart';
+import 'package:abitur/utils/extensions/map_extension.dart';
 import 'package:abitur/widgets/enum_radio_sheet.dart';
 import 'package:collection/collection.dart';
 import 'package:fl_chart/fl_chart.dart';

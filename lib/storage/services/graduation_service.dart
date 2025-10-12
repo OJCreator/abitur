@@ -1,8 +1,8 @@
 import 'package:abitur/storage/entities/graduation/graduation_evaluation.dart';
 import 'package:abitur/storage/services/settings_service.dart';
 
+import '../../utils/enums/land.dart';
 import '../../utils/enums/subject_type.dart';
-import '../entities/settings.dart';
 import '../entities/subject.dart';
 import '../storage.dart';
 

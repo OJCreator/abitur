@@ -1,7 +1,8 @@
 import 'package:abitur/pages/review/review_data.dart';
 import 'package:abitur/pages/review/stories/story.dart';
 import 'package:abitur/pages/review/story_widgets/story_number_view.dart';
-import 'package:abitur/utils/constants.dart';
+import 'package:abitur/utils/extensions/int_extension.dart';
+import 'package:abitur/utils/extensions/lists/nullable_num_list_extension.dart';
 import 'package:flutter/material.dart';
 
 import '../story_widgets/story_graph_view.dart';

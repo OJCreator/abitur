@@ -9,10 +9,10 @@ import 'package:flutter/foundation.dart';
 
 import '../../isolates/models/projection/evaluations_subjects_performances_evaluation_dates_model.dart';
 import '../../isolates/projection/projection_isolate.dart';
+import '../../utils/enums/land.dart';
 import '../entities/evaluation.dart';
 import '../entities/evaluation_date.dart';
 import '../entities/performance.dart';
-import '../entities/settings.dart';
 import '../entities/subject.dart';
 import 'evaluation_date_service.dart';
 import 'graduation_service.dart';

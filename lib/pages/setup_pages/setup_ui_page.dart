@@ -3,6 +3,7 @@ import 'package:abitur/storage/entities/settings.dart';
 import 'package:abitur/storage/services/settings_service.dart';
 import 'package:abitur/utils/brightness_notifier.dart';
 import 'package:abitur/utils/constants.dart';
+import 'package:abitur/utils/extensions/theme_mode_extension.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 

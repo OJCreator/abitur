@@ -2,7 +2,7 @@ import 'dart:math';
 
 import 'package:abitur/pages/analytics_pages/analytics_subjects_page.dart';
 import 'package:abitur/storage/services/subject_service.dart';
-import 'package:abitur/utils/constants.dart';
+import 'package:abitur/utils/extensions/map_extension.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 

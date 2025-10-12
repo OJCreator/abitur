@@ -1,4 +1,4 @@
-import 'package:abitur/utils/constants.dart';
+import 'package:abitur/utils/extensions/theme_mode_extension.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 

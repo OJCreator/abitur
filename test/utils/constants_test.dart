@@ -1,4 +1,12 @@
 import 'package:abitur/utils/constants.dart';
+import 'package:abitur/utils/extensions/date_extension.dart';
+import 'package:abitur/utils/extensions/int_extension.dart';
+import 'package:abitur/utils/extensions/lists/expand_to_list_extension.dart';
+import 'package:abitur/utils/extensions/lists/int_iterable_extension.dart';
+import 'package:abitur/utils/extensions/lists/iterable_extension.dart';
+import 'package:abitur/utils/extensions/lists/list_extension.dart';
+import 'package:abitur/utils/extensions/lists/nullable_list_extension.dart';
+import 'package:abitur/utils/extensions/lists/nullable_num_list_extension.dart';
 import 'package:abitur/utils/pair.dart';
 import 'package:flutter_test/flutter_test.dart';
 

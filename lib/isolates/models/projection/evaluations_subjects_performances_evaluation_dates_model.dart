@@ -1,4 +1,4 @@
-import '../../../storage/entities/settings.dart';
+import '../../../utils/enums/land.dart';
 
 class EvaluationsSubjectsPerformancesEvaluationDatesModel {
 
