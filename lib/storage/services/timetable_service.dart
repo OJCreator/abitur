@@ -1,202 +1,202 @@
-import 'package:abitur/storage/entities/timetable/timetable_entry.dart';
-import 'package:abitur/storage/entities/timetable/timetable_settings.dart';
-import 'package:abitur/storage/services/settings_service.dart';
-import 'package:abitur/storage/services/subject_service.dart';
-import 'package:abitur/storage/storage.dart';
-import 'package:abitur/utils/extensions/lists/expand_to_list_extension.dart';
-import 'package:abitur/utils/extensions/lists/list_extension.dart';
-import 'package:intl/intl.dart';
-
-import '../../utils/enums/subject_type.dart';
-import '../entities/subject.dart';
-import '../entities/timetable/timetable.dart';
-
-class TimetableService {
-
-  static Timetable loadTimetable(int term) {
-    String termId = loadTimetableSettings().timetables[term];
-    return loadTimetables().firstWhere((it) => it.id == termId);
-  }
-
-  static List<Timetable> loadTimetables() {
-    return Storage.loadTimetables();
-  }
-
-  static TimetableEntry loadTimetableEntry(String id) {
-    return Storage.loadTimetableEntry(id);
-  }
-
-  static List<TimetableEntry> loadTimetableEntries() {
-    return Storage.loadTimetableEntries();
-  }
-
-  static TimetableSettings loadTimetableSettings() {
-    return Storage.loadTimetableSettings();
-  }
-
-  static Future<void> changeSubject(int term, int day, int hour, Subject? subject, String? room) async {
-    Timetable t = loadTimetable(term);
-
-    if (subject != null) {
-      String? timetableEntryId = t.timetableEntryIds[day][hour];
-      if (timetableEntryId == null) {
-        TimetableEntry entry = TimetableEntry(subjectId: subject.id, room: room);
-        await Storage.saveTimetableEntry(entry);
-        t.timetableEntryIds[day][hour] = entry.id;
-        await Storage.saveTimetable(t);
-      } else {
-        TimetableEntry entry = loadTimetableEntry(timetableEntryId);
-        entry.subjectId = subject.id;
-        entry.room = room;
-        await Storage.saveTimetableEntry(entry);
-      }
-    } else {
-      String? timetableEntryId = t.timetableEntryIds[day][hour];
-      if (timetableEntryId != null) {
-        Storage.deleteTimetableEntry(timetableEntryId);
-      }
-      t.timetableEntryIds[day][hour] = null;
-      await Storage.saveTimetable(t);
-    }
-  }
-
-  static int maxHours(int term) {
-    Timetable t = loadTimetable(term);
-    int maxHours = 4;
-    for (int i = 0; i < 5; i++) {
-      int dayHours = _hours(t.timetableEntryIds[i]);
-      if (dayHours > maxHours) {
-        maxHours = dayHours;
-      }
-    }
-    return maxHours;
-  }
-
-  static int _hours(List<String?> day) {
-    return day.lastIndexWhere((s) => s != null) + 1;
-  }
-
-  static TimetableEntry? getTimetableEntry(int term, int day, int hour) {
-    Timetable t = loadTimetable(term);
-    String? entryId = t.timetableEntryIds[day][hour];
-    return entryId == null ? null : loadTimetableEntry(entryId);
-  }
-
-  static bool timetableIsEmpty(int term) {
-    Timetable t = loadTimetable(term);
-    return t.timetableEntryIds.expandToList().every((it) => it == null);
-  }
-
-  static Future<void> copyTimetable(int fromTerm, int toTerm) async {
-    assert(timetableIsEmpty(toTerm));
-    Timetable tFrom = loadTimetable(fromTerm);
-    Timetable tTo = loadTimetable(toTerm);
-
-    for (int day = 0; day < 5; day++) {
-      for (int hour = 0; hour < tFrom.timetableEntryIds[day].length; hour++) {
-        String? entryId = tFrom.timetableEntryIds[day][hour];
-        if (entryId == null) {
-          continue;
-        }
-        TimetableEntry fromEntry = loadTimetableEntry(entryId);
-        TimetableEntry toEntry = TimetableEntry(subjectId: fromEntry.subjectId, room: fromEntry.room);
-        await Storage.saveTimetableEntry(toEntry);
-        tTo.timetableEntryIds[day][hour] = toEntry.id;
-      }
-    }
-    await Storage.saveTimetable(tTo);
-  }
-
-  static String? knownRoom(Subject? s) {
-    int currentTerm = SettingsService.currentProbableTerm();
-    for (int i = 0; i < 4; i++) {
-      Timetable t = loadTimetable((currentTerm - i) % 4);
-      String? id = t.timetableEntryIds.expandToList().firstWhere(
-          (entry) => entry != null && loadTimetableEntry(entry).subject == s,
-          orElse: () => null);
-      if (id != null) {
-        return loadTimetableEntry(id).room;
-      }
-    }
-    return null;
-  }
-
-  static Future<void> deleteSubjectEntries(Subject subject) async {
-    for (int term = 0; term < 4; term++) {
-      Timetable t = loadTimetable(term);
-      for (int day = 0; day < t.timetableEntryIds.length; day++) {
-        List<int> indicesToRemove = t.timetableEntryIds[day].indicesWhere((e) => e != null && loadTimetableEntry(e).subjectId == subject.id);
-
-        for (var index in indicesToRemove) {
-          t.timetableEntryIds[day][index] = null;
-        }
-      }
-      Storage.saveTimetable(t);
-    }
-  }
-
-  static DateTime getStartTime(int term, Subject subject, int weekday) {
-    TimetableSettings timetableSettings = loadTimetableSettings();
-    Timetable t = loadTimetable(term);
-    var firstHour = t.timetableEntryIds.elementAtOrNull(weekday-1)?.indexWhere((it) => it != null && loadTimetableEntry(it).subjectId == subject.id) ?? -1;
-    String from = timetableSettings.times.elementAtOrNull(firstHour)?.split(" - ").first ?? "23:50";
-    DateFormat format = DateFormat("HH:mm"); // Todo manchmal um 2h verschoben
-    return format.parse(from);
-  }
-
-  static DateTime getEndTime(int term, Subject subject, int weekday) {
-    TimetableSettings timetableSettings = loadTimetableSettings();
-    Timetable t = loadTimetable(term);
-    var lastHour = t.timetableEntryIds.elementAtOrNull(weekday-1)?.lastIndexWhere((it) => it != null && loadTimetableEntry(it).subjectId == subject.id) ?? -1;
-    String from = timetableSettings.times.elementAtOrNull(lastHour)?.split(" - ")[1] ?? "23:55";
-    DateFormat format = DateFormat("HH:mm"); // Todo manchmal um 2h verschoben
-    return format.parse(from);
-  }
-
-  static Future<void> buildSettingsFromJson(Map<String, dynamic> jsonData) async {
-    TimetableSettings t = TimetableSettings.fromJson(jsonData);
-    await Storage.saveTimetableSettings(t);
-  }
-
-  static Future<void> buildTimetableFromJson(List<Map<String, dynamic>> jsonData) async {
-    List<Timetable> timetables = jsonData.map((e) => Timetable.fromJson(e)).toList();
-    for (Timetable t in timetables) {
-      await Storage.saveTimetable(t);
-    }
-  }
-
-  static Future<void> buildEntriesFromJson(List<Map<String, dynamic>> jsonData) async {
-    List<TimetableEntry> entries = jsonData.map((e) => TimetableEntry.fromJson(e)).toList();
-    for (TimetableEntry t in entries) {
-      await Storage.saveTimetableEntry(t);
-    }
-  }
-
-  static Subject findLatestGradableSubject() {
-    int currentTerm = SettingsService.currentProbableTerm();
-    DateTime now = DateTime.now();
-    int weekday = now.weekday-1;
-    if (weekday >= 5) {
-      return SubjectService.findAllGradable()[0];
-    }
-    DateFormat format = DateFormat("HH:mm");
-    int hour = loadTimetableSettings().times.lastIndexWhere((time) {
-      DateTime t = format.parse(time.split(" - ")[0]);
-      t = t.copyWith(year: now.year, month: now.month, day: now.day);
-      return t.isBefore(now);
-    });
-    Timetable t = loadTimetable(currentTerm);
-    List<String?> entries = t.timetableEntryIds[weekday];
-    while (hour >= 0) {
-      if (hour < entries.length && entries[hour] != null) {
-        String entryId = entries[hour]!;
-        Subject s = loadTimetableEntry(entryId).subject;
-        if (s.subjectType != SubjectType.wahlfach) {
-          return s;
-        }
-      }
-      hour--;
-    }
-    return SubjectService.findAllGradable()[0];
-  }
-}
+// import 'package:abitur/storage/entities/timetable/timetable_entry.dart';
+// import 'package:abitur/storage/entities/timetable/timetable_settings.dart';
+// import 'package:abitur/storage/services/settings_service.dart';
+// import 'package:abitur/storage/services/subject_service.dart';
+// import 'package:abitur/storage/storage.dart';
+// import 'package:abitur/utils/extensions/lists/expand_to_list_extension.dart';
+// import 'package:abitur/utils/extensions/lists/list_extension.dart';
+// import 'package:intl/intl.dart';
+//
+// import '../../utils/enums/subject_type.dart';
+// import '../entities/subject.dart';
+// import '../entities/timetable/timetable.dart';
+//
+// class TimetableService {
+//
+//   static Timetable loadTimetable(int term) {
+//     String termId = loadTimetableSettings().timetables[term];
+//     return loadTimetables().firstWhere((it) => it.id == termId);
+//   }
+//
+//   static List<Timetable> loadTimetables() {
+//     return Storage.loadTimetables();
+//   }
+//
+//   static TimetableEntry loadTimetableEntry(String id) {
+//     return Storage.loadTimetableEntry(id);
+//   }
+//
+//   static List<TimetableEntry> loadTimetableEntries() {
+//     return Storage.loadTimetableEntries();
+//   }
+//
+//   static TimetableSettings loadTimetableSettings() {
+//     return Storage.loadTimetableSettings();
+//   }
+//
+//   static Future<void> changeSubject(int term, int day, int hour, Subject? subject, String? room) async {
+//     Timetable t = loadTimetable(term);
+//
+//     if (subject != null) {
+//       String? timetableEntryId = t.timetableEntryIds[day][hour];
+//       if (timetableEntryId == null) {
+//         TimetableEntry entry = TimetableEntry(subjectId: subject.id, room: room);
+//         await Storage.saveTimetableEntry(entry);
+//         t.timetableEntryIds[day][hour] = entry.id;
+//         await Storage.saveTimetable(t);
+//       } else {
+//         TimetableEntry entry = loadTimetableEntry(timetableEntryId);
+//         entry.subjectId = subject.id;
+//         entry.room = room;
+//         await Storage.saveTimetableEntry(entry);
+//       }
+//     } else {
+//       String? timetableEntryId = t.timetableEntryIds[day][hour];
+//       if (timetableEntryId != null) {
+//         Storage.deleteTimetableEntry(timetableEntryId);
+//       }
+//       t.timetableEntryIds[day][hour] = null;
+//       await Storage.saveTimetable(t);
+//     }
+//   }
+//
+//   static int maxHours(int term) {
+//     Timetable t = loadTimetable(term);
+//     int maxHours = 4;
+//     for (int i = 0; i < 5; i++) {
+//       int dayHours = _hours(t.timetableEntryIds[i]);
+//       if (dayHours > maxHours) {
+//         maxHours = dayHours;
+//       }
+//     }
+//     return maxHours;
+//   }
+//
+//   static int _hours(List<String?> day) {
+//     return day.lastIndexWhere((s) => s != null) + 1;
+//   }
+//
+//   static TimetableEntry? getTimetableEntry(int term, int day, int hour) {
+//     Timetable t = loadTimetable(term);
+//     String? entryId = t.timetableEntryIds[day][hour];
+//     return entryId == null ? null : loadTimetableEntry(entryId);
+//   }
+//
+//   static bool timetableIsEmpty(int term) {
+//     Timetable t = loadTimetable(term);
+//     return t.timetableEntryIds.expandToList().every((it) => it == null);
+//   }
+//
+//   static Future<void> copyTimetable(int fromTerm, int toTerm) async {
+//     assert(timetableIsEmpty(toTerm));
+//     Timetable tFrom = loadTimetable(fromTerm);
+//     Timetable tTo = loadTimetable(toTerm);
+//
+//     for (int day = 0; day < 5; day++) {
+//       for (int hour = 0; hour < tFrom.timetableEntryIds[day].length; hour++) {
+//         String? entryId = tFrom.timetableEntryIds[day][hour];
+//         if (entryId == null) {
+//           continue;
+//         }
+//         TimetableEntry fromEntry = loadTimetableEntry(entryId);
+//         TimetableEntry toEntry = TimetableEntry(subjectId: fromEntry.subjectId, room: fromEntry.room);
+//         await Storage.saveTimetableEntry(toEntry);
+//         tTo.timetableEntryIds[day][hour] = toEntry.id;
+//       }
+//     }
+//     await Storage.saveTimetable(tTo);
+//   }
+//
+//   static String? knownRoom(Subject? s) {
+//     int currentTerm = SettingsService.currentProbableTerm();
+//     for (int i = 0; i < 4; i++) {
+//       Timetable t = loadTimetable((currentTerm - i) % 4);
+//       String? id = t.timetableEntryIds.expandToList().firstWhere(
+//           (entry) => entry != null && loadTimetableEntry(entry).subject == s,
+//           orElse: () => null);
+//       if (id != null) {
+//         return loadTimetableEntry(id).room;
+//       }
+//     }
+//     return null;
+//   }
+//
+//   static Future<void> deleteSubjectEntries(Subject subject) async {
+//     for (int term = 0; term < 4; term++) {
+//       Timetable t = loadTimetable(term);
+//       for (int day = 0; day < t.timetableEntryIds.length; day++) {
+//         List<int> indicesToRemove = t.timetableEntryIds[day].indicesWhere((e) => e != null && loadTimetableEntry(e).subjectId == subject.id);
+//
+//         for (var index in indicesToRemove) {
+//           t.timetableEntryIds[day][index] = null;
+//         }
+//       }
+//       Storage.saveTimetable(t);
+//     }
+//   }
+//
+//   static DateTime getStartTime(int term, Subject subject, int weekday) {
+//     TimetableSettings timetableSettings = loadTimetableSettings();
+//     Timetable t = loadTimetable(term);
+//     var firstHour = t.timetableEntryIds.elementAtOrNull(weekday-1)?.indexWhere((it) => it != null && loadTimetableEntry(it).subjectId == subject.id) ?? -1;
+//     String from = timetableSettings.times.elementAtOrNull(firstHour)?.split(" - ").first ?? "23:50";
+//     DateFormat format = DateFormat("HH:mm"); // Todo manchmal um 2h verschoben
+//     return format.parse(from);
+//   }
+//
+//   static DateTime getEndTime(int term, Subject subject, int weekday) {
+//     TimetableSettings timetableSettings = loadTimetableSettings();
+//     Timetable t = loadTimetable(term);
+//     var lastHour = t.timetableEntryIds.elementAtOrNull(weekday-1)?.lastIndexWhere((it) => it != null && loadTimetableEntry(it).subjectId == subject.id) ?? -1;
+//     String from = timetableSettings.times.elementAtOrNull(lastHour)?.split(" - ")[1] ?? "23:55";
+//     DateFormat format = DateFormat("HH:mm"); // Todo manchmal um 2h verschoben
+//     return format.parse(from);
+//   }
+//
+//   static Future<void> buildSettingsFromJson(Map<String, dynamic> jsonData) async {
+//     TimetableSettings t = TimetableSettings.fromJson(jsonData);
+//     await Storage.saveTimetableSettings(t);
+//   }
+//
+//   static Future<void> buildTimetableFromJson(List<Map<String, dynamic>> jsonData) async {
+//     List<Timetable> timetables = jsonData.map((e) => Timetable.fromJson(e)).toList();
+//     for (Timetable t in timetables) {
+//       await Storage.saveTimetable(t);
+//     }
+//   }
+//
+//   static Future<void> buildEntriesFromJson(List<Map<String, dynamic>> jsonData) async {
+//     List<TimetableEntry> entries = jsonData.map((e) => TimetableEntry.fromJson(e)).toList();
+//     for (TimetableEntry t in entries) {
+//       await Storage.saveTimetableEntry(t);
+//     }
+//   }
+// //
+//   static Subject findLatestGradableSubject() {
+//     int currentTerm = SettingsService.currentProbableTerm();
+//     DateTime now = DateTime.now();
+//     int weekday = now.weekday-1;
+//     if (weekday >= 5) {
+//       return SubjectService.findAllGradable()[0];
+//     }
+//     DateFormat format = DateFormat("HH:mm");
+//     int hour = loadTimetableSettings().times.lastIndexWhere((time) {
+//       DateTime t = format.parse(time.split(" - ")[0]);
+//       t = t.copyWith(year: now.year, month: now.month, day: now.day);
+//       return t.isBefore(now);
+//     });
+//     Timetable t = loadTimetable(currentTerm);
+//     List<String?> entries = t.timetableEntryIds[weekday];
+//     while (hour >= 0) {
+//       if (hour < entries.length && entries[hour] != null) {
+//         String entryId = entries[hour]!;
+//         Subject s = loadTimetableEntry(entryId).subject;
+//         if (s.subjectType != SubjectType.wahlfach) {
+//           return s;
+//         }
+//       }
+//       hour--;
+//     }
+//     return SubjectService.findAllGradable()[0];
+//   }
+// }

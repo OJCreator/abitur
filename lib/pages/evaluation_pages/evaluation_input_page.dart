@@ -1,19 +1,22 @@
-import 'package:abitur/storage/entities/evaluation_type.dart';
-import 'package:abitur/storage/services/evaluation_date_service.dart';
-import 'package:abitur/storage/services/evaluation_type_service.dart';
+import 'package:abitur/services/database/performance_service.dart';
+import 'package:abitur/services/database/subject_service.dart';
+import 'package:abitur/services/database/timetable_entry_service.dart';
+import 'package:abitur/utils/constants.dart';
+import 'package:abitur/utils/extensions/lists/expand_to_list_extension.dart';
 import 'package:abitur/widgets/forms/evaluation_date_form.dart';
 import 'package:abitur/widgets/forms/evaluation_type_dropdown.dart';
 import 'package:abitur/widgets/forms/form_page.dart';
 import 'package:flutter/material.dart';
 
-import '../../storage/entities/evaluation.dart';
-import '../../storage/entities/evaluation_date.dart';
-import '../../storage/entities/performance.dart';
-import '../../storage/entities/subject.dart';
-import '../../storage/services/evaluation_service.dart';
-import '../../storage/services/settings_service.dart';
-import '../../storage/services/subject_service.dart';
-import '../../storage/services/timetable_service.dart';
+import '../../services/database/evaluation_date_service.dart';
+import '../../services/database/evaluation_service.dart';
+import '../../services/database/evaluation_type_service.dart';
+import '../../services/database/settings_service.dart';
+import '../../sqlite/entities/evaluation/evaluation.dart';
+import '../../sqlite/entities/evaluation/evaluation_date.dart';
+import '../../sqlite/entities/evaluation/evaluation_type.dart';
+import '../../sqlite/entities/performance.dart';
+import '../../sqlite/entities/subject.dart';
 import '../../widgets/forms/performance_selector.dart';
 import '../../widgets/forms/subject_dropdown.dart';
 import '../../widgets/forms/term_selector.dart';
@@ -23,19 +26,12 @@ class EvaluationInputPage extends StatefulWidget {
 
   final Evaluation? evaluation;
   final DateTime? dateTime;
-  final Subject? subject;
+  final String? subjectId;
   final int? term;
 
   bool get editMode => evaluation != null;
 
-  String get initialName => evaluation?.name ?? "";
-  EvaluationType get initialEvaluationType => evaluation?.evaluationType ?? EvaluationTypeService.findAll().first;
-  Subject get initialSubject => subject ?? evaluation?.subject ?? TimetableService.findLatestGradableSubject();
-  Performance get initialPerformance => evaluation?.performance ?? initialSubject.performances.first;
-  int get initialTerm => term ?? evaluation?.term ?? SettingsService.probableTerm(initialEvaluationDates.firstOrNull?.date ?? DateTime.now());
-  List<EvaluationDate> get initialEvaluationDates => evaluation?.evaluationDates ?? [EvaluationDate(date: dateTime ?? DateTime.now())];
-
-  const EvaluationInputPage({this.evaluation, this.dateTime, this.subject, this.term, super.key,});
+  const EvaluationInputPage({this.evaluation, this.dateTime, this.subjectId, this.term, super.key,});
 
   @override
   State<EvaluationInputPage> createState() => _EvaluationInputPageState();
@@ -43,32 +39,77 @@ class EvaluationInputPage extends StatefulWidget {
 
 class _EvaluationInputPageState extends State<EvaluationInputPage> {
 
+  bool loading = true;
+  Color seedColor = primaryColor;
+
+  late Future<Map<String, Subject>> _allSubjects;
+
   final _formKey = GlobalKey<FormState>();
   late final TextEditingController _name;
 
   late EvaluationType _selectedEvaluationType;
-  late Subject _selectedSubject;
-  late Performance _selectedPerformance;
+  late String _selectedSubjectId;
+  late String _selectedPerformanceId;
   late int _selectedTerm;
 
   late List<EvaluationDate> _evaluationDates;
+  late List<String> _initialEvaluationDateIds;
 
   bool unsavedChanges = false;
 
+  Future<List<Performance>> performances = Future.value([]);
+  Map<String, EvaluationType> evaluationTypes = {};
+
   @override
   void initState() {
-    _name = TextEditingController(text: widget.initialName)..addListener(() {
+    _name = TextEditingController()..addListener(() {
       unsavedChanges = true;
     });
-
-    _selectedEvaluationType = widget.initialEvaluationType;
-    _selectedSubject = widget.initialSubject;
-    _selectedPerformance = widget.initialPerformance;
-    _selectedTerm = widget.initialTerm;
-
-    _evaluationDates = widget.initialEvaluationDates.map((e) => e.clone()).toList();
+    _allSubjects = SubjectService.findAllGradableAsMap();
 
     super.initState();
+  }
+
+  Future<void> initValues() async {
+    evaluationTypes = await EvaluationTypeService.findAllAsMap();
+    final timetableSubject = await TimetableEntryService.findLatestGradableSubject();
+    final eval = widget.evaluation;
+    final evaluationDates = eval == null ? null : await EvaluationDateService.findAllByEvaluationIds([eval.id]);
+    final probableTerm = await SettingsService.probableTerm(_evaluationDates.firstOrNull?.date ?? DateTime.now());
+
+    setState(() {
+      _name.text = eval?.name ?? "";
+      _selectedEvaluationType = evaluationTypes[eval?.evaluationTypeId] ?? evaluationTypes.values.first;
+      _selectedSubjectId = widget.subjectId ?? eval?.subjectId ?? timetableSubject.id;
+      _selectedPerformanceId = eval?.performanceId ?? "";
+      _evaluationDates = evaluationDates?.values.expandToList() ?? [EvaluationDate(date: widget.dateTime ?? DateTime.now())];
+      _initialEvaluationDateIds = _evaluationDates.map((e) => e.id).toList();
+      _selectedTerm = widget.term ?? eval?.term ?? probableTerm;
+
+      loading = false;
+    });
+    _loadPerformances();
+  }
+
+  Future<void> _setSubject(String subjectId) async {
+    setState(() {
+      _selectedSubjectId = subjectId;
+      unsavedChanges = true;
+    });
+    seedColor = (await _allSubjects)[subjectId]!.color;
+    setState(() { });
+    _loadPerformances();
+  }
+
+  void _loadPerformances() {
+    setState(() {
+      performances = PerformanceService.findAllBySubjectId(_selectedSubjectId)..then((performances) {
+        if (!performances.any((p) => p.subjectId == _selectedSubjectId)) {
+          _selectedPerformanceId = performances.first.id;
+        }
+        return performances;
+      });
+    });
   }
 
   @override
@@ -77,7 +118,7 @@ class _EvaluationInputPageState extends State<EvaluationInputPage> {
     return FormPage(
         formKey: _formKey,
         appBarTitle: widget.editMode ? "Prüfung bearbeiten" : "Neue Prüfung",
-        colorSeed: _selectedSubject.color,
+        colorSeed: seedColor,
         hasUnsavedChanges: () => widget.editMode && unsavedChanges,
         saveTitle: widget.editMode ? "Speichern" : "Eintragen",
         save: save,
@@ -102,7 +143,7 @@ class _EvaluationInputPageState extends State<EvaluationInputPage> {
           FormGap(),
 
           EvaluationTypeDropdown(
-            evaluationTypes: EvaluationTypeService.findAll(),
+            evaluationTypes: evaluationTypes.values.toList(),
             selectedEvaluationType: _selectedEvaluationType,
             onSelected: (e) {
               if (e == null) {
@@ -117,47 +158,64 @@ class _EvaluationInputPageState extends State<EvaluationInputPage> {
 
           FormGap(),
 
-          SubjectDropdown(
-            subjects: SubjectService.findAllGradable(),
-            selectedSubject: _selectedSubject,
-            onSelected: (s) {
-              if (s == null) {
-                return;
+          FutureBuilder(
+            future: _allSubjects,
+            builder: (context, asyncSnapshot) {
+              return SubjectDropdown(
+                subjects: asyncSnapshot.data?.values.toList() ?? [],
+                selectedSubject: asyncSnapshot.data?[_selectedSubjectId],
+                onSelected: (s) {
+                  if (s == null) {
+                    return;
+                  }
+                  _setSubject(s.id);
+                },
+              );
+            }
+          ),
+
+          FormGap(),
+
+          FutureBuilder(
+            future: performances,
+            builder: (context, asyncSnapshot) {
+              if (!asyncSnapshot.hasData || asyncSnapshot.data == null) {
+                return PerformanceSelector(performances: [], currentPerformance: null, onSelected: null);
               }
-              setState(() {
-                _selectedSubject = s;
-                _selectedPerformance = s.performances.first;
-                unsavedChanges = true;
-              });
-            },
-          ),
-
-          FormGap(),
-
-          PerformanceSelector(
-            performances: _selectedSubject.performances,
-            currentPerformance: _selectedPerformance,
-            onSelected: (Performance selected) {
-              setState(() {
-                _selectedPerformance = selected;
-                unsavedChanges = true;
-              });
-            },
+              return PerformanceSelector(
+                performances: asyncSnapshot.data!,
+                currentPerformance: asyncSnapshot.data!.firstWhere((p) => p.id == _selectedPerformanceId),
+                onSelected: (Performance selected) {
+                  setState(() {
+                    _selectedPerformanceId = selected.id;
+                    unsavedChanges = true;
+                  });
+                },
+              );
+            }
           ),
 
           FormGap(),
 
           FormGap(),
 
-          TermSelector(
-            selectedTerm: _selectedTerm,
-            terms: _selectedSubject.terms,
-            onSelected: (int newTerm) {
-              setState(() {
-                _selectedTerm = newTerm;
-                unsavedChanges = true;
-              });
-            },
+          FutureBuilder(
+            future: _allSubjects,
+            builder: (context, asyncSnapshot) {
+              if (!asyncSnapshot.hasData || asyncSnapshot.data == null) {
+                return TermSelector(selectedTerm: -1, terms: {0, 1, 2, 3}, onSelected: null);
+              }
+              return TermSelector(
+                selectedTerm: _selectedTerm,
+                terms: asyncSnapshot.data!.values.firstWhere((s) => s.id == _selectedSubjectId).terms,
+                onSelected: (int newTerm) {
+                  setState(() {
+                    _selectedTerm = newTerm;
+                    unsavedChanges = true;
+                  });
+                },
+              );
+            }
           ),
 
           FormGap(),
@@ -179,26 +237,26 @@ class _EvaluationInputPageState extends State<EvaluationInputPage> {
       return;
     }
     if (widget.editMode) {
-      await EvaluationDateService.deleteAllEvaluationDates(widget.initialEvaluationDates.where((e) => !_evaluationDates.contains(e)).toList());
+      List<String> evaluationDateIdsToDelete = _initialEvaluationDateIds.where((e) => !_evaluationDates.map((e) => e.id).contains(e)).toList();
+      await EvaluationDateService.deleteAllEvaluationDates(evaluationDateIdsToDelete);
       await EvaluationDateService.saveAllEvaluationDates(_evaluationDates);
       await EvaluationService.editEvaluation(
         widget.evaluation!,
-        subject: _selectedSubject,
-        performance: _selectedPerformance,
+        subjectId: _selectedSubjectId,
+        performanceId: _selectedPerformanceId,
+        evaluationType: _selectedEvaluationType,
         term: _selectedTerm,
         name: _name.text,
-        evaluationDates: _evaluationDates,
-        evaluationType: _selectedEvaluationType,
       );
       Navigator.pop(context);
     } else {
       Evaluation newEvaluation = await EvaluationService.newEvaluation(
-        _selectedSubject,
-        _selectedPerformance,
+        _selectedSubjectId,
+        _selectedPerformanceId,
+        _selectedEvaluationType,
         _selectedTerm,
         _name.text,
         _evaluationDates,
-        _selectedEvaluationType,
       );
       Navigator.pop(context, newEvaluation);
     }

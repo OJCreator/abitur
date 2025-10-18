@@ -1,10 +1,11 @@
+import 'package:abitur/services/database/settings_service.dart';
+import 'package:abitur/utils/constants.dart';
 import 'package:abitur/utils/extensions/theme_mode_extension.dart';
+import 'package:abitur/widgets/shimmer/shimmer_text.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import '../../storage/entities/settings.dart';
-import '../../storage/services/settings_service.dart';
-import '../../storage/storage.dart';
+import '../../sqlite/entities/settings.dart';
 import '../../utils/brightness_notifier.dart';
 import '../../widgets/color_dialog.dart';
 
@@ -17,8 +18,17 @@ class SettingsAppearancePage extends StatefulWidget {
 
 class _SettingsAppearancePageState extends State<SettingsAppearancePage> {
 
+  late Future<Settings> s;
 
-  Settings s = Storage.loadSettings();
+  @override
+  void initState() {
+    _loadSettings();
+    super.initState();
+  }
+
+  void _loadSettings() {
+    s = SettingsService.loadSettings();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -30,45 +40,74 @@ class _SettingsAppearancePageState extends State<SettingsAppearancePage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            ListTile(
-              trailing: CircleAvatar(
-                backgroundColor: s.accentColor,
-              ),
-              title: Text("Akzentfarbe wählen"),
-              onTap: () async {
-                Color? newAccentColor = await showDialog(context: context, builder: (context) {
-                  return ColorDialog(
-                    initialColor: s.accentColor,
-                    title: "Akzentfarbe wählen",
+            FutureBuilder(
+              future: s,
+              builder: (context, asyncSnapshot) {
+                if (!asyncSnapshot.hasData || asyncSnapshot.data == null) {
+                  return ListTile(
+                    trailing: CircleAvatar(
+                      backgroundColor: shimmerColor,
+                    ),
+                    title: Text("Akzentfarbe wählen"),
                   );
-                });
-                if (newAccentColor == null) {
-                  return;
                 }
-                setState(() {
-                  SettingsService.setAccentColor(context, newAccentColor);
-                });
-              },
-            ),
-            ListTile(
-              title: Text("Design"),
-              subtitle: Text(s.themeMode.label),
-              onTap: () async {
-                ThemeMode? newThemeMode = await showModalBottomSheet(
-                  context: context,
-                  showDragHandle: true,
-                  isScrollControlled: true,
-                  builder: (context) => ThemeModeSelectorSheet(currentThemeMode: s.themeMode,),
+                Settings settings = asyncSnapshot.data!;
+                return ListTile(
+                  trailing: CircleAvatar(
+                    backgroundColor: settings.accentColor,
+                  ),
+                  title: Text("Akzentfarbe wählen"),
+                  onTap: () async {
+                    Color? newAccentColor = await showDialog(context: context, builder: (context) {
+                      return ColorDialog(
+                        initialColor: settings.accentColor,
+                        title: "Akzentfarbe wählen",
+                      );
+                    });
+                    if (newAccentColor == null) {
+                      return;
+                    }
+                    setState(() {
+                      SettingsService.setAccentColor(context, newAccentColor);
+                    });
+                    _loadSettings();
+                  },
                 );
-                if (newThemeMode == null) {
-                  return;
+              }
+            ),
+            FutureBuilder(
+              future: s,
+              builder: (context, asyncSnapshot) {
+                if (!asyncSnapshot.hasData || asyncSnapshot.data == null) {
+                  return ListTile(
+                    title: Text("Design"),
+                    subtitle: ShimmerText(),
+                  );
                 }
-                setState(() {
-                  s.themeMode = newThemeMode;
-                });
-                Storage.saveSettings(s);
-                Provider.of<BrightnessNotifier>(context, listen: false).setThemeMode(s.themeMode);
-              },
+                Settings settings = asyncSnapshot.data!;
+                return ListTile(
+                  title: Text("Design"),
+                  subtitle: Text(settings.themeMode.label),
+                  onTap: () async {
+                    ThemeMode? newThemeMode = await showModalBottomSheet(
+                      context: context,
+                      showDragHandle: true,
+                      isScrollControlled: true,
+                      builder: (context) => ThemeModeSelectorSheet(currentThemeMode: settings.themeMode,),
+                    );
+                    if (newThemeMode == null) {
+                      return;
+                    }
+
+                    setState(() {
+                      settings.themeMode = newThemeMode;
+                    });
+                    SettingsService.saveSettings(settings);
+                    Provider.of<BrightnessNotifier>(context, listen: false).setThemeMode(settings.themeMode);
+                    _loadSettings();
+                  },
+                );
+              }
             ),
           ],
         ),

@@ -1,8 +1,10 @@
+import 'package:abitur/services/database/timetable_entry_service.dart';
+import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 
-import '../../storage/entities/subject.dart';
-import '../../storage/entities/timetable/timetable_entry.dart';
-import '../../storage/services/timetable_service.dart';
+import '../../services/database/subject_service.dart';
+import '../../sqlite/entities/subject.dart';
+import '../../sqlite/entities/timetable/timetable_entry.dart';
 import '../../utils/constants.dart';
 import 'timetable_edit_event_page.dart';
 
@@ -17,6 +19,20 @@ class TimetableEditPage extends StatefulWidget {
 }
 
 class _TimetableEditPageState extends State<TimetableEditPage> {
+
+  List<TimetableEntry> timetable = [];
+
+  @override
+  void initState() {
+    loadTimetable();
+    super.initState();
+  }
+
+  Future<void> loadTimetable() async {
+    timetable = await TimetableEntryService.findAllEntriesOfTerm(widget.term);
+    setState(() { });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -40,39 +56,48 @@ class _TimetableEditPageState extends State<TimetableEditPage> {
                   int day = index % 5;  // Berechnung des Tages
                   int hour = index ~/ 5; // Berechnung der Stunde
 
-                  TimetableEntry? entry = TimetableService.getTimetableEntry(widget.term, day, hour);
+                  TimetableEntry? entry = timetable.firstWhereOrNull((t) => t.day == day && t.hour == hour);
 
-                  return GestureDetector(
-                    onTap: () {
-                      _changeSubject(context, day, hour, entry?.subject, entry?.room);
-                    },
-                    child: Card(
-                      elevation: 0,
-                      margin: const EdgeInsets.all(2.0),
-                      color: entry == null ? Theme.of(context).colorScheme.surfaceContainer : entry.subject.color,
-                      child: Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Text(
-                              entry?.subject.shortName ?? "+",
-                              textAlign: TextAlign.center,
-                              style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                                color: getContrastingTextColor(entry?.subject.color ?? Colors.black),
-                              ),
-                            ),
-                            if (entry?.room?.isNotEmpty ?? false)
-                              Text(
-                                entry!.room!,
-                                textAlign: TextAlign.center,
-                                style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                                  color: getContrastingTextColor(entry.subject.color),
+                  return FutureBuilder(
+                    future: SubjectService.findById(entry?.subjectId),
+                    builder: (context, asyncSnapshot) {
+
+                      Subject? subject = asyncSnapshot.data;
+                      Color bgColor = subject?.color ?? Theme.of(context).colorScheme.surfaceContainer;
+
+                      return GestureDetector(
+                        onTap: () {
+                          _changeSubject(context, day, hour, subject, entry?.room);
+                        },
+                        child: Card(
+                          elevation: 0,
+                          margin: const EdgeInsets.all(2.0),
+                          color: bgColor,
+                          child: Center(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Text(
+                                  subject?.shortName ?? "+",
+                                  textAlign: TextAlign.center,
+                                  style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                                    color: getContrastingTextColor(bgColor),
+                                  ),
                                 ),
-                              ),
-                          ],
+                                if (entry?.room?.isNotEmpty ?? false)
+                                  Text(
+                                    entry!.room!,
+                                    textAlign: TextAlign.center,
+                                    style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                                      color: getContrastingTextColor(bgColor),
+                                    ),
+                                  ),
+                              ],
+                            ),
+                          ),
                         ),
-                      ),
-                    ),
+                      );
+                    }
                   );
                 },
               ),

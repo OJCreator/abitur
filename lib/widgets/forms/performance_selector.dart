@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 
-import '../../storage/entities/performance.dart';
+import '../../sqlite/entities/performance.dart';
 
 class PerformanceSelector extends StatelessWidget {
 
   final List<Performance> performances;
-  final Performance currentPerformance;
-  final Function(Performance selected) onSelected;
+  final Performance? currentPerformance;
+  final Function(Performance selected)? onSelected;
 
   const PerformanceSelector({
     required this.performances,
@@ -17,11 +17,11 @@ class PerformanceSelector extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SegmentedButton(
+    return SegmentedButton<Performance>(
       expandedInsets: const EdgeInsets.all(0),
-      selected: {currentPerformance},
-      onSelectionChanged: (Set<Performance> newSelection) {
-        onSelected(newSelection.first);
+      selected: currentPerformance == null ? {} : {currentPerformance!},
+      onSelectionChanged: onSelected == null ? null : (Set<Performance> newSelection) {
+        onSelected!(newSelection.first);
       },
       showSelectedIcon: false,
       segments: performances.map((performance) {

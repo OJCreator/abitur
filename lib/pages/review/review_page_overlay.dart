@@ -49,7 +49,7 @@ class _ReviewPageOverlayState extends State<ReviewPageOverlay> {
     if (_currentStoryIndex >= widget.storyDurations.length) {
       return;
     }
-    print("Next: ");
+    debugPrint("Next: ");
     _changeStory(_currentStoryIndex+1);
   }
 

@@ -1,10 +1,10 @@
-import 'package:abitur/storage/storage.dart';
 import 'package:flutter/material.dart';
 
 class BrightnessNotifier extends ChangeNotifier with WidgetsBindingObserver {
-  ThemeMode _themeMode = Storage.loadSettings().themeMode;
+  ThemeMode _themeMode;
 
-  BrightnessNotifier() {
+  BrightnessNotifier({required ThemeMode themeMode}):
+        _themeMode = themeMode {
     WidgetsBinding.instance.addObserver(this);
   }
 

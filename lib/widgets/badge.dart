@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../storage/entities/subject.dart';
+import '../sqlite/entities/subject.dart';
 import '../utils/constants.dart';
 
 class GraduationBadge extends StatelessWidget {

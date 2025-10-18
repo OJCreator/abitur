@@ -65,7 +65,7 @@ class _ReviewFinalExportPageState extends State<ReviewFinalExportPage> {
               await _generateImage();
               // Hier könntest du z.B. das Bild teilen, in der Galerie speichern etc.
               // Für Debugzwecke:
-              print("Bild generiert mit ${imageBytes?.length} bytes.");
+              debugPrint("Bild generiert mit ${imageBytes?.length} bytes.");
               _shareImage();
             },
             icon: Icon(Icons.share),

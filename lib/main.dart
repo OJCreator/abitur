@@ -4,9 +4,10 @@ import 'package:abitur/pages/evaluation_pages/evaluations_page.dart';
 import 'package:abitur/pages/analytics_page.dart';
 import 'package:abitur/pages/subject_pages/subjects_page.dart';
 import 'package:abitur/pages/welcome_screen.dart';
-import 'package:abitur/storage/services/notification_service.dart';
-import 'package:abitur/storage/services/settings_service.dart';
-import 'package:abitur/storage/storage.dart';
+import 'package:abitur/services/database/settings_service.dart';
+import 'package:abitur/services/notification_service.dart';
+import 'package:abitur/sqlite/entities/settings.dart';
+import 'package:abitur/sqlite/sqlite_storage.dart';
 import 'package:abitur/utils/brightness_notifier.dart';
 import 'package:abitur/utils/seed_notifier.dart';
 import 'package:flutter/material.dart';
@@ -30,22 +31,30 @@ Future<void> main() async {
   initializeDateFormatting();
   await NotificationService.init();
   initializeTimeZones();
-  await Storage.init();
+  // await Storage.init();
+  await SqliteStorage.init();
   await PurchaseService.init();
+
+  final Settings settings = await SettingsService.loadSettings();
 
   runApp(
     ChangeNotifierProvider(
-      create: (_) => SeedNotifier(),
+      create: (_) => SeedNotifier(seed: settings.accentColor),
       child: ChangeNotifierProvider(
-        create: (_) => BrightnessNotifier(),
-        child: MyApp(),
+        create: (_) => BrightnessNotifier(themeMode: settings.themeMode),
+        child: AbiturApp(
+          viewedWelcomeScreen: settings.viewedWelcomeScreen,
+        ),
       ),
     ),
   );
 }
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+class AbiturApp extends StatelessWidget {
+
+  final bool viewedWelcomeScreen;
+
+  const AbiturApp({super.key, required this.viewedWelcomeScreen});
 
   @override
   Widget build(BuildContext context) {
@@ -71,7 +80,7 @@ class MyApp extends StatelessWidget {
                 useMaterial3: true,
                 brightness: b,
               ),
-              home: SettingsService.loadSettings().viewedWelcomeScreen ? ScreenScaffolding() : WelcomeScreen(),
+              home: viewedWelcomeScreen ? ScreenScaffolding() : WelcomeScreen(),
             );
           },
         );

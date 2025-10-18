@@ -1,7 +1,7 @@
 import 'package:abitur/isolates/models/subject/subjects_model.dart';
 import 'package:abitur/isolates/serializer.dart';
 
-import '../storage/entities/subject.dart';
+import '../sqlite/entities/subject.dart';
 
 class SubjectIsolates {
 

@@ -1,5 +1,6 @@
-import 'package:abitur/storage/entities/performance.dart';
 import 'package:flutter/material.dart';
+
+import '../../sqlite/entities/performance.dart';
 
 class PerformanceForm extends StatefulWidget {
   final List<Performance> performances;
@@ -64,7 +65,7 @@ class _PerformanceFormState extends State<PerformanceForm> {
       return;
     }
     setState(() {
-      final newPerformance = Performance(name: "Leistung", weighting: 0);
+      final newPerformance = Performance(name: "Leistung", weighting: 0, subjectId: "");
       widget.performances.add(newPerformance);
       _textControllers.add(TextEditingController(text: newPerformance.name));
     });

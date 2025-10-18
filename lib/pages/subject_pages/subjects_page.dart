@@ -1,16 +1,14 @@
 import 'package:abitur/pages/subject_pages/subject_chose_graduation_page.dart';
 import 'package:abitur/pages/subject_pages/subject_input_page.dart';
 import 'package:abitur/pages/subject_pages/subject_page.dart';
-import 'package:abitur/storage/services/graduation_service.dart';
-import 'package:abitur/storage/services/settings_service.dart';
-import 'package:abitur/storage/services/subject_service.dart';
 import 'package:abitur/widgets/info_card.dart';
-import 'package:abitur/widgets/shimmer.dart';
 import 'package:flutter/material.dart';
 
-import '../../storage/entities/subject.dart';
-import '../../utils/constants.dart';
-import '../../widgets/badge.dart';
+import '../../services/database/graduation_evaluation_service.dart';
+import '../../services/database/settings_service.dart';
+import '../../services/database/subject_service.dart';
+import '../../sqlite/entities/subject.dart';
+import '../../widgets/list_tiles/subject_list_tile.dart';
 
 class SubjectsPage extends StatefulWidget {
 
@@ -41,7 +39,7 @@ class _SubjectsPageState extends State<SubjectsPage> {
 
   void _loadSubjects() {
     setState(() {
-      subjects = SubjectService.findAllSortedIsolated();
+      subjects = SubjectService.findAll();
     });
   }
 
@@ -77,6 +75,8 @@ class _SubjectsPageState extends State<SubjectsPage> {
         child: FutureBuilder(
           future: subjects,
           builder: (context, snapshot) {
+            debugPrint(snapshot.data.toString());
+            debugPrint(snapshot.hasError.toString());
             if (!snapshot.hasData) {
               return Column(
                 children: [
@@ -89,11 +89,18 @@ class _SubjectsPageState extends State<SubjectsPage> {
               children: [
                 if (snapshot.data!.isEmpty)
                   Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: InfoCard("Es gibt noch keine Fächer.")
+                    padding: const EdgeInsets.all(8.0),
+                    child: InfoCard("Es gibt noch keine Fächer."),
                   ),
-                if (SettingsService.choseGraduationSubjectsTime())
-                  Padding(
+                FutureBuilder(
+                  future: SettingsService.dayToChoseGraduationSubjects(),
+                  builder: (context, asyncSnapshot) {
+                    if (!asyncSnapshot.hasData || asyncSnapshot.data == null) {
+                      return Container();
+                    }
+                    DateTime dayToChoseGraduationSubjects = asyncSnapshot.data!;
+                    if (!DateTime.now().isAfter(dayToChoseGraduationSubjects)) return Container();
+                    return Padding(
                       padding: const EdgeInsets.all(8.0),
                       child: InfoCard(
                         "Es wird Zeit, deine Abiturfächer zu wählen.",
@@ -108,20 +115,32 @@ class _SubjectsPageState extends State<SubjectsPage> {
                           ));
                           _loadSubjects();
                         },
-                      )
-                  ),
+                      ),
+                    );
+                  }
+                ),
                 for (Subject subject in snapshot.data!)
-                  SubjectListTile(
-                    subject: subject,
-                    onTap: () async {
-                      await Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) {
-                          return SubjectPage(subject: subject);
-                        }),
+                  FutureBuilder(
+                    future: GraduationEvaluationService.isGraduationSubject(subject),
+                    builder: (context, asyncSnapshot) {
+                      if (!asyncSnapshot.hasData) {
+                        return SubjectListTile.shimmer();
+                      }
+                      bool isGraduationSubject = asyncSnapshot.data!;
+                      return SubjectListTile(
+                        subject: subject,
+                        isGraduationSubject: isGraduationSubject,
+                        onTap: () async {
+                          await Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (context) {
+                              return SubjectPage(subjectId: subject.id);
+                            }),
+                          );
+                          _loadSubjects();
+                        },
                       );
-                      _loadSubjects();
-                    },
+                    }
                   ),
               ],
             );
@@ -131,44 +150,6 @@ class _SubjectsPageState extends State<SubjectsPage> {
       floatingActionButton: FloatingActionButton(
         onPressed: _addNewSubject,
         child: Icon(Icons.add),
-      ),
-    );
-  }
-}
-
-class SubjectListTile extends StatelessWidget {
-
-  final Subject subject;
-  final GestureTapCallback? onTap;
-
-  final bool shimmer;
-
-  const SubjectListTile({super.key, required this.subject, this.onTap}) :
-        shimmer = false;
-  SubjectListTile.shimmer({super.key}) :
-        shimmer = true,
-        subject = Subject.empty(),
-        onTap = null;
-
-  @override
-  Widget build(BuildContext context) {
-    return ListTile(
-      title: shimmer ? Shimmer(height: 20, width: 50) : Text(subject.name),
-      subtitle: shimmer ? Shimmer(height: 15, width: 40) : Text(subject.subjectType.canBeLeistungsfach ? subject.subjectNiveau.name : subject.subjectType.displayName),
-      onTap: onTap,
-      leading: Container(
-        margin: const EdgeInsets.only(left: 10),
-        width: 8,
-        decoration: BoxDecoration(
-          color: shimmer ? shimmerColor : subject.color,
-          borderRadius: BorderRadius.circular(5),
-        ),
-      ),
-      trailing: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          if (GraduationService.isGraduationSubject(subject)) GraduationBadge(),
-        ],
       ),
     );
   }

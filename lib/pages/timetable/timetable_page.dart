@@ -1,7 +1,7 @@
 import 'package:abitur/pages/timetable/timetable_edit_page.dart';
 import 'package:flutter/material.dart';
 
-import '../../storage/services/settings_service.dart';
+import '../../services/database/settings_service.dart';
 import '../../widgets/timetable_view.dart';
 
 class TimetablePage extends StatefulWidget {
@@ -15,11 +15,18 @@ class _TimetablePageState extends State<TimetablePage> with SingleTickerProvider
 
   late TabController _tabController;
 
+  late Future<int> currentProbableTerm;
+
   @override
   void initState() {
-    int currentTerm = SettingsService.currentProbableTerm();
-    _tabController = TabController(length: 4, vsync: this, initialIndex: currentTerm);
+    currentProbableTerm = SettingsService.currentProbableTerm();
+    _tabController = TabController(length: 4, vsync: this, initialIndex: 0);
     super.initState();
+  }
+
+  Future<void> setCurrentProbableTerm() async {
+    int currentTerm = await SettingsService.currentProbableTerm();
+    _tabController.animateTo(currentTerm);
   }
 
   @override

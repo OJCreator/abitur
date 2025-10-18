@@ -2,9 +2,9 @@ import 'package:abitur/isolates/models/evaluation_dates/evaluation_dates_model.d
 import 'package:abitur/isolates/models/evaluation_dates/evaluation_dates_time_model.dart';
 import 'package:abitur/isolates/serializer.dart';
 
-import '../storage/entities/evaluation.dart';
-import '../storage/entities/evaluation_date.dart';
-import '../storage/entities/subject.dart';
+import '../sqlite/entities/evaluation/evaluation.dart';
+import '../sqlite/entities/evaluation/evaluation_date.dart';
+import '../sqlite/entities/subject.dart';
 import '../utils/constants.dart';
 import '../utils/pair.dart';
 import 'models/evaluation_dates/evaluation_dates_evaluation_subjects_model.dart';

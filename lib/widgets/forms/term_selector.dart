@@ -4,7 +4,7 @@ class TermSelector extends StatelessWidget {
 
   final int selectedTerm;
   final Set<int> terms;
-  final Function(int term) onSelected;
+  final Function(int term)? onSelected;
 
   const TermSelector({
     super.key,
@@ -19,8 +19,8 @@ class TermSelector extends StatelessWidget {
       expandedInsets: EdgeInsets.all(0),
       selected: {selectedTerm},
       showSelectedIcon: false,
-      onSelectionChanged: (Set<int> newSelection) {
-        onSelected(newSelection.first);
+      onSelectionChanged: onSelected == null ? null : (Set<int> newSelection) {
+        onSelected!(newSelection.first);
       },
       segments: terms.map((term) {
         return ButtonSegment(

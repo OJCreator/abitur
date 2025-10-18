@@ -3,23 +3,24 @@ import 'dart:io';
 
 import 'package:abitur/main.dart';
 import 'package:abitur/pages/setup_pages/setup_land_page.dart';
-import 'package:abitur/storage/services/calendar_service.dart';
-import 'package:abitur/storage/services/evaluation_service.dart';
-import 'package:abitur/storage/services/evaluation_type_service.dart';
-import 'package:abitur/storage/services/notification_service.dart';
-import 'package:abitur/storage/services/performance_service.dart';
-import 'package:abitur/storage/services/settings_service.dart';
-import 'package:abitur/storage/services/timetable_service.dart';
-import 'package:abitur/storage/storage.dart';
+import 'package:abitur/services/calendar_service.dart';
+import 'package:abitur/services/database/timetable_entry_service.dart';
+import 'package:abitur/services/database/timetable_time_service.dart';
+import 'package:abitur/services/notification_service.dart';
 import 'package:abitur/utils/brightness_notifier.dart';
 import 'package:abitur/utils/seed_notifier.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import '../storage/services/evaluation_date_service.dart';
-import '../storage/services/graduation_service.dart';
-import '../storage/services/subject_service.dart';
+import '../services/database/evaluation_date_service.dart';
+import '../services/database/evaluation_service.dart';
+import '../services/database/evaluation_type_service.dart';
+import '../services/database/graduation_evaluation_service.dart';
+import '../services/database/performance_service.dart';
+import '../services/database/settings_service.dart';
+import '../services/database/subject_service.dart';
+import '../sqlite/entities/settings.dart';
 
 class WelcomeScreen extends StatefulWidget {
   const WelcomeScreen({super.key});
@@ -36,44 +37,46 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            const Text(
-              "Willkommen in deiner Abitur-App.",
-              style: TextStyle(
-                fontSize: 40,
-                fontWeight: FontWeight.bold,
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            children: [
+              const Text(
+                "Willkommen in deiner Abitur-App.",
+                style: TextStyle(
+                  fontSize: 40,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
-            ),
-            const SizedBox(height: 12),
-
-            ListTile(
-              leading: Icon(Icons.remove_red_eye, color: Theme.of(context).colorScheme.primary, size: 32),
-              title: Text(
-                "Behalte die Übersicht",
-                style: TextStyle(fontWeight: FontWeight.bold),
+              const SizedBox(height: 12),
+        
+              ListTile(
+                leading: Icon(Icons.remove_red_eye, color: Theme.of(context).colorScheme.primary, size: 32),
+                title: Text(
+                  "Behalte die Übersicht",
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+                subtitle: Text("Über Prüfungen, Noten und Fächer"),
               ),
-              subtitle: Text("Über Prüfungen, Noten und Fächer"),
-            ),
-            ListTile(
-              leading: Icon(Icons.notifications, color: Theme.of(context).colorScheme.primary, size: 32),
-              title: Text(
-                "Vergiss nie mehr einen Termin",
-                style: TextStyle(fontWeight: FontWeight.bold),
+              ListTile(
+                leading: Icon(Icons.notifications, color: Theme.of(context).colorScheme.primary, size: 32),
+                title: Text(
+                  "Vergiss nie mehr einen Termin",
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+                subtitle: Text("Du wirst automatisch an alles Wichtige erinnert"),
               ),
-              subtitle: Text("Du wirst automatisch an alles Wichtige erinnert"),
-            ),
-            ListTile(
-              leading: Icon(Icons.query_stats, color: Theme.of(context).colorScheme.primary, size: 32),
-              title: Text(
-                "Wie gut wird dein Abi?",
-                style: TextStyle(fontWeight: FontWeight.bold),
+              ListTile(
+                leading: Icon(Icons.query_stats, color: Theme.of(context).colorScheme.primary, size: 32),
+                title: Text(
+                  "Wie gut wird dein Abi?",
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+                subtitle: Text("Sieh dir dynamische Hochrechnungen für deinen Abischnitt an"),
               ),
-              subtitle: Text("Sieh dir dynamische Hochrechnungen für deinen Abischnitt an"),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
       bottomNavigationBar: SafeArea(
@@ -134,27 +137,27 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
 
         Map<String, dynamic> jsonData = jsonDecode(fileContent);
 
-        print("Extracted data from JSON...");
+        // TODO SQLITE Tabelle aus JSON wiederherstellen
+
+        debugPrint("Extracted data from JSON...");
         await PerformanceService.buildFromJson((jsonData["performances"] as List).map((e) => e as Map<String, dynamic>).toList());
-        print("Extracted Performances from JSON.");
+        debugPrint("Extracted Performances from JSON.");
         await SubjectService.buildFromJson((jsonData["subjects"] as List).map((e) => e as Map<String, dynamic>).toList());
-        print("Extracted Subjects from JSON.");
+        debugPrint("Extracted Subjects from JSON.");
         await EvaluationService.buildFromJson((jsonData["evaluations"] as List).map((e) => e as Map<String, dynamic>).toList());
-        print("Extracted Evaluations from JSON.");
+        debugPrint("Extracted Evaluations from JSON.");
         await EvaluationDateService.buildFromJson((jsonData["evaluationDates"] as List).map((e) => e as Map<String, dynamic>).toList());
-        print("Extracted EvaluationDates from JSON.");
+        debugPrint("Extracted EvaluationDates from JSON.");
         await EvaluationTypeService.buildFromJson((jsonData["evaluationTypes"] as List).map((e) => e as Map<String, dynamic>).toList());
-        print("Extracted EvaluationTypes from JSON.");
+        debugPrint("Extracted EvaluationTypes from JSON.");
         await SettingsService.buildFromJson(jsonData["settings"] as Map<String, dynamic>);
-        print("Extracted Settings from JSON.");
-        await GraduationService.buildFromJson((jsonData["graduationEvaluations"] as List).map((e) => e as Map<String, dynamic>).toList());
-        print("Extracted GraduationEvaluations from JSON.");
-        await TimetableService.buildSettingsFromJson(jsonData["timetableSettings"] as Map<String, dynamic>);
-        print("Extracted TimetableSettings from JSON.");
-        await TimetableService.buildTimetableFromJson((jsonData["timetables"] as List).map((e) => e as Map<String, dynamic>).toList());
-        print("Extracted Timetables from JSON.");
-        await TimetableService.buildEntriesFromJson((jsonData["timetableEntries"] as List).map((e) => e as Map<String, dynamic>).toList());
-        print("Extracted TimetableEntries from JSON.");
+        debugPrint("Extracted Settings from JSON.");
+        await GraduationEvaluationService.buildFromJson((jsonData["graduationEvaluations"] as List).map((e) => e as Map<String, dynamic>).toList());
+        debugPrint("Extracted GraduationEvaluations from JSON.");
+        await TimetableEntryService.buildFromJson((jsonData["timetableEntries"] as List).map((e) => e as Map<String, dynamic>).toList());
+        debugPrint("Extracted TimetableSettings from JSON.");
+        await TimetableTimeService.buildFromJson((jsonData["timetableTimes"] as List).map((e) => e as Map<String, dynamic>).toList());
+        debugPrint("Extracted Timetables from JSON.");
 
         // Kalender und Notifications
         await CalendarService.syncAllEvaluationCalendarEvents();
@@ -162,11 +165,13 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
 
         SettingsService.markWelcomeScreenAsViewed();
 
-        Storage.initialValues();
+        // Storage.initialValues();
+
+        Settings settings = await SettingsService.loadSettings();
 
         // Theming
-        Provider.of<BrightnessNotifier>(context, listen: false,).setThemeMode(SettingsService.loadSettings().themeMode);
-        Provider.of<SeedNotifier>(context, listen: false,).seed = SettingsService.loadSettings().accentColor;
+        Provider.of<BrightnessNotifier>(context, listen: false,).setThemeMode(settings.themeMode);
+        Provider.of<SeedNotifier>(context, listen: false,).seed = settings.accentColor;
 
         Navigator.pushReplacement(
           context,
@@ -186,7 +191,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
           content: Text("Es gab einen Fehler beim Einlesen der Daten."),
         ),
       );
-      print(e.toString());
+      debugPrint(e.toString());
     }
   }
 }

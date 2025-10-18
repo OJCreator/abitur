@@ -1,9 +1,9 @@
+import 'package:abitur/services/database/timetable_entry_service.dart';
 import 'package:abitur/utils/extensions/int_extension.dart';
 import 'package:flutter/material.dart';
 
-import '../../storage/entities/subject.dart';
-import '../../storage/services/subject_service.dart';
-import '../../storage/services/timetable_service.dart';
+import '../../services/database/subject_service.dart';
+import '../../sqlite/entities/subject.dart';
 import '../../widgets/forms/form_gap.dart';
 import '../../widgets/forms/subject_dropdown.dart';
 
@@ -27,14 +27,21 @@ class _TimetableEditEventPageState extends State<TimetableEditEventPage> {
 
   Subject? _selectedSubject;
   final TextEditingController _roomController = TextEditingController();
-  late final List<Subject?> subjects;
+  List<Subject?> subjects = [null];
 
   @override
   void initState() {
     _selectedSubject = widget.initialSubject;
     _roomController.text = widget.initialRoom ?? "";
-    subjects = [null, ...SubjectService.findAll().where((s) => s.terms.contains(widget.term))];
+    _loadData();
     super.initState();
+  }
+
+  Future<void> _loadData() async {
+    final allSubjects = await SubjectService.findAll();
+    setState(() {
+      subjects = [null, ...allSubjects.where((s) => s.terms.contains(widget.term))];
+    });
   }
 
   @override
@@ -59,9 +66,13 @@ class _TimetableEditEventPageState extends State<TimetableEditEventPage> {
                   subjects: subjects,
                   selectedSubject: _selectedSubject,
                   onSelected: (s) {
-                    setState(() {
+                    setState(() async {
                       _selectedSubject = s;
-                      String? knownRoom = TimetableService.knownRoom(s);
+                      if (s == null) {
+                        _roomController.text = "";
+                        return;
+                      }
+                      String? knownRoom = await TimetableEntryService.knownRoom(s.id);
                       if (knownRoom != null) {
                         _roomController.text = knownRoom;
                       }
@@ -86,7 +97,7 @@ class _TimetableEditEventPageState extends State<TimetableEditEventPage> {
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () async {
-          await TimetableService.changeSubject(widget.term, widget.day, widget.hour, _selectedSubject, _roomController.text);
+          await TimetableEntryService.changeTimetableEntry(widget.term, widget.day, widget.hour, _selectedSubject?.id, _roomController.text, null);
           Navigator.pop(context);
         },
         label: Text("Speichern"),

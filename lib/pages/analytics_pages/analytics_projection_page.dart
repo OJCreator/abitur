@@ -1,14 +1,13 @@
 import 'package:abitur/isolates/models/projection/projection_model.dart';
-import 'package:abitur/pages/analytics_pages/projection_change_graduation_subjects_page.dart';
-import 'package:abitur/storage/services/projection_service.dart';
-import 'package:abitur/storage/services/subject_service.dart';
+import 'package:abitur/services/projection_service.dart';
 import 'package:abitur/widgets/analytics/note_projection.dart';
 import 'package:abitur/widgets/forms/form_gap.dart';
 import 'package:abitur/widgets/info_card.dart';
 import 'package:abitur/widgets/linear_percent_indicator.dart';
 import 'package:flutter/material.dart';
 
-import '../../storage/entities/subject.dart';
+import '../../services/database/subject_service.dart';
+import '../../sqlite/entities/subject.dart';
 import '../../widgets/percent_indicator.dart';
 
 class ProjectionAnalyticsPage extends StatefulWidget {
@@ -115,7 +114,7 @@ class _ProjectionAnalyticsPageState extends State<ProjectionAnalyticsPage> {
                           ],
                         );
                       }
-                      Subject s = SubjectService.findById(data[row - 1].subjectId) ?? Subject.empty();
+                      Future<Subject?> subject = SubjectService.findById(data[row - 1].subjectId);
                       return TableRow(
                         decoration: BoxDecoration(
                           color: row%2 == 0 ? Theme.of(context).colorScheme.surface : Theme.of(context).colorScheme.surfaceContainer,
@@ -123,7 +122,12 @@ class _ProjectionAnalyticsPageState extends State<ProjectionAnalyticsPage> {
                         ),
                         children: List.generate(5, (col) {
                           if (col == 0) {
-                            return SubjectTableLabel(subject: s);
+                            return FutureBuilder(
+                                future: subject,
+                                builder: (context, asyncSnapshot) {
+                                  return SubjectTableLabel(subject: asyncSnapshot.data ?? Subject.empty());
+                                }
+                            );
                           }
                           ProjectionTermModel termNoteDto = data[row - 1].terms[col - 1];
                           return NoteProjection(
@@ -153,7 +157,7 @@ class _ProjectionAnalyticsPageState extends State<ProjectionAnalyticsPage> {
                       await Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => ProjectionChangeGraduationSubjectsPage(),
+                          builder: (context) => Scaffold(), // TODO
                           fullscreenDialog: true,
                         ),
                       );
@@ -179,7 +183,7 @@ class _ProjectionAnalyticsPageState extends State<ProjectionAnalyticsPage> {
                       2: FlexColumnWidth(1),
                     },
                     children: List.generate(data.length, (row) {
-                      Subject s = SubjectService.findById(data[row].subjectId) ?? Subject.empty();
+                      Future<Subject?> subject = SubjectService.findById(data[row].subjectId);
                       return TableRow(
                         decoration: BoxDecoration(
                           color: row%2 == 0 ? Theme.of(context).colorScheme.surface : Theme.of(context).colorScheme.surfaceContainer,
@@ -187,7 +191,12 @@ class _ProjectionAnalyticsPageState extends State<ProjectionAnalyticsPage> {
                         ),
                         children: List.generate(2, (col) {
                           if (col == 0) {
-                            return SubjectTableLabel(subject: s);
+                            return FutureBuilder(
+                              future: subject,
+                              builder: (context, asyncSnapshot) {
+                                return SubjectTableLabel(subject: asyncSnapshot.data ?? Subject.empty());
+                              }
+                            );
                           }
                           ProjectionTermModel dto = data[row].result;
                           return NoteProjection(

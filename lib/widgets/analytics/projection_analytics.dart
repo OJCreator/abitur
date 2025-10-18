@@ -3,7 +3,7 @@ import 'package:abitur/pages/analytics_pages/analytics_projection_page.dart';
 import 'package:abitur/widgets/percent_indicator.dart';
 import 'package:flutter/material.dart';
 
-import '../../storage/services/projection_service.dart';
+import '../../services/projection_service.dart';
 import '../forms/form_gap.dart';
 import '../linear_percent_indicator.dart';
 

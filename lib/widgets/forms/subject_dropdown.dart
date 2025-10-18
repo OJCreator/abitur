@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../storage/entities/subject.dart';
+import '../../sqlite/entities/subject.dart';
 
 class SubjectDropdown extends StatelessWidget {
 

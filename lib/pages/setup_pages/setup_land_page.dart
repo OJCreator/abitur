@@ -1,9 +1,8 @@
 import 'package:abitur/pages/setup_pages/setup_graduation_year_page.dart';
-import 'package:abitur/storage/entities/settings.dart';
-import 'package:abitur/storage/services/settings_service.dart';
-import 'package:abitur/storage/storage.dart';
 import 'package:flutter/material.dart';
 
+import '../../services/database/settings_service.dart';
+import '../../sqlite/entities/settings.dart';
 import '../../utils/enums/land.dart';
 
 class SetupLandPage extends StatelessWidget {
@@ -28,9 +27,9 @@ class SetupLandPage extends StatelessWidget {
                     dense: true,
                     title: Text(land.name),
                     onTap: () async {
-                      Settings s = SettingsService.loadSettings();
+                      Settings s = await SettingsService.loadSettings();
                       s.land = land;
-                      await Storage.saveSettings(s);
+                      await SettingsService.saveSettings(s);
 
                       Navigator.pushReplacement(
                         context,

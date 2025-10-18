@@ -1,18 +1,21 @@
-import 'package:abitur/storage/entities/settings.dart';
-import 'package:abitur/storage/services/settings_service.dart';
+import 'package:abitur/services/database/evaluation_service.dart';
+import 'package:abitur/services/database/subject_service.dart';
 import 'package:device_calendar/device_calendar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'package:permission_handler/permission_handler.dart' as AppSettings;
 import 'package:synchronized/synchronized.dart';
 
-import '../../main.dart';
-import '../../pages/evaluation_pages/evaluation_input_page.dart';
-import '../../pages/subject_pages/subject_page.dart';
-import '../../utils/constants.dart';
-import '../entities/evaluation_date.dart';
-import 'evaluation_date_service.dart';
+import '../main.dart';
+import '../pages/evaluation_pages/evaluation_input_page.dart';
+import '../pages/subject_pages/subject_page.dart';
+import '../sqlite/entities/evaluation/evaluation.dart';
+import '../sqlite/entities/evaluation/evaluation_date.dart';
+import '../sqlite/entities/settings.dart';
+import '../sqlite/entities/subject.dart';
+import '../utils/constants.dart';
+import 'database/evaluation_date_service.dart';
+import 'database/settings_service.dart';
 
 class NotificationService {
   static final notificationsPlugin = FlutterLocalNotificationsPlugin();
@@ -46,8 +49,8 @@ class NotificationService {
   }
 
   // Public Scheduling APIs
-  static void scheduleAllNotifications() {
-    List<EvaluationDate> evaluationDates = EvaluationDateService.findAll();
+  static Future<void> scheduleAllNotifications() async {
+    List<EvaluationDate> evaluationDates = await EvaluationDateService.findAll();
     for (EvaluationDate e in evaluationDates) {
       scheduleNotificationsForEvaluation(e);
     }
@@ -56,9 +59,9 @@ class NotificationService {
     _scheduleEvaluationReminder(evaluationDate);
     _scheduleMissingGradeReminder(evaluationDate);
   }
-  static void cancelEvaluationNotifications(EvaluationDate evaluationDate) {
-    _cancelNotification(evaluationDate, tag: "evaluationReminder");
-    _cancelNotification(evaluationDate, tag: "missingGradeReminder");
+  static void cancelEvaluationNotifications(String evaluationDateId) {
+    _cancelNotification(evaluationDateId, tag: "evaluationReminder");
+    _cancelNotification(evaluationDateId, tag: "missingGradeReminder");
   }
   static void scheduleOnlyEvaluationReminders(List<EvaluationDate> evaluationDates) {
     for (EvaluationDate e in evaluationDates) {
@@ -72,30 +75,31 @@ class NotificationService {
   }
   static void cancelOnlyEvaluationReminders(List<EvaluationDate> evaluationDates) {
     for (EvaluationDate e in evaluationDates) {
-      _cancelNotification(e, tag: "evaluationReminder");
+      _cancelNotification(e.id, tag: "evaluationReminder");
     }
   }
   static void cancelOnlyMissingGradeReminders(List<EvaluationDate> evaluationDates) {
     for (EvaluationDate e in evaluationDates) {
-      _cancelNotification(e, tag: "missingGradeReminder");
+      _cancelNotification(e.id, tag: "missingGradeReminder");
     }
   }
 
   // Private Scheduling Helpers
   static Future<void> _scheduleEvaluationReminder(EvaluationDate evaluationDate) async {
     if (evaluationDate.date == null) return;
-    Settings s = SettingsService.loadSettings();
+    Settings s = await SettingsService.loadSettings();
+    Evaluation? evaluation = await EvaluationService.findById(evaluationDate.evaluationId);
     if (!s.evaluationReminder) return;
-    int reminderTime = s.evaluationReminderTimeInMinutes;
+    TimeOfDay reminderTime = s.evaluationReminderTime;
     DateTime scheduledDate = _calculateScheduledTime(
       evaluationDate.date!,
       dayOffset: -1,
-      minutes: reminderTime,
+      timeOfDay: reminderTime,
     );
     if (scheduledDate.isBefore(DateTime.now())) return;
     await _schedule(
       id: uuidToInt("${evaluationDate.id}-evaluationReminder"),
-      title: "Morgen: ${evaluationDate.evaluation.name}",
+      title: "Morgen: ${evaluation?.name ?? 'Prüfung'}",
       body: "Vergiss nicht auszuschlafen!",
       scheduled: scheduledDate,
       tag: "evaluationReminder",
@@ -104,19 +108,20 @@ class NotificationService {
   }
   static Future<void> _scheduleMissingGradeReminder(EvaluationDate evaluationDate) async {
     if (evaluationDate.date == null || evaluationDate.note != null) return;
-    Settings s = SettingsService.loadSettings();
+    Settings s = await SettingsService.loadSettings();
+    Evaluation? evaluation = await EvaluationService.findById(evaluationDate.evaluationId);
     if (!s.missingGradeReminder) return;
     int delayDays = s.missingGradeReminderDelayDays;
-    int reminderTime = s.missingGradeReminderTimeInMinutes;
+    TimeOfDay reminderTime = s.missingGradeReminderTime;
     DateTime scheduledDate = _calculateScheduledTime(
       evaluationDate.date!,
       dayOffset: delayDays,
-      minutes: reminderTime,
+      timeOfDay: reminderTime,
     );
     if (scheduledDate.isBefore(DateTime.now())) return;
     await _schedule(
       id: uuidToInt("${evaluationDate.id}-missingGradeReminder"),
-      title: "Hast du schon ${evaluationDate.evaluation.name} zurückbekommen?",
+      title: "Hast du schon ${evaluation?.name ?? 'deine Prüfung'} zurückbekommen?",
       body: "Dann trag hier deine Note ein!",
       scheduled: scheduledDate,
       tag: "missingGradeReminder",
@@ -136,7 +141,7 @@ class NotificationService {
     );
   }
   static Future<void> _schedule({int id = 0, required String title, String? body, required DateTime scheduled, String? payload, String? tag}) async {
-    print("Schedule Notification for ${scheduled.toString()} with title = $title");
+    debugPrint("Schedule Notification for ${scheduled.toString()} with title = $title");
     if (!_isInitialized) return;
     await _requestNotificationPermission();
     final TZDateTime tzScheduled = TZDateTime.from(scheduled, local);
@@ -151,8 +156,8 @@ class NotificationService {
       payload: payload,
     );
   }
-  static void _cancelNotification(EvaluationDate evaluationDate, {String? tag}) {
-    notificationsPlugin.cancel(uuidToInt(evaluationDate.id), tag: tag);
+  static void _cancelNotification(String evaluationDateId, {String? tag}) {
+    notificationsPlugin.cancel(uuidToInt(evaluationDateId), tag: tag);
   }
 
   // Permission
@@ -165,28 +170,34 @@ class NotificationService {
       if (await Permission.notification.isDenied) {
         await Permission.notification.request();
       } else if (await Permission.notification.isPermanentlyDenied) {
-        await AppSettings.openAppSettings();
+        await openAppSettings();
       }
     });
   }
 
   // Payload Handler
-  static void _handleNotificationTap(String payload) {
+  static Future<void> _handleNotificationTap(String payload) async {
     if (payload.startsWith("evaluationReminder:")) {
       String evaluationId = payload.split(":")[1];
-      EvaluationDate? evaluationDate = EvaluationDateService.findById(evaluationId);
+      EvaluationDate? evaluationDate = await EvaluationDateService.findById(evaluationId);
+      Evaluation? evaluation = await EvaluationService.findById(evaluationDate.evaluationId);
+      if (evaluation == null) return;
+      Subject? subject = await SubjectService.findById(evaluation.subjectId);
+      if (subject == null) return;
       navigatorKey.currentState?.push(
         MaterialPageRoute(
-          builder: (context) => SubjectPage(subject: evaluationDate.evaluation.subject),
+          builder: (context) => SubjectPage(subjectId: subject.id),
         ),
       );
     }
     if (payload.startsWith("missingGradeReminder:")) {
       String evaluationId = payload.split(":")[1];
-      EvaluationDate evaluationDate = EvaluationDateService.findById(evaluationId);
+      EvaluationDate evaluationDate = await EvaluationDateService.findById(evaluationId);
+      Evaluation? evaluation = await EvaluationService.findById(evaluationDate.evaluationId);
+      if (evaluation == null) return;
       navigatorKey.currentState?.push(
         MaterialPageRoute(
-          builder: (context) => EvaluationInputPage(evaluation: evaluationDate.evaluation),
+          builder: (context) => EvaluationInputPage(evaluation: evaluation),
         ),
       );
     }
@@ -206,10 +217,10 @@ class NotificationService {
       iOS: DarwinNotificationDetails(),
     );
   }
-  static DateTime _calculateScheduledTime(DateTime baseDate, {int dayOffset = 0, int minutes = 0}) {
+  static DateTime _calculateScheduledTime(DateTime baseDate, {int dayOffset = 0, TimeOfDay timeOfDay = const TimeOfDay(hour: 0, minute: 0)}) {
     return baseDate.add(Duration(days: dayOffset)).copyWith(
-      hour: minutes ~/ 60,
-      minute: minutes % 60,
+      hour: timeOfDay.hour,
+      minute: timeOfDay.minute,
       second: 0,
       millisecond: 0,
       microsecond: 0,

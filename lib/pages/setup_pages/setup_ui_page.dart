@@ -1,12 +1,12 @@
 import 'package:abitur/main.dart';
-import 'package:abitur/storage/entities/settings.dart';
-import 'package:abitur/storage/services/settings_service.dart';
 import 'package:abitur/utils/brightness_notifier.dart';
 import 'package:abitur/utils/constants.dart';
 import 'package:abitur/utils/extensions/theme_mode_extension.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../services/database/settings_service.dart';
+import '../../sqlite/entities/settings.dart';
 import '../../widgets/color_dialog.dart';
 import '../settings_pages/settings_appearance_page.dart';
 
@@ -47,12 +47,12 @@ class _SetupUiPageState extends State<SetupUiPage> {
                     if (newThemeMode == null) {
                       return;
                     }
-                    Settings s = SettingsService.loadSettings();
+                    Settings settings = await SettingsService.loadSettings();
                     setState(() {
-                      s.themeMode = newThemeMode;
+                      settings.themeMode = newThemeMode;
                       themeMode = newThemeMode;
                     });
-                    Provider.of<BrightnessNotifier>(context, listen: false,).setThemeMode(s.themeMode);
+                    Provider.of<BrightnessNotifier>(context, listen: false,).setThemeMode(settings.themeMode);
                   },
                 ),
                 ListTile(

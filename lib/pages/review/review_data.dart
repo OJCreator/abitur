@@ -1,20 +1,27 @@
-import 'package:abitur/storage/services/api_service.dart';
+import 'package:abitur/services/api_service.dart';
+import 'package:abitur/services/database/evaluation_service.dart';
+import 'package:abitur/services/database/evaluation_type_service.dart';
+import 'package:abitur/sqlite/entities/evaluation/evaluation_type.dart';
 import 'package:abitur/utils/extensions/lists/iterable_extension.dart';
 
 import '../../isolates/models/projection/projection_model.dart';
-import '../../storage/entities/evaluation_date.dart';
-import '../../storage/entities/evaluation_type.dart';
-import '../../storage/entities/subject.dart';
-import '../../storage/services/evaluation_date_service.dart';
-import '../../storage/services/projection_service.dart';
-import '../../storage/services/settings_service.dart';
-import '../../storage/services/subject_service.dart';
+import '../../services/database/evaluation_date_service.dart';
+import '../../services/database/settings_service.dart';
+import '../../services/database/subject_service.dart';
+import '../../sqlite/entities/evaluation/evaluation.dart';
+import '../../sqlite/entities/evaluation/evaluation_date.dart';
+import '../../sqlite/entities/subject.dart';
+import '../../services/projection_service.dart';
+import '../../utils/enums/assessment_type.dart';
 import '../../utils/pair.dart';
 
 class ReviewData {
 
-  final List<Subject> subjects = SubjectService.findAll();
-  final List<EvaluationDate> evaluationDates = EvaluationDateService.findAll();
+  late final Map<String, Subject> subjectMap;
+  List<Subject> get subjects => subjectMap.values.toList();
+  late final List<EvaluationDate> evaluationDates;
+  late final Map<String, Evaluation?> evaluations;
+  late final Map<String, EvaluationType?> evaluationTypes;
 
   //SUBJ
   late final List<Pair<Subject, double>> subjectAvgs = [];
@@ -38,23 +45,33 @@ class ReviewData {
   final Future<ProjectionModel> projection = ProjectionService.computeProjectionIsolated();
 
   ReviewData() {
+    _fillData();
+  }
+
+  Future<void> _fillData() async {
+    evaluationDates = await EvaluationDateService.findAll();
+    evaluations = await EvaluationService.findAllById(evaluationDates.map((e) => e.evaluationId).toList());
+    evaluationTypes = await EvaluationTypeService.findAllAsMap();
     _fillSubjectsData();
     _fillEvaluationData();
     _fillDifferencesData();
     _fillAverageData();
   }
 
-  void _fillSubjectsData() {
+  Future<void> _fillSubjectsData() async {
 
-    for (Subject s in subjects) {
-      double? avg = SubjectService.getAverage(s);
-      if (avg == null) continue;
-      subjectAvgs.add(Pair(s, avg));
+    subjectMap = await SubjectService.findAllAsMap();
+
+    Map<String, double?> avgs = await SubjectService.getAverages(subjectMap.keys.toList());
+
+    for (MapEntry<String, double?> e in avgs.entries) {
+      if (e.value == null) continue;
+      subjectAvgs.add(Pair(subjectMap[e.key]!, e.value!));
     }
     subjectAvgs.sort((a,b) => b.second.compareTo(a.second));
 
     for (EvaluationDate e in evaluationDates) {
-      evaluationDatesPerSubject[e.evaluation.subject] = (evaluationDatesPerSubject[e.evaluation.subject] ?? 0) + 1;
+      evaluationDatesPerSubject[subjectMap[evaluations[e.evaluationId]!.subjectId]!] = (evaluationDatesPerSubject[subjectMap[evaluations[e.evaluationId]!.subjectId]!] ?? 0) + 1;
     }
     subjectsSortedByEvaluationDescending = evaluationDatesPerSubject.keys.toList();
     subjectsSortedByEvaluationDescending.sort((a,b) => evaluationDatesPerSubject[b]?.compareTo(evaluationDatesPerSubject[a]!) ?? 0);
@@ -66,14 +83,13 @@ class ReviewData {
         continue;
       }
       noteAmounts[e.note!]++;
-      evaluationTypeUses[e.evaluation.evaluationType.name] = (evaluationTypeUses[e.evaluation.evaluationType.name] ?? 0) + 1;
+      evaluationTypeUses[evaluationTypes[evaluations[e.evaluationId]?.evaluationTypeId]!.name] = (evaluationTypeUses[evaluationTypes[evaluations[e.evaluationId]?.evaluationTypeId]!.name] ?? 0) + 1;
     }
   }
 
   void _fillDifferencesData() {
-    List<EvaluationDate> evaluationDates = EvaluationDateService.findAll();
-    List<EvaluationDate> oral = evaluationDates.where((e) => e.note != null && e.evaluation.evaluationType.assessmentType == AssessmentType.oral).toList();
-    List<EvaluationDate> written = evaluationDates.where((e) => e.note != null && e.evaluation.evaluationType.assessmentType == AssessmentType.written).toList();
+    List<EvaluationDate> oral = evaluationDates.where((e) => e.note != null && evaluationTypes[evaluations[e.evaluationId]?.evaluationTypeId]!.assessmentType == AssessmentType.oral).toList();
+    List<EvaluationDate> written = evaluationDates.where((e) => e.note != null && evaluationTypes[evaluations[e.evaluationId]?.evaluationTypeId]!.assessmentType == AssessmentType.written).toList();
 
     double oralAvg = oral.isEmpty
         ? 0
@@ -96,8 +112,8 @@ class ReviewData {
         }
       }
     }
-    lastDate ??= SettingsService.lastDayOfSchool;
-    schoolDays = await ApiService.countSchoolDaysBetween(SettingsService.firstDayOfSchool, lastDate);
+    lastDate ??= await SettingsService.lastDayOfSchool();
+    schoolDays = await ApiService.countSchoolDaysBetween(await SettingsService.firstDayOfSchool(), lastDate);
 
     final groupedEvaluationDatesByDay = evaluationDates.where((e) => e.date != null).toList().groupBy((e) => e.date!.weekday);
     groupedEvaluationDatesByDay.forEach((day, evaluationDates) {
@@ -110,7 +126,7 @@ class ReviewData {
       }
     });
     final groupedEvaluationDatesByMonth = evaluationDates.where((e) => e.date != null && e.note != null).toList().groupBy((e) => (e.date!.year % 100) * 1000 + e.date!.month); // yyMM
-    startMonth = SettingsService.firstDayOfSchool;
+    startMonth = await SettingsService.firstDayOfSchool();
     groupedEvaluationDatesByMonth.forEach((identifier, evaluationDates) {
       final notes = evaluationDates.map((e) => e.note).where((note) => note != null);
 

@@ -1,18 +1,21 @@
 import 'package:abitur/pages/evaluation_pages/evaluation_input_page.dart';
 import 'package:abitur/pages/subject_pages/subject_page.dart';
-import 'package:abitur/storage/entities/evaluation.dart';
-import 'package:abitur/storage/entities/evaluation_date.dart';
-import 'package:abitur/storage/services/api_service.dart';
-import 'package:abitur/storage/services/evaluation_service.dart';
-import 'package:abitur/storage/services/subject_service.dart';
-import 'package:abitur/storage/storage.dart';
+import 'package:abitur/services/database/settings_service.dart';
+import 'package:abitur/services/api_service.dart';
+import 'package:abitur/utils/constants.dart';
 import 'package:abitur/utils/extensions/date_extension.dart';
 import 'package:abitur/utils/extensions/lists/list_extension.dart';
 import 'package:abitur/widgets/evaluation_date_list_tile.dart';
 import 'package:flutter/material.dart';
 import 'package:table_calendar/table_calendar.dart';
 
-import '../../storage/services/evaluation_date_service.dart';
+import '../../services/database/evaluation_date_service.dart';
+import '../../services/database/evaluation_service.dart';
+import '../../services/database/subject_service.dart';
+import '../../sqlite/entities/evaluation/evaluation.dart';
+import '../../sqlite/entities/evaluation/evaluation_date.dart';
+import '../../sqlite/entities/settings.dart';
+import '../../sqlite/entities/subject.dart';
 
 class EvaluationsPage extends StatefulWidget {
 
@@ -24,32 +27,46 @@ class EvaluationsPage extends StatefulWidget {
 
 class _EvaluationsPageState extends State<EvaluationsPage> {
 
-  late Future<List<EvaluationDate>> evaluationDates;
+  late Future<Map<String, Evaluation>> evaluationsFuture;
+  late Future<Map<String, Subject>> subjectsFuture;
+  late Future<List<EvaluationDate>> evaluationDatesFuture;
   List<Holiday> holidays = [];
+  DateTime firstDay = DateTime.now().copyWith(day: 0);
+  DateTime lastDay = DateTime.now().copyWith(month: DateTime.now().month+1, day: 0).add(Duration(days: -1));
   DateTime focusedDay = DateTime.now();
+  late Map<DateTime, List<Evaluation>> evaluationMapOfCurrentMonth = {};
 
   @override
   void initState() {
+    _loadSettings();
     searchEvaluations();
-    DateTime now = DateTime.now();
-    loadHolidays(now);
+    setVisibleMonth(DateTime.now());
     super.initState();
   }
 
-  Future<void> loadHolidays(DateTime date) async {
+  Future<void> setVisibleMonth(DateTime date) async {
     focusedDay = date;
+    setState(() { });
+
+    final first = DateTime(date.year, date.month, 1);
+    final last = DateTime(date.year, date.month + 1, 0);
+    evaluationMapOfCurrentMonth = await EvaluationService.findAllBetweenDays(first, last);
+    setState(() {});
+
     holidays = await ApiService.loadHolidays(date.year);
     setState(() { });
   }
 
   void searchEvaluations() {
     setState(() {
-      evaluationDates = EvaluationDateService.findAllFutureOrUngradedEvaluationDatesIsolated();
+      evaluationsFuture = EvaluationService.findAllAsMap();
+      subjectsFuture = SubjectService.findAllGradableAsMap();
+      evaluationDatesFuture = EvaluationDateService.findAllFutureOrUngraded(); // ursprünglich: findAllFutureOrUngradedEvaluationDatesIsolated();
     });
   }
 
   Future<void> newEvaluation() async {
-    if (SubjectService.hasSubjects()) {
+    if (await SubjectService.hasSubjects()) {
       await Navigator.push(
         context,
         MaterialPageRoute(builder: (context) {
@@ -68,6 +85,14 @@ class _EvaluationsPageState extends State<EvaluationsPage> {
     searchEvaluations();
   }
 
+  Future<void> _loadSettings() async {
+    Settings s = await SettingsService.loadSettings();
+    setState(() {
+      firstDay = DateTime(s.graduationYear.year-2, 9, 1);
+      firstDay = DateTime(s.graduationYear.year, 8, 1);
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -80,13 +105,18 @@ class _EvaluationsPageState extends State<EvaluationsPage> {
                 controller.openView();
               }, icon: Icon(Icons.search));
             },
-            suggestionsBuilder: (context, controller) {
+            suggestionsBuilder: (context, controller) async {
               String text = controller.text;
-              List<EvaluationDate> results = EvaluationDateService.findAllByQuery(text);
+              List<EvaluationDate> results = await EvaluationDateService.findAllByQuery(text);
+              Map<String, Subject> subjects = await subjectsFuture;
+              Map<String, Evaluation> evaluations = await evaluationsFuture;
 
               return results.map((evaluationDate) {
+              Evaluation? evaluation = evaluations[evaluationDate.evaluationId];
                 return EvaluationListTile(
                   evaluationDate: evaluationDate,
+                  evaluation: evaluations[evaluationDate.evaluationId],
+                  subject: subjects[evaluation?.subjectId],
                   enabled: false,
                   reloadEvaluations: () {},
                 );
@@ -100,7 +130,7 @@ class _EvaluationsPageState extends State<EvaluationsPage> {
           children: [
             // Kalender
             TableCalendar(
-              onPageChanged: loadHolidays,
+              onPageChanged: setVisibleMonth,
               holidayPredicate: (date) {
                 return isHoliday(date) != null;
               },
@@ -122,12 +152,12 @@ class _EvaluationsPageState extends State<EvaluationsPage> {
               ),
               locale: "de_DE",
               focusedDay: focusedDay,
-              firstDay: DateTime(Storage.loadSettings().graduationYear.year-2, 9, 1),
-              lastDay: DateTime(Storage.loadSettings().graduationYear.year, 8, 1),
+              firstDay: firstDay,
+              lastDay: lastDay,
               headerStyle: HeaderStyle(formatButtonVisible: false, titleCentered: true,),
               onDaySelected: _onDaySelected,
               startingDayOfWeek: StartingDayOfWeek.monday,
-              eventLoader: (day) => EvaluationService.findAllByDay(day),
+              eventLoader: (day) => evaluationMapOfCurrentMonth[DateTime(day.year, day.month, day.day)] ?? [],
               calendarBuilders: CalendarBuilders(
                 markerBuilder: (context, date, events) {
                   if (events.isNotEmpty) {
@@ -136,14 +166,16 @@ class _EvaluationsPageState extends State<EvaluationsPage> {
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: events.maxSize(5).map((event) {
-                          return Container(
-                            margin: EdgeInsets.symmetric(horizontal: 1.5),
-                            width: 6,
-                            height: 6,
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              color: (event as Evaluation).subject.color,
-                            ),
+                          return FutureBuilder(
+                            future: subjectsFuture,
+                            builder: (context, asyncSnapshot) {
+                              if (!asyncSnapshot.hasData) {
+                                return EvaluationIndicatorDot(color: shimmerColor);
+                              }
+                              return EvaluationIndicatorDot(
+                                color: asyncSnapshot.data![(event as Evaluation).subjectId]?.color ?? shimmerColor,
+                              );
+                            }
                           );
                         }).toList(),
                       ),
@@ -155,7 +187,7 @@ class _EvaluationsPageState extends State<EvaluationsPage> {
             ),
             // Prüfungen
             FutureBuilder(
-              future: evaluationDates,
+              future: evaluationDatesFuture,
               builder: (context, snapshot) {
                 if (!snapshot.hasData) {
                   return Column(
@@ -167,8 +199,20 @@ class _EvaluationsPageState extends State<EvaluationsPage> {
                 } else {
                   return Column(
                     children: snapshot.data!.map((evaluationDate) {
-                      return EvaluationListTile(evaluationDate: evaluationDate,
-                        reloadEvaluations: searchEvaluations,);
+                      return FutureBuilder(
+                        future: Future.wait([evaluationsFuture, subjectsFuture]),
+                        builder: (context, asyncSnapshot) {
+                          if (!asyncSnapshot.hasData) return EvaluationDateListTile.shimmer();
+                          Evaluation evaluation = (asyncSnapshot.data![0] as Map<String, Evaluation>)[evaluationDate.evaluationId]!;
+                          Subject subject = (asyncSnapshot.data![1] as Map<String, Subject>)[evaluation.subjectId]!;
+                          return EvaluationListTile(
+                            evaluationDate: evaluationDate,
+                            reloadEvaluations: searchEvaluations,
+                            evaluation: evaluation,
+                            subject: subject,
+                          );
+                        }
+                      );
                     }).toList(),
                   );
                 }
@@ -198,11 +242,18 @@ class _EvaluationsPageState extends State<EvaluationsPage> {
 
   Future<void> _onDaySelected(DateTime selected, DateTime focused) async {
     String? holiday = isHoliday(selected);
+    final evaluations = await evaluationsFuture;
+    final subjects = await subjectsFuture;
     await showDialog(
       context: context,
       builder: (context) {
         if (holiday == null) {
-          return EvaluationDayDialog(day: selected, reloadEvaluations: searchEvaluations,);
+          return EvaluationDayDialog(
+            day: selected,
+            reloadEvaluations: searchEvaluations,
+            evaluations: evaluations,
+            subjects: subjects,
+          );
         }
         return HolidayDayDialog(day: selected, holiday: holiday);
       },
@@ -210,49 +261,56 @@ class _EvaluationsPageState extends State<EvaluationsPage> {
   }
 }
 
+
 class EvaluationListTile extends StatelessWidget {
 
   final EvaluationDate evaluationDate;
+  final Evaluation? evaluation;
+  final Subject? subject;
   final Function reloadEvaluations;
   final bool showDate;
   final bool enabled;
 
-  const EvaluationListTile({super.key, required this.evaluationDate, required this.reloadEvaluations, this.showDate = true, this.enabled = true});
+  const EvaluationListTile({super.key, required this.evaluationDate, required this.evaluation, required this.subject, required this.reloadEvaluations, this.showDate = true, this.enabled = true});
 
   @override
   Widget build(BuildContext context) {
     return EvaluationDateListTile(
       evaluationDate: evaluationDate,
+      evaluation: evaluation,
+      subject: subject,
       showDate: showDate,
-      onTap: enabled ? () async { // TODO Enabled umfunktionieren: -> Link zu Fach??
-        Evaluation e = evaluationDate.evaluation;
-        if (e.subject.graduationEvaluation == e) {
+      onTap: !enabled || subject == null || evaluation == null ? null : () async { // TODO Enabled umfunktionieren: -> Link zu Fach??
+        if (subject!.graduationEvaluationId == evaluation!.id) {
           await Navigator.push(
             context,
             MaterialPageRoute(builder: (context) {
-              return SubjectPage(subject: e.subject, openGraduationPage: true,);
+              return SubjectPage(subjectId: subject!.id, openGraduationPage: true,);
             }),
           );
         } else {
           await Navigator.push(
             context,
             MaterialPageRoute(builder: (context) {
-              return EvaluationInputPage(evaluation: evaluationDate.evaluation);
+              return EvaluationInputPage(evaluation: evaluation);
             }),
           );
         }
 
         reloadEvaluations();
-      } : null,
+      },
     );
   }
 }
+
 
 class EvaluationDayDialog extends StatefulWidget {
 
   final DateTime day;
   final Function reloadEvaluations;
-  const EvaluationDayDialog({super.key, required this.day, required this.reloadEvaluations});
+  final Map<String, Evaluation> evaluations;
+  final Map<String, Subject> subjects;
+  const EvaluationDayDialog({super.key, required this.day, required this.reloadEvaluations, required this.evaluations, required this.subjects});
 
   @override
   State<EvaluationDayDialog> createState() => _EvaluationDayDialogState();
@@ -260,7 +318,7 @@ class EvaluationDayDialog extends StatefulWidget {
 
 class _EvaluationDayDialogState extends State<EvaluationDayDialog> {
 
-  List<EvaluationDate> evaluationsOnSelectedDay = [];
+  Future<List<EvaluationDate>> evaluationsOnSelectedDay = Future.value([]);
 
   @override
   void initState() {
@@ -270,7 +328,7 @@ class _EvaluationDayDialogState extends State<EvaluationDayDialog> {
 
 
   Future<void> _newEvaluation(DateTime selectedDate) async {
-    if (SubjectService.hasSubjects()) {
+    if (await SubjectService.hasSubjects()) {
       await Navigator.push(
         context,
         MaterialPageRoute(builder: (context) {
@@ -301,23 +359,37 @@ class _EvaluationDayDialogState extends State<EvaluationDayDialog> {
   Widget build(BuildContext context) {
     return AlertDialog(
       title: Text(widget.day.format()),
-      content: evaluationsOnSelectedDay.isNotEmpty ? SingleChildScrollView(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: evaluationsOnSelectedDay.map((e) {
-            return EvaluationListTile(
-              evaluationDate: e,
-              showDate: false,
-              reloadEvaluations: () {
-                _reloadEvaluations();
-                widget.reloadEvaluations();
-              },
+      content: FutureBuilder(
+        future: evaluationsOnSelectedDay,
+        builder: (context, asyncSnapshot) {
+          if (!asyncSnapshot.hasData) {
+            return Column(
+              children: [
+                EvaluationDateListTile.shimmer(),
+              ],
             );
-          }).toList(),
-        ),
-      ) : Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 7),
-        child: Text("Heute gibt es keine Prüfungen."),
+          }
+          return asyncSnapshot.data!.isNotEmpty ? SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: asyncSnapshot.data!.map((e) {
+                return EvaluationListTile(
+                  evaluationDate: e,
+                  evaluation: widget.evaluations[e.evaluationId],
+                  subject: widget.subjects[widget.evaluations[e.evaluationId]?.subjectId],
+                  showDate: false,
+                  reloadEvaluations: () {
+                    _reloadEvaluations();
+                    widget.reloadEvaluations();
+                  },
+                );
+              }).toList(),
+            ),
+          ) : Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 7),
+            child: Text("Heute gibt es keine Prüfungen."),
+          );
+        }
       ),
       contentPadding: const EdgeInsets.symmetric(horizontal: 0, vertical: 20),
       actions: [
@@ -362,3 +434,22 @@ class HolidayDayDialog extends StatelessWidget {
   }
 }
 
+class EvaluationIndicatorDot extends StatelessWidget {
+
+  final Color color;
+
+  const EvaluationIndicatorDot({super.key, required this.color});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: EdgeInsets.symmetric(horizontal: 1.5),
+      width: 6,
+      height: 6,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        color: color,
+      ),
+    );
+  }
+}

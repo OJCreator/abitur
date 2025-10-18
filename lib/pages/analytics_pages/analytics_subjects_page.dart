@@ -8,8 +8,8 @@ import 'package:collection/collection.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 
-import '../../storage/entities/subject.dart';
-import '../../storage/services/subject_service.dart';
+import '../../services/database/subject_service.dart';
+import '../../sqlite/entities/subject.dart';
 import '../../utils/pair.dart';
 
 class AnalyticsSubjectsPage extends StatefulWidget {
@@ -21,18 +21,32 @@ class AnalyticsSubjectsPage extends StatefulWidget {
 
 class _AnalyticsSubjectsPageState extends State<AnalyticsSubjectsPage> {
 
-  late final List<Subject> subjects;
-  late List<Pair<Subject, double>> subjectNotes;
+  List<Subject> subjects = [];
+  List<Pair<Subject, double>> subjectNotes = [];
 
   TermOption termOption = TermOption.all;
   SortOption sortOption = SortOption.alphabet;
 
   @override
   void initState() {
-    subjects = SubjectService.findAllGradable();
-    subjectNotes = subjects.map((s) => Pair(s, SubjectService.getAverage(s) ?? 0)).toList();
-    subjectNotes.sort(sortOption.sortAlgorithm);
+    _loadSubjects();
     super.initState();
+  }
+
+  Future<void> _loadSubjects() async {
+    subjects = await SubjectService.findAllGradable();
+    setState(() { });
+    _loadAverages();
+  }
+
+  Future<void> _loadAverages() async {
+    setState(() {
+      subjectNotes = [];
+    });
+    final avgs = await SubjectService.getAverages(subjects.map((s) => s.id).toList(), filterByTerm: termOption.term);
+    setState(() {
+      subjectNotes = subjects.map((s) => Pair(s, avgs[s.id] ?? 0)).toList();
+    });
   }
 
   @override
@@ -104,9 +118,8 @@ class _AnalyticsSubjectsPageState extends State<AnalyticsSubjectsPage> {
           onSelected: (value) {
             setState(() {
               termOption = value;
-              subjectNotes = subjects.map((s) => Pair(s, termOption.term == null ? SubjectService.getAverage(s) ?? 0 : roundNote(SubjectService.getAverageByTerm(s, termOption.term!) ?? 0)!.toDouble())).toList();
-              subjectNotes.sort(sortOption.sortAlgorithm);
             });
+            _loadAverages();
           },
           displayName: (option) => option.displayName,
         );

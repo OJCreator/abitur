@@ -1,12 +1,12 @@
 import 'package:abitur/pages/analytics_pages/analytics_average_page.dart';
-import 'package:abitur/storage/services/subject_service.dart';
+import 'package:abitur/services/isolates/history_isolate_service.dart';
 import 'package:abitur/utils/extensions/map_extension.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 
 import '../../in_app_purchases/purchase_service.dart';
 import '../../pages/in_app_purchase_pages/full_version_page.dart';
-import '../../storage/entities/subject.dart';
+import '../../sqlite/entities/subject.dart';
 import '../../utils/pair.dart';
 
 class AverageAnalytics extends StatefulWidget {
@@ -28,10 +28,9 @@ class _AverageAnalyticsState extends State<AverageAnalytics> {
     super.initState();
   }
 
-  void _loadAverageHistory() {
-    setState(() {
-      averageHistory = SubjectService.getAverageHistoryForAllSubjects();
-    });
+  Future<void> _loadAverageHistory() async {
+    averageHistory = HistoryIsolateService.getAverageHistoryForAllSubjects();
+    setState(() {});
   }
 
   LineChartBarData generateAverageData(Subject s, List<Pair<DateTime, double>> data) {

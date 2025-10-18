@@ -1,12 +1,13 @@
-import 'package:abitur/storage/services/settings_service.dart';
 import 'package:abitur/utils/extensions/date_extension.dart';
 import 'package:flutter/material.dart';
+
+import '../../services/database/settings_service.dart';
 
 class DateInput extends StatelessWidget {
 
   final DateTime? dateTime;
-  final DateTime firstDate;
-  final DateTime lastDate;
+  final Future<DateTime> firstDate;
+  final Future<DateTime> lastDate;
   final Function(DateTime selected)? onSelected;
 
   final TextEditingController _date = TextEditingController();
@@ -18,18 +19,20 @@ class DateInput extends StatelessWidget {
     DateTime? lastDate,
     super.key,
   }) :
-        firstDate = firstDate ?? SettingsService.firstDayOfSchool,
-        lastDate = lastDate ?? SettingsService.lastDayOfSchool;
+        firstDate = firstDate != null ? Future.value(firstDate) : SettingsService.firstDayOfSchool(),
+        lastDate = lastDate != null ? Future.value(lastDate) : SettingsService.lastDayOfSchool();
 
 
   Future<void> _selectDate(BuildContext context) async {
     if (onSelected == null) {
       return;
     }
+    DateTime firstDatePossible = await firstDate;
+    DateTime lastDatePossible = await lastDate;
     final DateTime? picked = await showDatePicker(
       context: context,
-      firstDate: firstDate,
-      lastDate: lastDate,
+      firstDate: firstDatePossible,
+      lastDate: lastDatePossible,
       initialDate: dateTime,
     );
     if (picked == null) {

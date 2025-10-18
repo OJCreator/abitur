@@ -6,8 +6,8 @@ import 'package:abitur/utils/constants.dart';
 import 'package:abitur/utils/extensions/lists/iterable_extension.dart';
 import 'package:abitur/utils/extensions/lists/nullable_num_list_extension.dart';
 
-import '../../storage/entities/subject.dart';
-import '../../storage/services/graduation_service.dart';
+import '../../services/database/graduation_evaluation_service.dart';
+import '../../sqlite/entities/subject.dart';
 import '../../utils/enums/subject_type.dart';
 
 class ProjectionByTransformer {
@@ -51,7 +51,7 @@ class ProjectionByTransformer {
     Subject wseminar = workModel.seminarSubject()!;
     ProjectionSubjectBlock1Model wseminarBlock1 = block1.firstWhere((model) => model.subjectId == wseminar.id);
 
-    double? rawSeminararbeitNote = GraduationService.calculateNote(workModel.graduationEvaluations[wseminar.graduationEvaluationId]!);
+    double? rawSeminararbeitNote = GraduationEvaluationService.calculateNote(workModel.graduationEvaluations[wseminar.graduationEvaluationId]!);
     int? seminararbeitNote = rawSeminararbeitNote == null
         ? null
         : roundNote(rawSeminararbeitNote * 2);

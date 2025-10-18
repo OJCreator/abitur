@@ -1,19 +1,20 @@
 enum SubjectType {
-  wahlfach("Wahlfach", ["Orchester", "BigBand", "Theater"], false, null),
-  profilfach("Profilfach", ["Instrumentalensemble", "Vokalensemble", "Psychologie"], false, 2),
-  wSeminar("W-Seminar", ["W-Seminar"], false, 1),
-  naturwissenschaftOhneInf("Naturwissenschaft (ohne Informatik)", ["Physik", "Biologie", "Chemie", "Biophysik", "Astrophysik"], true, 2),
-  informatik("Informatik", ["Informatik"], true, 1),
-  fortgefuehrteFremdsprache("Fortgeführte Fremdsprache", ["Englisch", "Französisch", "Latein", "Spanisch"], true, 2),
-  spaetBeginnendeFremdsprache("Spät beginnende Fremdsprache", ["Türkisch", "Russisch", "Japanisch"], true, 1),
-  standardPflichtfach("Standard-Pflichtfach", ["Deutsch", "Mathematik", "Geschichte", "Religion", "Ethik", "Sport", "Kunst", "Musik"], true, 6),
-  gesellschaftswissenschaften("Gesellschaftswissenschaft", ["PuG", "Geographie", "Wirtschaft"], true, 2),
-  mathevk("Vertiefungskurs Mathematik", ["Mathe VK"], false, 1),
-  deutschvk("Vertiefungskurs Deutsch", ["Deutsch VK"], false, 1);
+  wahlfach("Wahlfach", ["Orchester", "BigBand", "Theater"], false, false, null),
+  profilfach("Profilfach", ["Instrumentalensemble", "Vokalensemble", "Psychologie"], false, true, 2),
+  wSeminar("W-Seminar", ["W-Seminar"], false, true, 1),
+  naturwissenschaftOhneInf("Naturwissenschaft (ohne Informatik)", ["Physik", "Biologie", "Chemie", "Biophysik", "Astrophysik"], true, true, 2),
+  informatik("Informatik", ["Informatik"], true, true, 1),
+  fortgefuehrteFremdsprache("Fortgeführte Fremdsprache", ["Englisch", "Französisch", "Latein", "Spanisch"], true, true, 2),
+  spaetBeginnendeFremdsprache("Spät beginnende Fremdsprache", ["Türkisch", "Russisch", "Japanisch"], true, true, 1),
+  standardPflichtfach("Standard-Pflichtfach", ["Deutsch", "Mathematik", "Geschichte", "Religion", "Ethik", "Sport", "Kunst", "Musik"], true, true, 6),
+  gesellschaftswissenschaften("Gesellschaftswissenschaft", ["PuG", "Geographie", "Wirtschaft"], true, true, 2),
+  mathevk("Vertiefungskurs Mathematik", ["Mathe VK"], false, true, 1),
+  deutschvk("Vertiefungskurs Deutsch", ["Deutsch VK"], false, true, 1);
 
   final String displayName;
   final List<String> examples;
   final bool canBeLeistungsfach;
+  final bool gradable;
   final int? maxAmount;
 
   String get code {
@@ -44,7 +45,7 @@ enum SubjectType {
   }
 
 
-  const SubjectType(this.displayName, this.examples, this.canBeLeistungsfach, this.maxAmount);
+  const SubjectType(this.displayName, this.examples, this.canBeLeistungsfach, this.gradable, this.maxAmount);
 
 
   static SubjectType fromCode(String code) {

@@ -26,52 +26,54 @@ class _ReviewLockedPageState extends State<ReviewLockedPage> {
 
     return Scaffold(
       appBar: AppBar(),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            const Text(
-              "Willkommen zu deinem Abitur-Review.",
-              style: TextStyle(
-                fontSize: 40,
-                fontWeight: FontWeight.bold,
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            children: [
+              const Text(
+                "Willkommen zu deinem Abitur-Review.",
+                style: TextStyle(
+                  fontSize: 40,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
-            ),
-            const SizedBox(height: 12),
-
-            ListTile(
-              leading: Icon(Icons.star, color: Theme.of(context).colorScheme.primary, size: 32),
-              title: Text(
-                "Deine Highligts",
-                style: TextStyle(fontWeight: FontWeight.bold),
+              const SizedBox(height: 12),
+        
+              ListTile(
+                leading: Icon(Icons.star, color: Theme.of(context).colorScheme.primary, size: 32),
+                title: Text(
+                  "Deine Highligts",
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+                subtitle: Text("Sieh deine persönliche Geschichte der letzten beiden Jahre an"),
               ),
-              subtitle: Text("Sieh deine persönliche Geschichte der letzten beiden Jahre an"),
-            ),
-            ListTile(
-              leading: Icon(Icons.query_stats, color: Theme.of(context).colorScheme.primary, size: 32),
-              title: Text(
-                "Erkunde interessante Statistiken",
-                style: TextStyle(fontWeight: FontWeight.bold),
+              ListTile(
+                leading: Icon(Icons.query_stats, color: Theme.of(context).colorScheme.primary, size: 32),
+                title: Text(
+                  "Erkunde interessante Statistiken",
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+                subtitle: Text("Darunter der beste Wochentag oder Analysen der Prüfungen"),
               ),
-              subtitle: Text("Darunter der beste Wochentag oder Analysen der Prüfungen"),
-            ),
-            ListTile(
-              leading: Icon(Icons.send, color: Theme.of(context).colorScheme.primary, size: 32),
-              title: Text(
-                "Teile deine Highlights",
-                style: TextStyle(fontWeight: FontWeight.bold),
+              ListTile(
+                leading: Icon(Icons.send, color: Theme.of(context).colorScheme.primary, size: 32),
+                title: Text(
+                  "Teile deine Highlights",
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+                subtitle: Text("Zeig Freunden deine spannendsten Ergebnisse"),
               ),
-              subtitle: Text("Zeig Freunden deine spannendsten Ergebnisse"),
-            ),
-            ListTile(
-              leading: Icon(Icons.favorite, color: Theme.of(context).colorScheme.primary, size: 32),
-              title: Text(
-                "Unterstütze den Entwickler",
-                style: TextStyle(fontWeight: FontWeight.bold),
+              ListTile(
+                leading: Icon(Icons.favorite, color: Theme.of(context).colorScheme.primary, size: 32),
+                title: Text(
+                  "Unterstütze den Entwickler",
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+                subtitle: Text("Hilf dabei, neue Features möglich zu machen"),
               ),
-              subtitle: Text("Hilf dabei, neue Features möglich zu machen"),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
       bottomNavigationBar: SafeArea(

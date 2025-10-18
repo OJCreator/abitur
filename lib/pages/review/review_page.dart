@@ -60,7 +60,7 @@ class _ReviewPageState extends State<ReviewPage> {
       });
       _audioPlayer.setAsset("assets/mp3/embrace-364091.mp3");
     } catch (e) {
-      print("Error loading audio: $e");
+      debugPrint("Error loading audio: $e");
     }
   }
   @override

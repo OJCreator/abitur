@@ -1,9 +1,11 @@
-import 'package:abitur/storage/services/evaluation_type_service.dart';
 import 'package:abitur/widgets/forms/assesment_type_selector.dart';
 import 'package:flutter/material.dart';
 
-import '../../storage/entities/evaluation_type.dart';
+import '../../services/database/evaluation_type_service.dart';
+import '../../sqlite/entities/evaluation/evaluation_type.dart';
+import '../../utils/enums/assessment_type.dart';
 import '../../widgets/confirm_dialog.dart';
+import '../../widgets/shimmer/shimmer_text.dart';
 
 class SettingsEvaluationTypesPage extends StatefulWidget {
   const SettingsEvaluationTypesPage({super.key});
@@ -14,7 +16,7 @@ class SettingsEvaluationTypesPage extends StatefulWidget {
 
 class _SettingsEvaluationTypesPageState extends State<SettingsEvaluationTypesPage> {
 
-  List<EvaluationType> evaluationTypes = [];
+  Future<List<EvaluationType>> evaluationTypesFuture = Future.value([]);
 
   @override
   void initState() {
@@ -24,7 +26,7 @@ class _SettingsEvaluationTypesPageState extends State<SettingsEvaluationTypesPag
 
   void _loadEvaluationTypes() {
     setState(() {
-      evaluationTypes = EvaluationTypeService.findAll();
+      evaluationTypesFuture = EvaluationTypeService.findAll();
     });
   }
 
@@ -35,57 +37,76 @@ class _SettingsEvaluationTypesPageState extends State<SettingsEvaluationTypesPag
         title: Text("Prüfungskategorien"),
       ),
       body: SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            for (EvaluationType evaluationType in evaluationTypes)
-              Dismissible(
-                key: Key(evaluationType.id),
-                direction: DismissDirection.startToEnd,
-                background: Container(
-                  color: Colors.red,
-                  alignment: Alignment.centerLeft,
-                  padding: EdgeInsets.symmetric(horizontal: 20),
-                  child: Icon(Icons.delete, color: Colors.white),
-                ),
-                confirmDismiss: (direction) async {
-                  bool? shouldDelete = await showDialog(
-                    context: context,
-                    builder: (context) {
-                      return ConfirmDialog(
-                        title: "Wirklich löschen?",
-                        message: "Möchtest du die Prüfungskategorie \"${evaluationType.name}\" wirklich löschen?",
-                        confirmText: "Löschen",
-                        onConfirm: () {},
-                      );
-                    }
-                  );
+        child: FutureBuilder(
+          future: evaluationTypesFuture,
+          builder: (context, asyncSnapshot) {
 
-                  if (shouldDelete == true) {
-                    await EvaluationTypeService.deleteEvaluationType(evaluationType);
-                    _loadEvaluationTypes();
-                  }
-                  return null;
-                },
-                child: ListTile(
-                  title: Text(evaluationType.name),
-                  subtitle: Text(evaluationType.assessmentType.name),
-                  onTap: () async {
-                    bool? edited = await showDialog(context: context, builder: (_) {
-                      return EvaluationTypeDialog(
-                        title: "Kategorie bearbeiten",
-                        initialValue: evaluationType,
-                        confirmText: "Speichern",
+            if (!asyncSnapshot.hasData || asyncSnapshot.data == null) {
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  for (int i = 0; i < 4; i++)
+                    ListTile(
+                      title: ShimmerText(),
+                      subtitle: ShimmerText(),
+                    ),
+                ],
+              );
+            }
+            List<EvaluationType> evaluationTypes = asyncSnapshot.data!;
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                for (EvaluationType evaluationType in evaluationTypes)
+                  Dismissible(
+                    key: Key(evaluationType.id),
+                    direction: DismissDirection.startToEnd,
+                    background: Container(
+                      color: Colors.red,
+                      alignment: Alignment.centerLeft,
+                      padding: EdgeInsets.symmetric(horizontal: 20),
+                      child: Icon(Icons.delete, color: Colors.white),
+                    ),
+                    confirmDismiss: (direction) async {
+                      bool? shouldDelete = await showDialog(
+                        context: context,
+                        builder: (context) {
+                          return ConfirmDialog(
+                            title: "Wirklich löschen?",
+                            message: "Möchtest du die Prüfungskategorie \"${evaluationType.name}\" wirklich löschen?",
+                            confirmText: "Löschen",
+                            onConfirm: () {},
+                          );
+                        }
                       );
-                    });
-                    if (edited != true) {
-                      return;
-                    }
-                    _loadEvaluationTypes();
-                  },
-                ),
-              ),
-          ],
+
+                      if (shouldDelete == true) {
+                        await EvaluationTypeService.deleteEvaluationType(evaluationType);
+                        _loadEvaluationTypes();
+                      }
+                      return null;
+                    },
+                    child: ListTile(
+                      title: Text(evaluationType.name),
+                      subtitle: Text(evaluationType.assessmentType.name),
+                      onTap: () async {
+                        bool? edited = await showDialog(context: context, builder: (_) {
+                          return EvaluationTypeDialog(
+                            title: "Kategorie bearbeiten",
+                            initialValue: evaluationType,
+                            confirmText: "Speichern",
+                          );
+                        });
+                        if (edited != true) {
+                          return;
+                        }
+                        _loadEvaluationTypes();
+                      },
+                    ),
+                  ),
+              ],
+            );
+          }
         ),
       ),
       floatingActionButton: FloatingActionButton.extended(

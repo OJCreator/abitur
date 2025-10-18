@@ -1,7 +1,7 @@
 import 'package:abitur/widgets/forms/form_gap.dart';
 import 'package:flutter/material.dart';
 
-import '../../storage/entities/evaluation_date.dart';
+import '../../sqlite/entities/evaluation/evaluation_date.dart';
 import 'date_input.dart';
 
 class EvaluationDateForm extends StatefulWidget {

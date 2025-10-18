@@ -4,12 +4,12 @@ import 'package:abitur/utils/extensions/lists/int_iterable_extension.dart';
 import 'package:abitur/utils/extensions/lists/iterable_extension.dart';
 import 'package:flutter/cupertino.dart';
 
-import '../../storage/entities/evaluation.dart';
-import '../../storage/entities/evaluation_date.dart';
-import '../../storage/entities/graduation/graduation_evaluation.dart';
-import '../../storage/entities/performance.dart';
-import '../../storage/entities/subject.dart';
-import '../../storage/services/graduation_service.dart';
+import '../../services/database/graduation_evaluation_service.dart';
+import '../../sqlite/entities/evaluation/evaluation.dart';
+import '../../sqlite/entities/evaluation/evaluation_date.dart';
+import '../../sqlite/entities/graduation_evaluation.dart';
+import '../../sqlite/entities/performance.dart';
+import '../../sqlite/entities/subject.dart';
 import '../../utils/enums/land.dart';
 import '../../utils/enums/subject_type.dart';
 import '../average_isolates.dart';
@@ -128,7 +128,7 @@ class ProjectionIsolate {
 
   static ProjectionTermModel _buildModelFromGraduationEvaluation(GraduationEvaluation graduationEvaluation, int defaultAverage, int graduationEvaluationAmount) {
     final baseWeight = (300 / 15 / graduationEvaluationAmount).toInt();
-    final calculatedNote = GraduationService.calculateNote(graduationEvaluation);
+    final calculatedNote = GraduationEvaluationService.calculateNote(graduationEvaluation);
     if (graduationEvaluation.isDividedEvaluation) {
       return _buildDividedEvaluation(calculatedNote, defaultAverage, baseWeight);
     }

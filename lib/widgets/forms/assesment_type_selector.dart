@@ -1,5 +1,6 @@
-import 'package:abitur/storage/entities/evaluation_type.dart';
 import 'package:flutter/material.dart';
+
+import '../../utils/enums/assessment_type.dart';
 
 class AssessmentTypeSelector extends StatelessWidget {
 

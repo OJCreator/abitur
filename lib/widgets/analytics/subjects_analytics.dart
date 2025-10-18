@@ -1,14 +1,14 @@
 import 'dart:math';
 
 import 'package:abitur/pages/analytics_pages/analytics_subjects_page.dart';
-import 'package:abitur/storage/services/subject_service.dart';
 import 'package:abitur/utils/extensions/map_extension.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 
 import '../../in_app_purchases/purchase_service.dart';
 import '../../pages/in_app_purchase_pages/full_version_page.dart';
-import '../../storage/entities/subject.dart';
+import '../../services/database/subject_service.dart';
+import '../../sqlite/entities/subject.dart';
 
 class SubjectsAnalytics extends StatefulWidget {
 
@@ -22,26 +22,36 @@ class SubjectsAnalytics extends StatefulWidget {
 
 class SubjectsAnalyticsState extends State<SubjectsAnalytics> {
 
-  late List<BarChartGroupData> data;
+
+  List<BarChartGroupData>? data;
+  Map<String, double> subjectAvgs = {};
 
   @override
   void initState() {
+    _loadData();
     super.initState();
+  }
+
+  Future<void> _loadData() async {
+    final averages = await SubjectService.getAverages(widget.subjects.map((s) => s.id).toList());
 
     data = widget.subjects.asMap().mapToIterable((index, subject) {
       return BarChartGroupData(
-        x: index,
-        barRods: [
-          BarChartRodData(
-            toY: SubjectService.getAverage(subject) ?? 0,
-            color: subject.color,
-            width: 12,
-            borderRadius: BorderRadius.circular(3),
-          ),
-        ],
+          x: index,
+          barRods: [
+            BarChartRodData(
+              toY: averages[subject.id] ?? 0,
+              color: subject.color,
+              width: 12,
+              borderRadius: BorderRadius.circular(3),
+            ),
+          ],
       );
     }).toList();
+
+    setState(() { });
   }
+
 
   @override
   Widget build(BuildContext context) {

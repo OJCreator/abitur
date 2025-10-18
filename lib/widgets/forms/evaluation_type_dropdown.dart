@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../storage/entities/evaluation_type.dart';
+import '../../sqlite/entities/evaluation/evaluation_type.dart';
 
 class EvaluationTypeDropdown extends StatelessWidget {
 

@@ -1,7 +1,7 @@
 import 'package:abitur/pages/timetable/timetable_page.dart';
-import 'package:abitur/storage/services/settings_service.dart';
 import 'package:flutter/material.dart';
 
+import '../../services/database/settings_service.dart';
 import '../timetable_view.dart';
 
 class TimetableAnalytics extends StatefulWidget {
@@ -14,9 +14,16 @@ class TimetableAnalytics extends StatefulWidget {
 
 class _TimetableAnalyticsState extends State<TimetableAnalytics> {
 
+  late Future<int> currentProbableTerm;
+
+  @override
+  void initState() {
+    currentProbableTerm = SettingsService.currentProbableTerm();
+    super.initState();
+  }
+
   @override
   Widget build(BuildContext context) {
-    int term = SettingsService.currentProbableTerm();
     return Padding(
       padding: const EdgeInsets.all(16.0),
       child: Column(
@@ -42,7 +49,13 @@ class _TimetableAnalyticsState extends State<TimetableAnalytics> {
               );
               setState(() { });
             },
-            child: TimetableView(term: term),
+            child: FutureBuilder(
+              future: currentProbableTerm,
+              builder: (context, asyncSnapshot) {
+                if (!asyncSnapshot.hasData || asyncSnapshot.data == null) return TimetableView.shimmer();
+                return TimetableView(term: asyncSnapshot.data!);
+              }
+            ),
           ),
         ],
       ),

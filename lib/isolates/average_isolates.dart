@@ -1,9 +1,9 @@
 import 'package:abitur/isolates/models/evaluation_dates/evaluation_dates_evaluation_subjects_model.dart';
-import 'package:abitur/storage/entities/performance.dart';
 
-import '../storage/entities/evaluation.dart';
-import '../storage/entities/evaluation_date.dart';
-import '../storage/entities/subject.dart';
+import '../sqlite/entities/evaluation/evaluation.dart';
+import '../sqlite/entities/evaluation/evaluation_date.dart';
+import '../sqlite/entities/performance.dart';
+import '../sqlite/entities/subject.dart';
 import '../utils/constants.dart';
 import '../utils/pair.dart';
 
@@ -47,12 +47,12 @@ class AverageIsolates {
     );
 
     // Berechne gewichtete Noten pro Leistung
-    var weightedNotes = s.performanceIds.map((performanceId) {
-      var matchingEvals = evaluationsOfTerm.where((e) => e.performanceId == performanceId);
-      var noteValues = matchingEvals.map((e) => _calculateNote(e, evaluationDates));
-      var averageNote = avg(noteValues);
-      var weight = performances[performanceId]?.weighting ?? 0.0;
-      return Pair(weight, averageNote);
+    var weightedNotes = performances.values.where((p) => p.subjectId == s.id).map((performance) {
+        var matchingEvals = evaluationsOfTerm.where((e) => e.performanceId == performance.id);
+        var noteValues = matchingEvals.map((e) => _calculateNote(e, evaluationDates));
+        var averageNote = avg(noteValues);
+        var weight = performance.weighting;
+        return Pair(weight, averageNote);
     });
 
     double? average = weightedAvg(weightedNotes);
@@ -60,10 +60,12 @@ class AverageIsolates {
   }
 
   static int? _calculateNote(Evaluation evaluation, Map<String, EvaluationDate> evaluationDates) {
-    var eds = evaluation.evaluationDateIds
-        .map((id) => evaluationDates[id])
-        .whereType<EvaluationDate>()
-        .where((ed) => ed.note != null);
+    var eds = evaluationDates.values
+        .where((ed) => ed.evaluationId == evaluation.id && ed.note != null);
+    // var eds = evaluation.evaluationDateIds
+    //     .map((id) => evaluationDates[id])
+    //     .whereType<EvaluationDate>()
+    //     .where((ed) => ed.note != null);
 
     var totalWeight = eds.fold<double>(0.0, (sum, ed) => sum + ed.weight);
     if (totalWeight == 0) return null;

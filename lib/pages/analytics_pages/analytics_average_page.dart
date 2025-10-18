@@ -1,10 +1,10 @@
-import 'package:abitur/storage/services/settings_service.dart';
+import 'package:abitur/services/isolates/history_isolate_service.dart';
 import 'package:abitur/utils/extensions/map_extension.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 
-import '../../storage/entities/subject.dart';
-import '../../storage/services/subject_service.dart';
+import '../../services/database/settings_service.dart';
+import '../../sqlite/entities/subject.dart';
 import '../../utils/pair.dart';
 
 class AnalyticsAveragePage extends StatefulWidget {
@@ -110,19 +110,28 @@ class AnalyticsAverageGraph extends StatefulWidget {
 
 class _AnalyticsAverageGraphState extends State<AnalyticsAverageGraph> {
 
-  DateTime get startDate => widget.dateRange.days == null ? SettingsService.firstDayOfSchool : DateTime.now().add(Duration(days: -widget.dateRange.days!));
+  late Future<DateTime> startDateFuture;
 
-  late Future<Map<Subject, List<Pair<DateTime, double>>>> averageHistory;
+  late Future<Map<Subject, List<Pair<DateTime, double>>>> averageHistoryFuture;
 
   @override
   void initState() {
+    _loadStartDate();
     _loadAverageHistory();
     super.initState();
   }
 
+  void _loadStartDate() {
+    setState(() {
+      startDateFuture = widget.dateRange.days == null
+          ? SettingsService.firstDayOfSchool()
+          : Future.value(DateTime.now().add(Duration(days: -widget.dateRange.days!)));
+    });
+  }
+
   void _loadAverageHistory() {
     setState(() {
-      averageHistory = SubjectService.getAverageHistoryForAllSubjects();
+      averageHistoryFuture = HistoryIsolateService.getAverageHistoryForAllSubjects();
     });
   }
 
@@ -131,11 +140,13 @@ class _AnalyticsAverageGraphState extends State<AnalyticsAverageGraph> {
     return AspectRatio(
       aspectRatio: 1,
       child: FutureBuilder(
-        future: averageHistory,
+        future: Future.wait([startDateFuture, averageHistoryFuture]),
         builder: (context, snapshot) {
           if (!snapshot.hasData) {
             return Center(child: CircularProgressIndicator());
           }
+          DateTime startDate = snapshot.data![0] as DateTime;
+          Map<Subject, List<Pair<DateTime, double>>> averageHistory = snapshot.data![1] as Map<Subject, List<Pair<DateTime, double>>>;
           return LineChart(
             duration: Duration.zero,
             LineChartData(
@@ -165,7 +176,7 @@ class _AnalyticsAverageGraphState extends State<AnalyticsAverageGraph> {
                     showTitles: true,
                     reservedSize: 32,
                     interval: 1,
-                    getTitlesWidget: bottomTitleWidgets,
+                    getTitlesWidget: (value, meta) => bottomTitleWidgets(value, meta, startDate),
                   ),
                 ),
                 rightTitles: const AxisTitles(),
@@ -179,7 +190,7 @@ class _AnalyticsAverageGraphState extends State<AnalyticsAverageGraph> {
                 ),
               ),
               borderData: FlBorderData(show: false),
-              lineBarsData: snapshot.data!.mapToIterable((key, value) => generateAverageData(key, value)).toList(),
+              lineBarsData: averageHistory.mapToIterable((key, value) => generateAverageData(key, value, startDate)).toList(),
               minX: 0,
               maxX: DateTime.now().difference(startDate).inDays.toDouble(),
               maxY: 15,
@@ -191,7 +202,7 @@ class _AnalyticsAverageGraphState extends State<AnalyticsAverageGraph> {
     );
   }
 
-  LineChartBarData generateAverageData(Subject s, List<Pair<DateTime, double>> data) {
+  LineChartBarData generateAverageData(Subject s, List<Pair<DateTime, double>> data, DateTime startDate) {
 
     List<Pair<DateTime, double>> filteredAvgHistory = data.where((data) => data.first.isAfter(startDate)).toList();
     List<Pair<DateTime, double>> abandonedEntries = data.where((data) => !data.first.isAfter(startDate)).toList();
@@ -227,7 +238,7 @@ class _AnalyticsAverageGraphState extends State<AnalyticsAverageGraph> {
     );
   }
 
-  Widget bottomTitleWidgets(double value, TitleMeta meta) {
+  Widget bottomTitleWidgets(double value, TitleMeta meta, DateTime startDate) {
     Widget text = const Text('');
     DateTime dateValue = startDate.add(Duration(days: value.toInt()));
 

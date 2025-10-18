@@ -1,8 +1,8 @@
 import 'package:abitur/pages/setup_pages/setup_ui_page.dart';
-import 'package:abitur/storage/entities/settings.dart';
-import 'package:abitur/storage/services/settings_service.dart';
-import 'package:abitur/storage/storage.dart';
 import 'package:flutter/material.dart';
+
+import '../../services/database/settings_service.dart';
+import '../../sqlite/entities/settings.dart';
 
 class SetupGraduationYearPage extends StatelessWidget {
   const SetupGraduationYearPage({super.key});
@@ -26,9 +26,9 @@ class SetupGraduationYearPage extends StatelessWidget {
                     dense: true,
                     title: Text(year.toString()),
                     onTap: () async {
-                      Settings s = SettingsService.loadSettings();
+                      Settings s = await SettingsService.loadSettings();
                       s.graduationYear = DateTime(year);
-                      await Storage.saveSettings(s);
+                      await SettingsService.saveSettings(s);
 
                       Navigator.pushReplacement(
                         context,
