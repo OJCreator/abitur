@@ -46,7 +46,9 @@ class TermViewState extends State<TermView> {
   }
 
   Future<void> loadData() async {
-    termViewModelFuture = SubjectMapper.generateSubjectPageTermViewModel(widget.subject, widget.term);
+    setState(() {
+      termViewModelFuture = SubjectMapper.generateSubjectPageTermViewModel(widget.subject, widget.term);
+    });
   }
 
   Iterable<(int, Performance)> _getIndexedPerformances(Map<Performance, List<Evaluation>> evaluationsByPerformance) {

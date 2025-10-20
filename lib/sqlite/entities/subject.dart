@@ -20,7 +20,14 @@ class Subject implements Serializable {
   SubjectNiveau subjectNiveau;
   SubjectType subjectType;
 
-  Set<int> terms;
+  Set<int> _terms;
+  Set<int> get terms {
+    final sortedList = _terms.toList()..sort();
+    return sortedList.toSet();
+  }
+  set terms(Set<int> newTerms) {
+    _terms = newTerms;
+  }
   int countingTermAmount;
   List<int?> manuallyEnteredTermNotes;
 
@@ -33,11 +40,13 @@ class Subject implements Serializable {
     this.color = primaryColor,
     this.subjectNiveau = SubjectNiveau.basic,
     this.subjectType = SubjectType.standardPflichtfach,
-    this.terms = const {0,1,2,3},
+    Set<int> terms = const {0,1,2,3},
     required this.countingTermAmount,
     this.manuallyEnteredTermNotes = const [null, null, null, null],
     this.graduationEvaluationId,
-  }) : id = id ?? Uuid.generate();
+  }) :
+        _terms = terms,
+        id = id ?? Uuid.generate();
 
   static Subject empty() {
     return Subject(name: "-", shortName: "", countingTermAmount: 0);

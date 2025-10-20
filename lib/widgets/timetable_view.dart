@@ -25,19 +25,30 @@ class TimetableView extends StatefulWidget {
 }
 
 class _TimetableViewState extends State<TimetableView> {
+
   late Future<_TimetableData> _timetableFuture;
 
   @override
-  void initState() {
-    super.initState();
-    if (widget.shimmer) {
-      _timetableFuture = Future.value(_TimetableData.empty());
-    } else {
-      _timetableFuture = _loadTimetableData();
+  void didUpdateWidget(covariant TimetableView oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.shimmer != widget.shimmer || oldWidget.term != widget.term) {
+      setState(() {
+        _timetableFuture = _loadTimetableData();
+      });
     }
   }
 
+  @override
+  void initState() {
+    _timetableFuture = _loadTimetableData();
+    super.initState();
+  }
+
   Future<_TimetableData> _loadTimetableData() async {
+
+    if (widget.shimmer) {
+      return _TimetableData.empty();
+    }
 
     final isEmpty = await TimetableEntryService.timetableIsEmpty(widget.term);
     final prevEmpty = widget.term > 0 ? await TimetableEntryService.timetableIsEmpty(widget.term - 1) : true;

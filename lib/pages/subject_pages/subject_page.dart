@@ -40,6 +40,7 @@ class _SubjectPageState extends State<SubjectPage> with SingleTickerProviderStat
 
   TabController? _tabController;
   late List<GlobalKey<TermViewState>> _tabKeys;
+  late GlobalKey<GraduationWorkTermViewState> _graduationWorkTermViewKey;
 
   @override
   void initState() {
@@ -75,20 +76,22 @@ class _SubjectPageState extends State<SubjectPage> with SingleTickerProviderStat
     GraduationEvaluation? ge = dto.graduationEvaluation;
 
     int currentTerm = await SettingsService.currentProbableTerm();
+    int initialTabIndex = s.terms.toList().indexWhere((term) => term == currentTerm);
+    if (initialTabIndex == -1) initialTabIndex = 0;
     if (!s.terms.contains(currentTerm)) currentTerm = 0;
 
     if (widget.openGraduationPage && ge != null) {
-      currentTerm = s.terms.length;
+      initialTabIndex = s.terms.length;
     }
     _tabKeys = s.terms.map((e) => GlobalKey<TermViewState>()).toList();
     int tabLength = s.terms.length;
     if (ge != null) {
       tabLength++;
-      _tabKeys.add(GlobalKey<TermViewState>());
+      _graduationWorkTermViewKey = GlobalKey<GraduationWorkTermViewState>();
       giveGraduationNote = ge.notePartOne != null;
     }
     setState(() {
-      _tabController = TabController(length: tabLength, vsync: this, initialIndex: currentTerm);
+      _tabController = TabController(length: tabLength, vsync: this, initialIndex: initialTabIndex);
     });
     _tabController!.addListener(() {
       setState(() {});
@@ -241,7 +244,7 @@ class _SubjectPageState extends State<SubjectPage> with SingleTickerProviderStat
                   GraduationWorkTermView(
                     subject: s,
                     graduationEvaluation: ge,
-                    key: _tabKeys.last,
+                    key: _graduationWorkTermViewKey,
                   ),
               ],
             );
@@ -295,7 +298,7 @@ class _SubjectPageState extends State<SubjectPage> with SingleTickerProviderStat
         // return ManualTermNoteEnterSheet(subject: widget.subject, term: widget.term);
       },
     ).then((value) {
-      _tabKeys[_tabController!.index].currentState!.loadData();
+      _graduationWorkTermViewKey.currentState!.loadData();
       setState(() { });
     });
   }

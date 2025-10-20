@@ -17,10 +17,15 @@ class GraduationWorkTermView extends StatefulWidget {
   const GraduationWorkTermView({super.key, required this.subject, required this.graduationEvaluation});
 
   @override
-  State<GraduationWorkTermView> createState() => _GraduationWorkTermViewState();
+  State<GraduationWorkTermView> createState() => GraduationWorkTermViewState();
 }
 
-class _GraduationWorkTermViewState extends State<GraduationWorkTermView> {
+class GraduationWorkTermViewState extends State<GraduationWorkTermView> {
+
+  void loadData() {
+    setState(() { });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(

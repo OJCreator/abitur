@@ -82,7 +82,7 @@ class SubjectService {
     final List<Map<String, dynamic>> maps = await db.rawQuery('''
     SELECT s.*
     FROM subjects s
-    JOIN graduationEvaluations ge ON ge.id = s.graduationEvaluationId
+    JOIN graduation_evaluations ge ON ge.id = s.graduationEvaluationId
     WHERE ge.graduationEvaluationType = ?
   ''', [filter.name]);
 

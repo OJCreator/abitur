@@ -30,4 +30,12 @@ extension ListExtensions<T> on List<T> {
     }
     return getRange(0, maxSize).toList();
   }
+
+  List<T> extendToSize<T>(int maxSize, T Function(int) generate) {
+    final result = List<T>.from(this);
+    while (result.length < maxSize) {
+      result.add(generate(result.length));
+    }
+    return result;
+  }
 }

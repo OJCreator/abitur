@@ -55,6 +55,7 @@ class _EvaluationsPageState extends State<EvaluationsPage> {
     setState(() {});
 
     holidays = await ApiService.loadHolidays(date.year);
+    if (!mounted) return;
     setState(() { });
   }
 

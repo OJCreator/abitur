@@ -21,6 +21,9 @@ class _TimetablePageState extends State<TimetablePage> with SingleTickerProvider
   void initState() {
     currentProbableTerm = SettingsService.currentProbableTerm();
     _tabController = TabController(length: 4, vsync: this, initialIndex: 0);
+    currentProbableTerm.then((term) {
+      _tabController.animateTo(term);
+    });
     super.initState();
   }
 

@@ -45,14 +45,14 @@ class _SubjectChoseGraduationPageState extends State<SubjectChoseGraduationPage>
   }
   Future<void> _loadGraduationSubjects(Land land) async {
     _graduationSubjectsWritten = await SubjectService.findGraduationSubjectsFiltered(GraduationEvaluationType.written).then((subjects) {
-      return subjects.maxSize(land.writtenAmount);
+      return subjects.maxSize(land.writtenAmount).extendToSize(land.writtenAmount, (_) => null);
     });
     _graduationSubjectsOral = await SubjectService.findGraduationSubjectsFiltered(GraduationEvaluationType.oral).then((subjects) {
       if (subjects.length > land.oralAmount && land.extraGraduationSubject) {
         _fifthGraduationSubject = subjects.last;
         includeFifthGraduationSubject = true;
       }
-      return subjects.maxSize(land.oralAmount);
+      return subjects.maxSize(land.oralAmount).extendToSize(land.oralAmount, (_) => null);
     });
     setState(() { });
   }
@@ -64,101 +64,94 @@ class _SubjectChoseGraduationPageState extends State<SubjectChoseGraduationPage>
         title: Text("Abifächer wählen"),
         leading: IconButton(
           icon: const Icon(Icons.close),
-          onPressed: () {
-            Navigator.pop(context);
-          },
+          onPressed: () => Navigator.pop(context),
         ),
       ),
-      body: FutureBuilder(
-        future: landFuture,
-        builder: (context, asyncSnapshot) {
-          if (!asyncSnapshot.hasData) return CircularProgressIndicator();
-          Land land = asyncSnapshot.data!;
-          return SingleChildScrollView(
-            child: Padding(
-              padding: const EdgeInsets.all(8),
-              child: Form(
-                child: Column(
-                  children: [
-                    if (land.extraGraduationSubject) ...[
-                      SwitchListTile(
-                        title: Text("Einbringung eines weiteren Prüfungsfaches"),
-                        value: includeFifthGraduationSubject,
-                        onChanged: (newValue) {
-                          setState(() {
-                            includeFifthGraduationSubject = newValue;
-                          });
-                        },
-                      ),
-                      FormGap(),
-                    ],
+      body: FutureBuilder<List<Subject>>(
+        future: _allSubjects,
+        builder: (context, snapshotSubjects) {
+          if (!snapshotSubjects.hasData) return Center(child: CircularProgressIndicator());
 
-                    for (int i = 0; i < land.writtenAmount; i++) ...[
-                      FutureBuilder(
-                        future: _allSubjects,
-                        builder: (context, asyncSnapshot) {
-                          return _GraduationSubjectDropdown(
-                            label: "Schriftliches Abiturfach",
-                            subject: _graduationSubjectsWritten[i],
-                            subjects: asyncSnapshot.data ?? [],
-                            onSelected: (s) {
+          final allSubjects = snapshotSubjects.data!;
+          return FutureBuilder<Land>(
+            future: landFuture,
+            builder: (context, snapshotLand) {
+              if (!snapshotLand.hasData) return Center(child: CircularProgressIndicator());
+              final land = snapshotLand.data!;
+
+              return SingleChildScrollView(
+                child: Padding(
+                  padding: const EdgeInsets.all(8),
+                  child: Form(
+                    child: Column(
+                      children: [
+                        if (land.extraGraduationSubject) ...[
+                          SwitchListTile(
+                            title: Text("Einbringung eines weiteren Prüfungsfaches"),
+                            value: includeFifthGraduationSubject,
+                            onChanged: (newValue) {
                               setState(() {
-                                _graduationSubjectsWritten[i] = s;
+                                includeFifthGraduationSubject = newValue;
                               });
                             },
-                          );
-                        }
-                      ),
-                      FormGap(),
-                    ],
-                    for (int i = 0; i < land.oralAmount; i++) ...[
-                      FutureBuilder(
-                        future: _allSubjects,
-                        builder: (context, asyncSnapshot) {
-                          return _GraduationSubjectDropdown(
-                            label: "Mündliches Abiturfach",
-                            subject: _graduationSubjectsOral[i],
-                            subjects: asyncSnapshot.data ?? [],
-                            onSelected: (s) {
-                              setState(() {
-                                _graduationSubjectsOral[i] = s;
-                              });
-                            },
-                          );
-                        }
-                      ),
-                      FormGap(),
-                    ],
-                    if (includeFifthGraduationSubject)
-                      FutureBuilder(
-                        future: _allSubjects,
-                        builder: (context, asyncSnapshot) {
-                          return _GraduationSubjectDropdown(
+                          ),
+                          FormGap(),
+                        ],
+
+                        if (_graduationSubjectsWritten.length >= land.writtenAmount)
+                          for (int i = 0; i < land.writtenAmount; i++) ...[
+                            _GraduationSubjectDropdown(
+                              label: "Schriftliches Abiturfach",
+                              subject: _graduationSubjectsWritten[i],
+                              subjects: allSubjects,
+                              onSelected: (s) {
+                                setState(() {
+                                  _graduationSubjectsWritten[i] = s;
+                                });
+                              },
+                            ),
+                            FormGap(),
+                          ],
+                        if (_graduationSubjectsOral.length >= land.oralAmount)
+                          for (int i = 0; i < land.oralAmount; i++) ...[
+                            _GraduationSubjectDropdown(
+                              label: "Mündliches Abiturfach",
+                              subject: _graduationSubjectsOral[i],
+                              subjects: allSubjects,
+                              onSelected: (s) {
+                                setState(() {
+                                  _graduationSubjectsOral[i] = s;
+                                });
+                              },
+                            ),
+                            FormGap(),
+                          ],
+
+                        if (includeFifthGraduationSubject)
+                          _GraduationSubjectDropdown(
                             label: "Besondere Lernleistung",
                             enabled: includeFifthGraduationSubject,
                             subject: _fifthGraduationSubject,
-                            subjects: asyncSnapshot.data ?? [],
+                            subjects: allSubjects,
                             onSelected: (s) {
                               setState(() {
                                 _fifthGraduationSubject = s;
                               });
                             },
-                          );
-                        }
-                      ),
-                  ],
+                          ),
+                      ],
+                    ),
+                  ),
                 ),
-              ),
-            ),
+              );
+            },
           );
-        }
+        },
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () async {
-          List<Subject?> oral = _graduationSubjectsOral.toList();
-          if (includeFifthGraduationSubject) {
-            oral.add(_fifthGraduationSubject);
-          }
+          List<Subject?> oral = List.from(_graduationSubjectsOral);
+          if (includeFifthGraduationSubject) oral.add(_fifthGraduationSubject);
 
           trySubmittingForm(context, () async {
             await SubjectService.setGraduationSubjects(_graduationSubjectsWritten, oral);

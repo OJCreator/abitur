@@ -65,18 +65,21 @@ class _TimetableEditEventPageState extends State<TimetableEditEventPage> {
                 SubjectDropdown(
                   subjects: subjects,
                   selectedSubject: _selectedSubject,
-                  onSelected: (s) {
-                    setState(() async {
+                  onSelected: (s) async {
+                    setState(() {
                       _selectedSubject = s;
-                      if (s == null) {
-                        _roomController.text = "";
-                        return;
-                      }
-                      String? knownRoom = await TimetableEntryService.knownRoom(s.id);
-                      if (knownRoom != null) {
-                        _roomController.text = knownRoom;
-                      }
                     });
+                    if (s == null) {
+                      setState(() {
+                        _roomController.text = "";
+                      });
+                      return;
+                    }
+                    String? knownRoom = await TimetableEntryService.knownRoom(s.id);
+                    if (knownRoom != null) {
+                      _roomController.text = knownRoom;
+                    }
+                    setState(() { });
                   },
                 ),
 
