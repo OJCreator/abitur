@@ -228,7 +228,7 @@ class TimetableEntryService {
     final result = await db.rawQuery('''
       SELECT MAX(tt.slot) AS hour
       FROM timetable_times tt
-      WHERE tt.from <= ?
+      WHERE tt."from" <= ?
     ''', [currentMinutes]);
 
     final hour = (result.first['hour'] as int?) ?? -1;

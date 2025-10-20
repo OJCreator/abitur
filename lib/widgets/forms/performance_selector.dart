@@ -18,13 +18,14 @@ class PerformanceSelector extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SegmentedButton<Performance>(
+      emptySelectionAllowed: performances.isEmpty,
       expandedInsets: const EdgeInsets.all(0),
       selected: currentPerformance == null ? {} : {currentPerformance!},
       onSelectionChanged: onSelected == null ? null : (Set<Performance> newSelection) {
         onSelected!(newSelection.first);
       },
       showSelectedIcon: false,
-      segments: performances.map((performance) {
+      segments: performances.isEmpty ? [ButtonSegment(value: Performance.empty(), label: Text(""))] : performances.map((performance) {
         return ButtonSegment(
           value: performance,
           label: Text(performance.name),

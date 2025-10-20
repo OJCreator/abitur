@@ -50,7 +50,7 @@ class _SubjectInputPageState extends State<SubjectInputPage> {
   late Set<int> _terms;
   late SubjectNiveau _subjectNiveau;
   late SubjectType _subjectType;
-  late List<Performance> _performances;
+  List<Performance> _performances = [];
 
   bool _subjectNiveauDisabled = false;
   bool _unsavedChanges = false;

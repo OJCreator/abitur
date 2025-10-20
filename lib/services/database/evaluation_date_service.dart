@@ -104,7 +104,7 @@ class EvaluationDateService {
 
   static Future<List<EvaluationDate>> findAllByQuery(String text) async {
     final queries = text.toLowerCase().split(" ")..removeWhere((it) => it.isEmpty);
-    if (queries.isEmpty) return [];
+    if (queries.isEmpty) return findAll();
 
     // Baue dynamisch die WHERE-Bedingungen (eine pro Suchbegriff)
     final whereClauses = queries.map((_) =>
@@ -122,16 +122,18 @@ class EvaluationDateService {
     ).toList();
 
     final maps = await SqliteStorage.database.rawQuery('''
-    SELECT 
-      ed.*, 
-      e.name AS evaluationName, 
-      s.name AS subjectName, 
-      s.shortName AS subjectShortName
-    FROM evaluation_dates ed
-    JOIN evaluations e ON e.id = ed.evaluationId
-    JOIN subjects s ON s.id = e.subjectId
-    WHERE $whereClauses
-  ''', whereArgs);
+      SELECT 
+        ed.*, 
+        e.name AS evaluationName, 
+        s.name AS subjectName, 
+        s.shortName AS subjectShortName
+      FROM evaluation_dates ed
+      JOIN evaluations e ON e.id = ed.evaluationId
+      JOIN subjects s ON s.id = e.subjectId
+      WHERE $whereClauses
+      ORDER BY ed.date ASC
+    ''', whereArgs);
+
 
     return maps.map((m) => EvaluationDate.fromJson(m)).toList();
   }
@@ -174,17 +176,30 @@ class EvaluationDateService {
   }
 
   static Future<void> saveEvaluationDate(EvaluationDate e) async {
-    await db.update(
+    final existing = await db.query(
       'evaluation_dates',
-      e.toJson(),
       where: 'id = ?',
       whereArgs: [e.id],
     );
-    Evaluation? evaluation = await EvaluationService.findById(e.evaluationId);
+
+    if (existing.isEmpty) {
+      await db.insert('evaluation_dates', e.toJson());
+    } else {
+      await db.update(
+        'evaluation_dates',
+        e.toJson(),
+        where: 'id = ?',
+        whereArgs: [e.id],
+      );
+    }
+
+    final evaluation = await EvaluationService.findById(e.evaluationId);
     if (evaluation == null) return;
+
     await CalendarService.syncEvaluationCalendarEvent(e, evaluation);
     NotificationService.scheduleNotificationsForEvaluation(e);
   }
+
 
   static Future<void> saveAllEvaluationDates(List<EvaluationDate> evaluationDates) async {
     for (final e in evaluationDates) {

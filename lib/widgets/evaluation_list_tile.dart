@@ -2,7 +2,6 @@ import 'package:abitur/utils/extensions/date_extension.dart';
 import 'package:abitur/widgets/shimmer/shimmer_text.dart';
 import 'package:flutter/material.dart';
 
-import '../services/database/evaluation_service.dart';
 import '../services/database/settings_service.dart';
 import '../sqlite/entities/evaluation/evaluation.dart';
 import '../sqlite/entities/evaluation/evaluation_date.dart';
@@ -11,9 +10,10 @@ class EvaluationListTile extends StatelessWidget {
 
   final Evaluation evaluation;
   final List<EvaluationDate> evaluationDates;
+  final int? note;
   final GestureTapCallback? onTap;
 
-  const EvaluationListTile({super.key, required this.evaluation, required this.evaluationDates, this.onTap});
+  const EvaluationListTile({super.key, required this.evaluation, required this.evaluationDates, required this.note, this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -30,7 +30,7 @@ class EvaluationListTile extends StatelessWidget {
         aspectRatio: 1,
         child: Center(
           child: Text(
-            EvaluationService.calculateNote(evaluation).toString(),
+            note?.toString() ?? "-",
             style: TextStyle(
               fontSize: 20,
             ),

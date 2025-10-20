@@ -4,10 +4,10 @@ import '../../sqlite/sqlite_storage.dart';
 import '../../utils/enums/assessment_type.dart';
 
 class EvaluationTypeService {
+  static Database get db => SqliteStorage.database;
 
   /// Alle EvaluationTypes laden
   static Future<List<EvaluationType>> findAll() async {
-    final db = SqliteStorage.database;
     final List<Map<String, dynamic>> maps = await db.query('evaluation_types', orderBy: 'name');
 
     return maps.map((m) => EvaluationType.fromJson(m)).toList();
@@ -15,7 +15,6 @@ class EvaluationTypeService {
 
   /// Alle EvaluationTypes als Map mit ID als Key laden
   static Future<Map<String, EvaluationType>> findAllAsMap() async {
-    final db = SqliteStorage.database;
     final List<Map<String, dynamic>> maps = await db.query(
       'evaluation_types',
       orderBy: 'name',
@@ -29,7 +28,6 @@ class EvaluationTypeService {
 
   /// Nach ID suchen
   static Future<EvaluationType?> findById(String id) async {
-    final db = SqliteStorage.database;
     final List<Map<String, dynamic>> maps = await db.query(
       'evaluation_types',
       where: 'id = ?',
@@ -49,7 +47,7 @@ class EvaluationTypeService {
       showInCalendar: showInCalendar,
     );
 
-    await SqliteStorage.database.insert(
+    await db.insert(
       'evaluation_types',
       newType.toJson(),
       conflictAlgorithm: ConflictAlgorithm.replace,
@@ -69,7 +67,7 @@ class EvaluationTypeService {
     type.assessmentType = assessmentType;
     type.showInCalendar = showInCalendar;
 
-    await SqliteStorage.database.update(
+    await db.update(
       'evaluation_types',
       type.toJson(),
       where: 'id = ?',
@@ -79,7 +77,6 @@ class EvaluationTypeService {
 
   /// EvaluationType löschen (nur, wenn keine Evaluation referenziert)
   static Future<void> deleteEvaluationType(EvaluationType type) async {
-    final db = SqliteStorage.database;
 
     final List<Map<String, dynamic>> linked = await db.query(
       'evaluations',
@@ -111,7 +108,7 @@ class EvaluationTypeService {
 
     for (final e in jsonData) {
       final type = EvaluationType.fromJson(e);
-      await SqliteStorage.database.insert(
+      await db.insert(
         'evaluation_types',
         type.toJson(),
         conflictAlgorithm: ConflictAlgorithm.replace,

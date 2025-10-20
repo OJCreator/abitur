@@ -45,8 +45,9 @@ class _EvaluationsPageState extends State<EvaluationsPage> {
   }
 
   Future<void> setVisibleMonth(DateTime date) async {
-    focusedDay = date;
-    setState(() { });
+    setState(() {
+      focusedDay = date;
+    });
 
     final first = DateTime(date.year, date.month, 1);
     final last = DateTime(date.year, date.month + 1, 0);
@@ -89,7 +90,7 @@ class _EvaluationsPageState extends State<EvaluationsPage> {
     Settings s = await SettingsService.loadSettings();
     setState(() {
       firstDay = DateTime(s.graduationYear.year-2, 9, 1);
-      firstDay = DateTime(s.graduationYear.year, 8, 1);
+      lastDay = DateTime(s.graduationYear.year, 8, 1);
     });
   }
 
@@ -131,6 +132,10 @@ class _EvaluationsPageState extends State<EvaluationsPage> {
             // Kalender
             TableCalendar(
               onPageChanged: setVisibleMonth,
+              focusedDay: focusedDay,
+              locale: "de_DE",
+              firstDay: firstDay,
+              lastDay: lastDay,
               holidayPredicate: (date) {
                 return isHoliday(date) != null;
               },
@@ -150,10 +155,6 @@ class _EvaluationsPageState extends State<EvaluationsPage> {
                   shape: BoxShape.circle,
                 ),
               ),
-              locale: "de_DE",
-              focusedDay: focusedDay,
-              firstDay: firstDay,
-              lastDay: lastDay,
               headerStyle: HeaderStyle(formatButtonVisible: false, titleCentered: true,),
               onDaySelected: _onDaySelected,
               startingDayOfWeek: StartingDayOfWeek.monday,

@@ -48,7 +48,8 @@ class ProjectionByTransformer {
 
   static void countWseminarProperly(List<ProjectionSubjectBlock1Model> block1, ProjectionWorkModel workModel) {
 
-    Subject wseminar = workModel.seminarSubject()!;
+    Subject? wseminar = workModel.seminarSubject();
+    if (wseminar == null) return;
     ProjectionSubjectBlock1Model wseminarBlock1 = block1.firstWhere((model) => model.subjectId == wseminar.id);
 
     double? rawSeminararbeitNote = GraduationEvaluationService.calculateNote(workModel.graduationEvaluations[wseminar.graduationEvaluationId]!);

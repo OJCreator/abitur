@@ -1,12 +1,11 @@
+import 'package:abitur/mappers/mappers/subject_mapper.dart';
 import 'package:abitur/pages/subject_pages/subject_chose_graduation_page.dart';
 import 'package:abitur/pages/subject_pages/subject_input_page.dart';
 import 'package:abitur/pages/subject_pages/subject_page.dart';
 import 'package:abitur/widgets/info_card.dart';
 import 'package:flutter/material.dart';
 
-import '../../services/database/graduation_evaluation_service.dart';
-import '../../services/database/settings_service.dart';
-import '../../services/database/subject_service.dart';
+import '../../mappers/models/subjects_page_model.dart';
 import '../../sqlite/entities/subject.dart';
 import '../../widgets/list_tiles/subject_list_tile.dart';
 
@@ -19,7 +18,8 @@ class SubjectsPage extends StatefulWidget {
 }
 
 class _SubjectsPageState extends State<SubjectsPage> {
-  late Future<List<Subject>> subjects;
+
+  late Future<SubjectsPageModel> subjectsPageDtoFuture;
 
   @override
   void initState() {
@@ -27,9 +27,14 @@ class _SubjectsPageState extends State<SubjectsPage> {
     super.initState();
   }
 
+  void _loadSubjects() {
+    setState(() {
+      subjectsPageDtoFuture = SubjectMapper.generateSubjectsPageModel();
+    });
+  }
+
   Future<void> _addNewSubject() async {
-    await Navigator.push(
-      context,
+    await Navigator.push(context,
       MaterialPageRoute(builder: (context) {
         return SubjectInputPage();
       }),
@@ -37,10 +42,16 @@ class _SubjectsPageState extends State<SubjectsPage> {
     _loadSubjects();
   }
 
-  void _loadSubjects() {
-    setState(() {
-      subjects = SubjectService.findAll();
-    });
+  Future<void> _setGraduationSubjects() async {
+    await Navigator.push(context,
+      MaterialPageRoute(
+        builder: (context) {
+          return SubjectChoseGraduationPage();
+        },
+        fullscreenDialog: true,
+      ),
+    );
+    _loadSubjects();
   }
 
   @override
@@ -52,14 +63,7 @@ class _SubjectsPageState extends State<SubjectsPage> {
           PopupMenuButton<String>(
             onSelected: (value) async {
               if (value == "selectGraduationSubjects") {
-                await Navigator.push(context,
-                    MaterialPageRoute(
-                      builder: (context) {
-                        return SubjectChoseGraduationPage();
-                      },
-                      fullscreenDialog: true,
-                    ));
-                _loadSubjects();
+                _setGraduationSubjects();
               }
             },
             itemBuilder: (BuildContext context) => [
@@ -73,10 +77,8 @@ class _SubjectsPageState extends State<SubjectsPage> {
       ),
       body: SingleChildScrollView(
         child: FutureBuilder(
-          future: subjects,
+          future: subjectsPageDtoFuture,
           builder: (context, snapshot) {
-            debugPrint(snapshot.data.toString());
-            debugPrint(snapshot.hasError.toString());
             if (!snapshot.hasData) {
               return Column(
                 children: [
@@ -85,62 +87,45 @@ class _SubjectsPageState extends State<SubjectsPage> {
                 ],
               );
             }
+            SubjectsPageModel subjectsPageDto = snapshot.data!;
             return Column(
               children: [
-                if (snapshot.data!.isEmpty)
+                if (subjectsPageDto.subjects.isEmpty)
                   Padding(
                     padding: const EdgeInsets.all(8.0),
                     child: InfoCard("Es gibt noch keine Fächer."),
                   ),
-                FutureBuilder(
-                  future: SettingsService.dayToChoseGraduationSubjects(),
-                  builder: (context, asyncSnapshot) {
-                    if (!asyncSnapshot.hasData || asyncSnapshot.data == null) {
-                      return Container();
-                    }
-                    DateTime dayToChoseGraduationSubjects = asyncSnapshot.data!;
-                    if (!DateTime.now().isAfter(dayToChoseGraduationSubjects)) return Container();
-                    return Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: InfoCard(
-                        "Es wird Zeit, deine Abiturfächer zu wählen.",
-                        action: "Wählen",
-                        onAction: () async {
-                          await Navigator.push(context,
-                            MaterialPageRoute(
-                              builder: (context) {
-                                return SubjectChoseGraduationPage();
-                              },
-                              fullscreenDialog: true,
-                          ));
-                          _loadSubjects();
-                        },
-                      ),
-                    );
-                  }
+                if (subjectsPageDto.timeToChoseGraduationSubjects)
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: InfoCard(
+                    "Es wird Zeit, deine Abiturfächer zu wählen.",
+                    action: "Wählen",
+                    onAction: () async {
+                      await Navigator.push(context,
+                        MaterialPageRoute(
+                          builder: (context) {
+                            return SubjectChoseGraduationPage();
+                          },
+                          fullscreenDialog: true,
+                      ));
+                      _loadSubjects();
+                    },
+                  ),
                 ),
-                for (Subject subject in snapshot.data!)
-                  FutureBuilder(
-                    future: GraduationEvaluationService.isGraduationSubject(subject),
-                    builder: (context, asyncSnapshot) {
-                      if (!asyncSnapshot.hasData) {
-                        return SubjectListTile.shimmer();
-                      }
-                      bool isGraduationSubject = asyncSnapshot.data!;
-                      return SubjectListTile(
-                        subject: subject,
-                        isGraduationSubject: isGraduationSubject,
-                        onTap: () async {
-                          await Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (context) {
-                              return SubjectPage(subjectId: subject.id);
-                            }),
-                          );
-                          _loadSubjects();
-                        },
+                for (Subject subject in subjectsPageDto.subjects)
+                  SubjectListTile(
+                    subject: subject,
+                    isGraduationSubject: subjectsPageDto.isGraduationSubject[subject] == true,
+                    onTap: () async {
+                      await Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) {
+                          return SubjectPage(subjectId: subject.id);
+                        }),
                       );
-                    }
+                      _loadSubjects();
+                    },
                   ),
               ],
             );

@@ -1,3 +1,5 @@
+import 'package:abitur/mappers/mappers/subject_mapper.dart';
+import 'package:abitur/mappers/models/subject_page_model.dart';
 import 'package:abitur/pages/subject_pages/subject_input_page.dart';
 import 'package:abitur/pages/subject_pages/subject_page/graduation_work_term_view.dart';
 import 'package:abitur/pages/subject_pages/subject_page/subject_edit_graduation_evaluation_dialog.dart';
@@ -7,7 +9,6 @@ import 'package:abitur/widgets/confirm_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import '../../services/database/graduation_evaluation_service.dart';
 import '../../services/database/settings_service.dart';
 import '../../services/database/subject_service.dart';
 import '../../sqlite/entities/evaluation/evaluation.dart';
@@ -33,53 +34,45 @@ class _SubjectPageState extends State<SubjectPage> with SingleTickerProviderStat
 
   Color seedColor = primaryColor;
 
-  late Future<Subject?> subject;
-  Future<GraduationEvaluation?> graduationEvaluation = Future.value(null);
+  late Future<SubjectPageModel> subjectPageModelFuture;
+
   bool giveGraduationNote = false;
 
-  late TabController _tabController;
+  TabController? _tabController;
   late List<GlobalKey<TermViewState>> _tabKeys;
 
   @override
   void initState() {
-    _loadSubject();
+    _loadData();
     super.initState();
   }
 
   @override
   void dispose() {
-    _tabController.dispose();
+    _tabController?.dispose();
     super.dispose();
   }
 
-  void _loadSubject() {
-    subject = SubjectService.findById(widget.subjectId);
-    subject.then((s) {
-      if (s == null) {
+  void _loadData() {
+    subjectPageModelFuture = SubjectMapper.generateSubjectPageModel(widget.subjectId);
+    subjectPageModelFuture.then((dto) {
+      if (dto.subject == null) {
         if (mounted) {
           Navigator.pop(context);
         }
         return;
       }
       setState(() {
-        seedColor = s.color;
+        seedColor = dto.subject!.color;
       });
-      _loadGraduationEvaluation(s);
+      _initTabs(dto);
     });
   }
 
-  void _loadGraduationEvaluation(Subject s) {
-    if (s.graduationEvaluationId == null) {
-      _initTabs(s, null);
-      return;
-    }
-    graduationEvaluation = GraduationEvaluationService.findEvaluationById(s.graduationEvaluationId!);
-    graduationEvaluation.then((ge) {
-      _initTabs(s,ge);
-    });
-  }
+  Future<void> _initTabs(SubjectPageModel dto) async {
 
-  Future<void> _initTabs(Subject s, GraduationEvaluation? ge) async {
+    Subject s = dto.subject!;
+    GraduationEvaluation? ge = dto.graduationEvaluation;
 
     int currentTerm = await SettingsService.currentProbableTerm();
     if (!s.terms.contains(currentTerm)) currentTerm = 0;
@@ -97,22 +90,23 @@ class _SubjectPageState extends State<SubjectPage> with SingleTickerProviderStat
     setState(() {
       _tabController = TabController(length: tabLength, vsync: this, initialIndex: currentTerm);
     });
-    _tabController.addListener(() {
+    _tabController!.addListener(() {
       setState(() {});
     });
   }
 
   Future<void> editSubject(BuildContext context) async {
-    Subject? s = await subject;
+    SubjectPageModel model = await subjectPageModelFuture;
     await Navigator.push(
       context,
       MaterialPageRoute(builder: (context) {
         return SubjectInputPage(
-          subject: s,
+          subject: model.subject,
         );
       }),
     );
-    _loadSubject();
+    _loadData();
+    _tabKeys[_tabController!.index].currentState!.loadData();
   }
 
   Future<void> deleteSubject() async {
@@ -148,7 +142,7 @@ class _SubjectPageState extends State<SubjectPage> with SingleTickerProviderStat
     if (newEvaluation == null) {
       return;
     }
-    _tabKeys[_tabController.index].currentState?.loadEvaluations();
+    _tabKeys[_tabController!.index].currentState?.loadData();
   }
 
   @override
@@ -164,10 +158,10 @@ class _SubjectPageState extends State<SubjectPage> with SingleTickerProviderStat
       child: Scaffold(
         appBar: AppBar(
           title: FutureBuilder(
-            future: subject,
+            future: subjectPageModelFuture,
             builder: (context, asyncSnapshot) {
               if (!asyncSnapshot.hasData || asyncSnapshot.data == null) return ShimmerText();
-              return Text(asyncSnapshot.data!.name);
+              return Text(asyncSnapshot.data!.subject!.name);
             }
           ),
           actions: [
@@ -194,17 +188,17 @@ class _SubjectPageState extends State<SubjectPage> with SingleTickerProviderStat
           bottom: PreferredSize(
             preferredSize: const Size.fromHeight(kToolbarHeight),
             child: FutureBuilder(
-              future: Future.wait([subject, graduationEvaluation]),
+              future: subjectPageModelFuture,
               builder: (context, asyncSnapshot) {
-                if (!asyncSnapshot.hasData) {
+                if (!asyncSnapshot.hasData || _tabController == null) {
                   return const SizedBox(
                     height: kToolbarHeight,
                     child: Center(child: CircularProgressIndicator()),
                   );
                 }
 
-                Subject s = (asyncSnapshot.data![0] as Subject);
-                GraduationEvaluation? ge = (asyncSnapshot.data![1] as GraduationEvaluation?);
+                Subject s = asyncSnapshot.data!.subject!;
+                GraduationEvaluation? ge = asyncSnapshot.data!.graduationEvaluation;
 
                 return TabBar(
                   controller: _tabController,
@@ -222,17 +216,17 @@ class _SubjectPageState extends State<SubjectPage> with SingleTickerProviderStat
           ),
         ),
         body: FutureBuilder(
-          future: Future.wait([subject, graduationEvaluation]),
+          future: subjectPageModelFuture,
           builder: (context, asyncSnapshot) {
-            if (!asyncSnapshot.hasData) {
+            if (!asyncSnapshot.hasData || _tabController == null) {
               return const SizedBox(
                 height: kToolbarHeight,
-                child: Center(child: CircularProgressIndicator()),
+                child: Center(child: CircularProgressIndicator()), // TODO: Default Subject Page (Shimmer)
               );
             }
 
-            Subject s = (asyncSnapshot.data![0] as Subject);
-            GraduationEvaluation? ge = (asyncSnapshot.data![1] as GraduationEvaluation?);
+            Subject s = asyncSnapshot.data!.subject!;
+            GraduationEvaluation? ge = asyncSnapshot.data!.graduationEvaluation;
 
             return TabBarView(
               controller: _tabController,
@@ -254,23 +248,28 @@ class _SubjectPageState extends State<SubjectPage> with SingleTickerProviderStat
           }
         ),
         floatingActionButton: FutureBuilder(
-          future: Future.wait([subject, graduationEvaluation]),
+          future: subjectPageModelFuture,
           builder: (context, asyncSnapshot) {
 
-            if (!asyncSnapshot.hasData) {
-              return const SizedBox(
+            if (!asyncSnapshot.hasData || _tabController == null) {
+              return SizedBox(
                 height: kToolbarHeight,
-                child: Center(child: CircularProgressIndicator()),
+                child: FloatingActionButton(
+                  child: Icon(Icons.add),
+                  onPressed: () {
+                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Es ist noch nichts geladen.")));
+                  },
+                ),
               );
             }
 
-            Subject s = (asyncSnapshot.data![0] as Subject);
-            GraduationEvaluation? ge = (asyncSnapshot.data![1] as GraduationEvaluation?);
+            Subject s = asyncSnapshot.data!.subject!;
+            GraduationEvaluation? ge = asyncSnapshot.data!.graduationEvaluation;
 
-            return _tabController.index < s.terms.length ? FloatingActionButton(
+            return _tabController!.index < s.terms.length ? FloatingActionButton(
               child: Icon(Icons.add),
               onPressed: () {
-                _newEvaluation(context, s.terms.elementAt(_tabController.index),);
+                _newEvaluation(context, s.terms.elementAt(_tabController!.index),);
               },
             ) : FloatingActionButton(
               child: Icon(Icons.edit),
@@ -296,15 +295,9 @@ class _SubjectPageState extends State<SubjectPage> with SingleTickerProviderStat
         // return ManualTermNoteEnterSheet(subject: widget.subject, term: widget.term);
       },
     ).then((value) {
+      _tabKeys[_tabController!.index].currentState!.loadData();
       setState(() { });
     });
-    // await showDialog(context: context, barrierDismissible: false, builder: (context) {
-    //   return SubjectEditGraduationEvaluationDialog(
-    //     graduationEvaluation: e,
-    //   );
-    // });
-    //
-    // setState(() {});
   }
 }
 

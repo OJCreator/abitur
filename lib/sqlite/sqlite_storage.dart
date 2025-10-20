@@ -1,6 +1,10 @@
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
 
+import '../services/database/evaluation_type_service.dart';
+import '../utils/enums/assessment_type.dart';
+import 'entities/evaluation/evaluation_type.dart';
+
 class SqliteStorage {
 
   static late Database database;
@@ -135,17 +139,24 @@ class SqliteStorage {
           CREATE TABLE timetable_times (
             id TEXT PRIMARY KEY,
             slot INTEGER NOT NULL,
-            from_minutes INTEGER NOT NULL,
-            to_minutes INTEGER NOT NULL
+            "from" INTEGER NOT NULL,
+            "to" INTEGER NOT NULL
           );
         ''');
       },
       version: 1,
     );
-    initialValues();
+    await initialValues();
   }
 
-  static void initialValues() {
+  static Future<void> initialValues() async {
 
+    List<EvaluationType> evaluationTypes = await EvaluationTypeService.findAll();
+    if (evaluationTypes.isEmpty) {
+      EvaluationTypeService.newEvaluationType("Klausur", AssessmentType.written, true);
+      EvaluationTypeService.newEvaluationType("Test", AssessmentType.written, true);
+      EvaluationTypeService.newEvaluationType("Referat", AssessmentType.oral, true);
+      EvaluationTypeService.newEvaluationType("Mündliche Note", AssessmentType.oral, false);
+    }
   }
 }

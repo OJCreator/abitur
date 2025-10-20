@@ -1,11 +1,7 @@
-import 'package:abitur/services/database/performance_service.dart';
-import 'package:abitur/sqlite/entities/evaluation/evaluation_date.dart';
-import 'package:abitur/utils/extensions/lists/iterable_extension.dart';
+import 'package:abitur/mappers/mappers/subject_mapper.dart';
 import 'package:flutter/material.dart';
 
-import '../../../services/database/evaluation_date_service.dart';
-import '../../../services/database/evaluation_service.dart';
-import '../../../services/database/subject_service.dart';
+import '../../../mappers/models/subject_page_term_view_model.dart';
 import '../../../sqlite/entities/evaluation/evaluation.dart';
 import '../../../sqlite/entities/performance.dart';
 import '../../../sqlite/entities/subject.dart';
@@ -33,41 +29,28 @@ class TermView extends StatefulWidget {
 
 class TermViewState extends State<TermView> {
 
-  // List<Evaluation> evaluations = [];
-  Map<Performance, List<Evaluation>> evaluations = {};
-  Map<String, List<EvaluationDate>> evaluationDatesByEvaluationId = {};
+  late Future<SubjectPageTermViewModel> termViewModelFuture;
+
+  @override
+  void initState() {
+    loadData();
+    super.initState();
+  }
 
   @override
   void didUpdateWidget(covariant TermView oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.subject != widget.subject || oldWidget.term != widget.term) {
-      loadEvaluations();
+      loadData();
     }
   }
 
-  @override
-  void initState() {
-    loadEvaluations();
-    super.initState();
+  Future<void> loadData() async {
+    termViewModelFuture = SubjectMapper.generateSubjectPageTermViewModel(widget.subject, widget.term);
   }
 
-  Future<void> loadEvaluations() async {
-    final allEvaluations = await EvaluationService.findAllBySubjectAndTerm(widget.subject, widget.term);
-    final evaluationsMap = allEvaluations.groupBy((e) => e.performanceId);
-    final performanceIds = evaluationsMap.keys;
-    final evaluationIds = allEvaluations.map((e) => e.id);
-    final performances = await PerformanceService.findAllByIds(performanceIds.toList());
-    evaluationDatesByEvaluationId = await EvaluationDateService.findAllByEvaluationIds(evaluationIds.toList());
-    setState(() {
-      evaluations = evaluationsMap.map((pId, e) => MapEntry(performances[pId]!, e));
-      for (List<Evaluation> list in evaluations.values) {
-        list.sort((a, b) => evaluationDatesByEvaluationId[a.id]!.first.compareTo(evaluationDatesByEvaluationId[b.id]!.first));
-      }
-    });
-  }
-
-  Iterable<(int, Performance)> _getIndexedPerformances() {
-    List<Performance> keys = evaluations.keys.toList();
+  Iterable<(int, Performance)> _getIndexedPerformances(Map<Performance, List<Evaluation>> evaluationsByPerformance) {
+    List<Performance> keys = evaluationsByPerformance.keys.toList();
     keys.sort((a, b) => a.name.compareTo(b.name));
     return keys.indexed;
   }
@@ -77,59 +60,74 @@ class TermViewState extends State<TermView> {
     return Scaffold(
       body: Container(
         padding: const EdgeInsets.all(8),
-        child: SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Center(
-                  child: FutureBuilder(
-                      future: SubjectService.getAverageByTerm(widget.subject, widget.term),
-                      builder: (context, asyncSnapshot) {
-                        if (asyncSnapshot.hasData) return PercentIndicator.shimmer();
-                        return PercentIndicator(
-                          value: asyncSnapshot.data,
-                          color: widget.subject.color,
-                          edit: () {
-                            manuallyEnterTermNoteDialog();
-                          },
-                        );
-                      }
+        child: FutureBuilder(
+          future: termViewModelFuture,
+          builder: (context, asyncSnapshot) {
+            if (!asyncSnapshot.hasData) {
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Center(
+                      child: PercentIndicator.shimmer(),
+                    ),
                   ),
-                ),
-              ),
-              if (widget.subject.manuallyEnteredTermNotes[widget.term] != null)
-                InfoCard("Diese Halbjahresnote wurde manuell eingetragen."),
-              ListTile(
-                title: Text(
-                  "Noten:",
-                  style: Theme.of(context).textTheme.titleMedium,
-                ),
-              ),
-              if (evaluations.isEmpty)
-                InfoCard("In diesem Halbjahr gibt es noch keine Noten."),
-              for (final (i, p) in _getIndexedPerformances()) ...[
-                if (i > 0)
-                  Divider(),
-                SectionHeadingListTile(heading: p.name),
-                for (Evaluation e in evaluations[p]!)
-                  EvaluationListTile(
-                    evaluation: e,
-                    evaluationDates: evaluationDatesByEvaluationId[e.id]!,
-                    onTap: () async {
-                      await Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) {
-                          return EvaluationInputPage(evaluation: e);
-                        }),
-                      );
-                      loadEvaluations();
-                    },
+                ],
+              );
+            }
+            SubjectPageTermViewModel termViewModel = asyncSnapshot.data!;
+            return SingleChildScrollView(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Center(
+                      child: PercentIndicator(
+                        value: termViewModel.termAverage,
+                        color: widget.subject.color,
+                        edit: () {
+                          manuallyEnterTermNoteDialog();
+                        },
+                      ),
+                    ),
                   ),
-              ],
-            ],
-          ),
+                  if (termViewModel.manualEnteredTermNote)
+                    InfoCard("Diese Halbjahresnote wurde manuell eingetragen."),
+                  ListTile(
+                    title: Text(
+                      "Noten:",
+                      style: Theme.of(context).textTheme.titleMedium,
+                    ),
+                  ),
+                  if (termViewModel.evaluationsByPerformance.isEmpty)
+                    InfoCard("In diesem Halbjahr gibt es noch keine Noten."),
+                  for (final (i, p) in _getIndexedPerformances(termViewModel.evaluationsByPerformance)) ...[
+                    if (i > 0)
+                      Divider(),
+                    SectionHeadingListTile(heading: p.name),
+                    for (Evaluation e in termViewModel.evaluationsByPerformance[p]!)
+                      EvaluationListTile(
+                        evaluation: e,
+                        evaluationDates: termViewModel.evaluationDatesByEvaluationId[e.id] ?? [],
+                        note: termViewModel.evaluationNotes[e.id],
+                        onTap: () async {
+                          await Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (context) {
+                              return EvaluationInputPage(evaluation: e);
+                            }),
+                          );
+                          loadData();
+                        },
+                      ),
+                  ],
+                  SizedBox(height: 80,), // damit der FloatingActionButton nichts verdeckt
+                ],
+              ),
+            );
+          }
         ),
       ),
     );
@@ -144,6 +142,7 @@ class TermViewState extends State<TermView> {
         return ManualTermNoteEnterSheet(subject: widget.subject, term: widget.term);
       },
     ).then((value) {
+      loadData();
       setState(() { });
     });
   }

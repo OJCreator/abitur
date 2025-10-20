@@ -143,20 +143,6 @@ class EvaluationService {
   }
 
 
-  // static Future<List<Evaluation>> findAllByQuery(String text) async {
-  //   final queries = text.toLowerCase().split(' ')..removeWhere((it) => it.isEmpty);
-  //   if (queries.isEmpty) return findAll();
-  //
-  //   final all = await findAll();
-  //   return all.where((e) {
-  //     return queries.every((query) =>
-  //     e.name.toLowerCase().contains(query) ||
-  //         e.subject.name.toLowerCase().contains(query) ||
-  //         e.subject.shortName.toLowerCase().contains(query) ||
-  //         (calculateNote(e) == int.tryParse(query)));
-  //   }).toList();
-  // }
-
   static Future<List<Evaluation>> findAllBySubject(Subject s) async {
     final result = await db.query(
       'evaluations',

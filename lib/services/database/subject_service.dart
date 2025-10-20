@@ -11,12 +11,11 @@ import 'package:abitur/utils/enums/subject_type.dart';
 import 'package:abitur/utils/pair.dart';
 import 'package:sqflite/sqflite.dart';
 
-// TODO: Diese Imports später ersetzen, sobald Services migriert sind
+import '../../sqlite/entities/evaluation/evaluation.dart';
 import '../../sqlite/entities/graduation_evaluation.dart';
 import '../../sqlite/entities/performance.dart';
 import '../../sqlite/entities/subject.dart';
 import '../../utils/enums/graduation_evaluation_type.dart';
-import '../../utils/uuid.dart';
 import 'evaluation_service.dart';
 
 class SubjectService {
@@ -36,7 +35,7 @@ class SubjectService {
 
     final existing = await findAll();
 
-    final land = await SettingsService.land(); // TODO: durch DB-basierte Settings ersetzen
+    final land = await SettingsService.land();
     final advancedCount = existing.where((s) => s.subjectNiveau == SubjectNiveau.advanced).length;
     final sameTypeCount = existing.where((s) => s.subjectType == subjectType).length;
 
@@ -196,7 +195,7 @@ class SubjectService {
     final db = SqliteStorage.database;
     final existing = (await findAll()).where((s) => s.id != subject.id).toList();
 
-    final land = SettingsService.land; // TODO
+    final land = await SettingsService.land();
     final advancedCount = existing.where((s) => s.subjectNiveau == SubjectNiveau.advanced).length;
     final sameTypeCount = existing.where((s) => s.subjectType == subjectType).length;
 
@@ -248,7 +247,6 @@ class SubjectService {
   static Future<List<Subject>> findAll() async {
     final db = SqliteStorage.database;
     final rows = await db.query('subjects', orderBy: 'name ASC');
-    print(rows);
     return rows.map((row) => Subject.fromJson(Map<String, dynamic>.from(row))).toList();
   }
   /// Alle Fächer laden (alphabetisch) und als Map zurückgeben
@@ -300,7 +298,7 @@ class SubjectService {
     final List<Map<String, dynamic>> maps = await db.query(
       'subjects',
       where: 'subjectType IN ($placeholders)',
-      whereArgs: gradableTypes.map((e) => e.name).toList(),
+      whereArgs: gradableTypes.map((e) => e.code).toList(),
     );
 
     return {
@@ -379,24 +377,41 @@ class SubjectService {
     final evaluations = await EvaluationService.findAllGradedBySubjectAndTerm(s, term);
     if (evaluations.isEmpty) return null;
 
-    final Map<String, List> perfs = {}; // TODO: PerformanceService-Integration
+    // Evaluations nach Performance gruppieren
+    final Map<String, List<Evaluation>> perfs = {};
     for (final e in evaluations) {
       perfs.putIfAbsent(e.performanceId, () => []).add(e);
     }
 
     final weightNotePairs = <Pair<double, double?>>[];
+
     for (final entry in perfs.entries) {
-      final p = entry.key;
+      final performanceId = entry.key;
       final evals = entry.value;
-      final noteValues = evals
-          .map((e) => EvaluationService.calculateNote(e))
-          .whereType<int>()
-          .toList();
-      weightNotePairs.add(Pair(1.0, avg(noteValues))); // TODO: Gewicht aus Performance
+
+      // Performance abrufen (für Gewicht)
+      final performance = await PerformanceService.findById(performanceId);
+      if (performance == null) continue;
+
+      // Alle Noten asynchron berechnen
+      final notes = <int>[];
+      for (final e in evals) {
+        final note = await EvaluationService.calculateNote(e);
+        if (note != null) notes.add(note);
+      }
+
+      if (notes.isEmpty) continue;
+
+      final perfAverage = avg(notes);
+      final weight = performance.weighting;
+      weightNotePairs.add(Pair(weight, perfAverage));
     }
+
+    if (weightNotePairs.isEmpty) return null;
 
     return weightedAvg(weightNotePairs);
   }
+
 
   static Future<void> manuallyEnterTermNote(Subject s, {required int term, required int? note}) async {
     final db = SqliteStorage.database;

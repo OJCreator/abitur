@@ -47,12 +47,12 @@ class _EvaluationInputPageState extends State<EvaluationInputPage> {
   final _formKey = GlobalKey<FormState>();
   late final TextEditingController _name;
 
-  late EvaluationType _selectedEvaluationType;
-  late String _selectedSubjectId;
+  EvaluationType _selectedEvaluationType = EvaluationType.empty();
+  String _selectedSubjectId = "";
   late String _selectedPerformanceId;
-  late int _selectedTerm;
+  int _selectedTerm = -1;
 
-  late List<EvaluationDate> _evaluationDates;
+  List<EvaluationDate> _evaluationDates = [];
   late List<String> _initialEvaluationDateIds;
 
   bool unsavedChanges = false;
@@ -67,6 +67,8 @@ class _EvaluationInputPageState extends State<EvaluationInputPage> {
     });
     _allSubjects = SubjectService.findAllGradableAsMap();
 
+    initValues();
+
     super.initState();
   }
 
@@ -79,7 +81,7 @@ class _EvaluationInputPageState extends State<EvaluationInputPage> {
 
     setState(() {
       _name.text = eval?.name ?? "";
-      _selectedEvaluationType = evaluationTypes[eval?.evaluationTypeId] ?? evaluationTypes.values.first;
+      _selectedEvaluationType = evaluationTypes[eval?.evaluationTypeId] ?? evaluationTypes.values.firstOrNull ?? EvaluationType.empty();
       _selectedSubjectId = widget.subjectId ?? eval?.subjectId ?? timetableSubject.id;
       _selectedPerformanceId = eval?.performanceId ?? "";
       _evaluationDates = evaluationDates?.values.expandToList() ?? [EvaluationDate(date: widget.dateTime ?? DateTime.now())];
@@ -179,12 +181,12 @@ class _EvaluationInputPageState extends State<EvaluationInputPage> {
           FutureBuilder(
             future: performances,
             builder: (context, asyncSnapshot) {
-              if (!asyncSnapshot.hasData || asyncSnapshot.data == null) {
+              if (!asyncSnapshot.hasData || asyncSnapshot.data == null || asyncSnapshot.data == []) {
                 return PerformanceSelector(performances: [], currentPerformance: null, onSelected: null);
               }
               return PerformanceSelector(
                 performances: asyncSnapshot.data!,
-                currentPerformance: asyncSnapshot.data!.firstWhere((p) => p.id == _selectedPerformanceId),
+                currentPerformance: asyncSnapshot.data!.firstWhere((p) => p.id == _selectedPerformanceId, orElse: Performance.empty),
                 onSelected: (Performance selected) {
                   setState(() {
                     _selectedPerformanceId = selected.id;
@@ -207,7 +209,7 @@ class _EvaluationInputPageState extends State<EvaluationInputPage> {
               }
               return TermSelector(
                 selectedTerm: _selectedTerm,
-                terms: asyncSnapshot.data!.values.firstWhere((s) => s.id == _selectedSubjectId).terms,
+                terms: asyncSnapshot.data!.values.firstWhere((s) => s.id == _selectedSubjectId, orElse: Subject.empty).terms,
                 onSelected: (int newTerm) {
                   setState(() {
                     _selectedTerm = newTerm;
