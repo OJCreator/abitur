@@ -1,3 +1,5 @@
+import 'package:abitur/mappers/models/evaluations_page_model.dart';
+import 'package:abitur/services/database/evaluation_service.dart';
 import 'package:abitur/services/database/evaluation_type_service.dart';
 import 'package:abitur/services/database/performance_service.dart';
 import 'package:abitur/utils/extensions/lists/expand_to_list_extension.dart';
@@ -54,6 +56,19 @@ class EvaluationsMapper {
 
       seedColor: seedColor,
       editMode: evaluation != null,
+    );
+  }
+
+  static Future<EvaluationsPageModel> generateEvaluationsPageModel() async {
+
+    final evaluationDates = await EvaluationDateService.findAllFutureOrUngraded();
+    final subjects = await SubjectService.findAllGradableAsMap();
+    final evaluations = await EvaluationService.findAllAsMap();
+
+    return EvaluationsPageModel(
+      evaluationDates: evaluationDates,
+      evaluations: evaluations,
+      subjects: subjects,
     );
   }
 }
