@@ -32,9 +32,21 @@ class SubjectsAnalyticsState extends State<SubjectsAnalytics> {
     super.initState();
   }
 
+  @override
+  void didUpdateWidget(covariant SubjectsAnalytics oldWidget) {
+    super.didUpdateWidget(oldWidget);
+
+    if (oldWidget.subjects != widget.subjects) {
+      _loadData();
+    }
+  }
+
+
   Future<void> _loadData() async {
     final averages = await SubjectService.getAverages(widget.subjects.map((s) => s.id).toList());
 
+    print("averages");
+    print(averages);
     data = widget.subjects.asMap().mapToIterable((index, subject) {
       return BarChartGroupData(
           x: index,
@@ -93,7 +105,25 @@ class SubjectsAnalyticsState extends State<SubjectsAnalytics> {
                   barGroups: data,
                   barTouchData: BarTouchData(enabled: false),
                   borderData: FlBorderData(show: false),
-                  gridData: FlGridData(show: false),
+                  gridData: FlGridData(
+                    show: true,
+                    drawVerticalLine: false,
+                    horizontalInterval: 1,
+                    getDrawingHorizontalLine: (value) {
+                      return FlLine(
+                        color: Colors.grey.withAlpha(77),
+                        strokeWidth: 1,
+                        dashArray: [5, 5],
+                      );
+                    },
+                    getDrawingVerticalLine: (value) {
+                      return FlLine(
+                        color: Colors.grey.withAlpha(77),
+                        strokeWidth: 1,
+                        dashArray: [5, 5],
+                      );
+                    },
+                  ),
                   titlesData: FlTitlesData(
                     rightTitles: const AxisTitles(),
                     topTitles: const AxisTitles(),

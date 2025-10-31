@@ -332,39 +332,88 @@ class SubjectService {
     return result.first['avg'] as double?;
   }
 
-  static Future<Map<String, double?>> getAverages(List<String> subjectIds, {int? filterByTerm}) async {
+  static Future<Map<String, double?>> getAverages(
+      List<String> subjectIds, {
+        int? filterByTerm,
+      }) async {
+
     if (subjectIds.isEmpty) return {};
 
     final db = SqliteStorage.database;
-
     final placeholders = List.filled(subjectIds.length, '?').join(', ');
+    final args = <Object>[...subjectIds];
 
-    final whereClause = StringBuffer('subjectId IN ($placeholders)');
-    final List<Object> args = [...subjectIds];
+    final termFilter = filterByTerm != null ? 'AND e.term = ?' : '';
+    if (filterByTerm != null) args.add(filterByTerm);
 
-    if (filterByTerm != null) {
-      whereClause.write(' AND term = ?');
-      args.add(filterByTerm);
-    }
-
+    // SQL: bis Term-Durchschnitte
     final result = await db.rawQuery('''
-    SELECT subjectId, AVG(grade) AS avg
-    FROM evaluations
-    WHERE $whereClause
-    GROUP BY subjectId
+    WITH evaluation_averages AS (
+      SELECT 
+        e.id AS evalId,
+        e.subjectId,
+        e.performanceId,
+        e.term,
+        CASE WHEN SUM(d.weight) > 0 THEN CAST(SUM(d.note * d.weight) AS REAL) / SUM(d.weight) ELSE NULL END AS evalAvg
+      FROM evaluations e
+      LEFT JOIN evaluation_dates d ON e.id = d.evaluationId
+      WHERE e.subjectId IN ($placeholders) $termFilter
+      GROUP BY e.id
+    ),
+    performance_averages AS (
+      SELECT
+        ea.subjectId,
+        ea.term,
+        ea.performanceId,
+        CAST(SUM(ea.evalAvg * p.weighting) AS REAL) / CAST(SUM(CASE WHEN ea.evalAvg IS NOT NULL THEN p.weighting ELSE 0 END) AS REAL) AS performanceAvg
+      FROM evaluation_averages ea
+      JOIN performances p ON p.id = ea.performanceId
+      GROUP BY ea.subjectId, ea.term, ea.performanceId
+    ),
+    term_averages AS (
+      SELECT
+        subjectId,
+        term,
+        AVG(performanceAvg) AS termAvg
+      FROM performance_averages
+      GROUP BY subjectId, term
+    )
+    SELECT subjectId, term, termAvg FROM term_averages
   ''', args);
 
-    final averages = <String, double?>{};
+    // --- Schritt 1: Term-Durchschnitte in Dart runden ---
+    final Map<String, List<double>> subjectTerms = {};
     for (final row in result) {
-      averages[row['subjectId'] as String] = (row['avg'] as num?)?.toDouble();
+      final subjectId = row['subjectId'] as String;
+      final termAvg = row['termAvg'] as num?;
+      if (termAvg == null) continue;
+
+      final rounded = roundNote(termAvg.toDouble());
+
+      subjectTerms.putIfAbsent(subjectId, () => []);
+      if (rounded == null) continue;
+      subjectTerms[subjectId]!.add(rounded.toDouble());
     }
 
+    // --- Schritt 2: Durchschnitt der Term-Noten pro Fach ---
+    final Map<String, double?> averages = {};
     for (final id in subjectIds) {
-      averages.putIfAbsent(id, () => null);
+      final terms = subjectTerms[id];
+      if (terms == null || terms.isEmpty) {
+        averages[id] = null;
+      } else {
+        averages[id] = terms.reduce((a, b) => a + b) / terms.length;
+      }
     }
 
     return averages;
   }
+
+
+
+
+
+
 
 
   static Future<double?> getAverageByTerm(Subject s, int term) async {

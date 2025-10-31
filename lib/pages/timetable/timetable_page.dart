@@ -50,9 +50,11 @@ class _TimetablePageState extends State<TimetablePage> with SingleTickerProvider
       body: TabBarView(
         controller: _tabController,
         children: List.generate(4, (index) {
-          return Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: TimetableView(term: index),
+          return SingleChildScrollView(
+            child: Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: TimetableView(term: index),
+            ),
           );
         })
       ),

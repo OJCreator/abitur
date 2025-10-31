@@ -140,24 +140,24 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
         // TODO SQLITE Tabelle aus JSON wiederherstellen
 
         debugPrint("Extracted data from JSON...");
-        await PerformanceService.buildFromJson((jsonData["performances"] as List).map((e) => e as Map<String, dynamic>).toList());
-        debugPrint("Extracted Performances from JSON.");
-        await SubjectService.buildFromJson((jsonData["subjects"] as List).map((e) => e as Map<String, dynamic>).toList());
-        debugPrint("Extracted Subjects from JSON.");
-        await EvaluationService.buildFromJson((jsonData["evaluations"] as List).map((e) => e as Map<String, dynamic>).toList());
-        debugPrint("Extracted Evaluations from JSON.");
-        await EvaluationDateService.buildFromJson((jsonData["evaluationDates"] as List).map((e) => e as Map<String, dynamic>).toList());
-        debugPrint("Extracted EvaluationDates from JSON.");
-        await EvaluationTypeService.buildFromJson((jsonData["evaluationTypes"] as List).map((e) => e as Map<String, dynamic>).toList());
-        debugPrint("Extracted EvaluationTypes from JSON.");
         await SettingsService.buildFromJson(jsonData["settings"] as Map<String, dynamic>);
         debugPrint("Extracted Settings from JSON.");
+        await EvaluationTypeService.buildFromJson((jsonData["evaluationTypes"] as List).map((e) => e as Map<String, dynamic>).toList());
+        debugPrint("Extracted EvaluationTypes from JSON.");
+        await TimetableTimeService.buildFromJson((jsonData["timetableTimes"] as List).map((e) => e as Map<String, dynamic>).toList());
+        debugPrint("Extracted Timetables from JSON.");
+        await SubjectService.buildFromJson((jsonData["subjects"] as List).map((e) => e as Map<String, dynamic>).toList());
+        debugPrint("Extracted Subjects from JSON.");
+        await PerformanceService.buildFromJson((jsonData["performances"] as List).map((e) => e as Map<String, dynamic>).toList());
+        debugPrint("Extracted Performances from JSON.");
         await GraduationEvaluationService.buildFromJson((jsonData["graduationEvaluations"] as List).map((e) => e as Map<String, dynamic>).toList());
         debugPrint("Extracted GraduationEvaluations from JSON.");
         await TimetableEntryService.buildFromJson((jsonData["timetableEntries"] as List).map((e) => e as Map<String, dynamic>).toList());
         debugPrint("Extracted TimetableSettings from JSON.");
-        await TimetableTimeService.buildFromJson((jsonData["timetableTimes"] as List).map((e) => e as Map<String, dynamic>).toList());
-        debugPrint("Extracted Timetables from JSON.");
+        await EvaluationService.buildFromJson((jsonData["evaluations"] as List).map((e) => e as Map<String, dynamic>).toList());
+        debugPrint("Extracted Evaluations from JSON.");
+        await EvaluationDateService.buildFromJson((jsonData["evaluationDates"] as List).map((e) => e as Map<String, dynamic>).toList());
+        debugPrint("Extracted EvaluationDates from JSON.");
 
         // Kalender und Notifications
         await CalendarService.syncAllEvaluationCalendarEvents();
