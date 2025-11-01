@@ -56,24 +56,24 @@ class _SubjectPageState extends State<SubjectPage> with SingleTickerProviderStat
 
   void _loadData() {
     subjectPageModelFuture = SubjectMapper.generateSubjectPageModel(widget.subjectId);
-    subjectPageModelFuture.then((dto) {
-      if (dto.subject == null) {
+    subjectPageModelFuture.then((model) {
+      if (model.subject == null) {
         if (mounted) {
           Navigator.pop(context);
         }
         return;
       }
       setState(() {
-        seedColor = dto.subject!.color;
+        seedColor = model.subject!.color;
       });
-      _initTabs(dto);
+      _initTabs(model);
     });
   }
 
-  Future<void> _initTabs(SubjectPageModel dto) async {
+  Future<void> _initTabs(SubjectPageModel model) async {
 
-    Subject s = dto.subject!;
-    GraduationEvaluation? ge = dto.graduationEvaluation;
+    Subject s = model.subject!;
+    GraduationEvaluation? ge = model.graduationEvaluation;
 
     int currentTerm = await SettingsService.currentProbableTerm();
     int initialTabIndex = s.terms.toList().indexWhere((term) => term == currentTerm);
@@ -210,7 +210,7 @@ class _SubjectPageState extends State<SubjectPage> with SingleTickerProviderStat
                       Tab(text: "${term + 1}. Halbjahr"),
                     if (ge != null && s.subjectType != SubjectType.wSeminar)
                       const Tab(text: "Abitur"),
-                    if (s.subjectType == SubjectType.wSeminar)
+                    if (ge != null && s.subjectType == SubjectType.wSeminar)
                       const Tab(text: "Seminararbeit"),
                   ],
                 );

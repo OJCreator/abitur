@@ -50,7 +50,7 @@ class _SubjectInputPageState extends State<SubjectInputPage> {
   late Set<int> _terms;
   late SubjectNiveau _subjectNiveau;
   late SubjectType _subjectType;
-  List<Performance> _performances = [];
+  Future<List<Performance>> _performances = Future.value([]);
 
   bool _subjectNiveauDisabled = false;
   bool _unsavedChanges = false;
@@ -76,13 +76,13 @@ class _SubjectInputPageState extends State<SubjectInputPage> {
   
   Future<void> _loadPerformances() async {
     if (widget.editMode) {
-      _performances = await PerformanceService.findAllBySubjectId(widget.subject!.id);
+      _performances = PerformanceService.findAllBySubjectId(widget.subject!.id);
       setState(() { });
     } else {
-      _performances = [
+      _performances = Future.value([
         Performance(name: "Klausuren", weighting: 0.5, subjectId: ""),
         Performance(name: "Kleine Noten", weighting: 0.5, subjectId: ""),
-      ];
+      ]);
     }
   }
 
@@ -180,14 +180,20 @@ class _SubjectInputPageState extends State<SubjectInputPage> {
 
         FormGap(),
 
-        PerformanceForm(
-          performances: _performances,
-          onChanged: (data) {
-            setState(() {
-              _performances = data;
-              _unsavedChanges = true;
-            });
-          },
+        FutureBuilder(
+          future: _performances,
+          builder: (context, asyncSnapshot) {
+            if (!asyncSnapshot.hasData) return CircularProgressIndicator();
+            return PerformanceForm(
+              performances: asyncSnapshot.data!,
+              onChanged: (data) {
+                setState(() {
+                  _performances = Future.value(data);
+                  _unsavedChanges = true;
+                });
+              },
+            );
+          }
         ),
       ],
     );
@@ -198,6 +204,7 @@ class _SubjectInputPageState extends State<SubjectInputPage> {
     if (!_formKey.currentState!.validate()) {
       return;
     }
+    List<Performance> performances = await _performances;
 
     if (widget.editMode) {
       List<int> termsThatDontExist = [0,1,2,3].where((i) => !_terms.contains(i)).toList();
@@ -209,6 +216,7 @@ class _SubjectInputPageState extends State<SubjectInputPage> {
         }
       }
 
+
       trySubmittingForm(context, () async {
         Subject editedSubject = await SubjectService.editSubject(
           widget.subject!,
@@ -219,7 +227,7 @@ class _SubjectInputPageState extends State<SubjectInputPage> {
           countingTermAmount: _countingTerms,
           subjectNiveau: _subjectNiveau,
           subjectType: _subjectType,
-          performances: _performances,
+          performances: performances,
         );
 
         Navigator.pop(context, editedSubject);
@@ -236,7 +244,7 @@ class _SubjectInputPageState extends State<SubjectInputPage> {
           _countingTerms,
           _subjectNiveau,
           _subjectType,
-          _performances,
+          performances,
         );
 
         Navigator.pop(context);

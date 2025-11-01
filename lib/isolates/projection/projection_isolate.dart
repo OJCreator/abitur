@@ -87,7 +87,7 @@ class ProjectionIsolate {
   static ProjectionWorkModel extractData(EvaluationsSubjectsPerformancesEvaluationDatesModel model) {
 
     Map<String, GraduationEvaluation> graduationEvaluations = {
-      for (var e in model.graduationEvaluations) e['id']: GraduationEvaluation.fromJson(e),
+      for (var e in model.graduationEvaluations) e['subjectId']: GraduationEvaluation.fromJson(e),
     };
     Map<String, Evaluation> evaluations = {
       for (var e in model.evaluations) e['id']: Evaluation.fromJson(e),
@@ -152,7 +152,8 @@ class ProjectionIsolate {
 /// Diese Klasse organisiert die Informationen, die für die Projection wichtig sind.
 /// Zusätzlich bietet sie einige Funktionen, die man auf diesen Daten ausführen kann.
 class ProjectionWorkModel {
-  final Map<String, GraduationEvaluation> graduationEvaluations;
+
+  final Map<String, GraduationEvaluation> graduationEvaluations; // SubjectId -> GraduationEvaluation
   final Map<String, Evaluation> evaluations;
   final Map<String, Subject> subjects;
   final Map<String, Performance> performances;
@@ -213,6 +214,6 @@ class ProjectionWorkModel {
     return subjects.values.where((s) => s.graduationEvaluationId != null && s.subjectType != SubjectType.wSeminar).toList();
   }
   List<GraduationEvaluation> finalGraduationEvaluations() { // Abiprüfungen (ohne W-Seminar-Arbeit)
-    return graduationSubjects().map((s) => graduationEvaluations[s.graduationEvaluationId]!).toList();
+    return graduationSubjects().map((s) => graduationEvaluations[s.id]!).toList();
   }
 }

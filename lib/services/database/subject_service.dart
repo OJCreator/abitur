@@ -346,7 +346,6 @@ class SubjectService {
     final termFilter = filterByTerm != null ? 'AND e.term = ?' : '';
     if (filterByTerm != null) args.add(filterByTerm);
 
-    // SQL: bis Term-Durchschnitte
     final result = await db.rawQuery('''
     WITH evaluation_averages AS (
       SELECT 
@@ -354,7 +353,12 @@ class SubjectService {
         e.subjectId,
         e.performanceId,
         e.term,
-        CASE WHEN SUM(d.weight) > 0 THEN CAST(SUM(d.note * d.weight) AS REAL) / SUM(d.weight) ELSE NULL END AS evalAvg
+        CASE 
+          WHEN SUM(CASE WHEN d.note IS NOT NULL THEN d.weight ELSE 0 END) > 0 
+          THEN CAST(SUM(CASE WHEN d.note IS NOT NULL THEN d.note * d.weight ELSE 0 END) AS REAL) 
+               / SUM(CASE WHEN d.note IS NOT NULL THEN d.weight ELSE 0 END)
+          ELSE NULL 
+        END AS evalAvg
       FROM evaluations e
       LEFT JOIN evaluation_dates d ON e.id = d.evaluationId
       WHERE e.subjectId IN ($placeholders) $termFilter
@@ -365,7 +369,8 @@ class SubjectService {
         ea.subjectId,
         ea.term,
         ea.performanceId,
-        CAST(SUM(ea.evalAvg * p.weighting) AS REAL) / CAST(SUM(CASE WHEN ea.evalAvg IS NOT NULL THEN p.weighting ELSE 0 END) AS REAL) AS performanceAvg
+        CAST(SUM(ea.evalAvg * p.weighting) AS REAL)
+        / CAST(SUM(CASE WHEN ea.evalAvg IS NOT NULL THEN p.weighting ELSE 0 END) AS REAL) AS performanceAvg
       FROM evaluation_averages ea
       JOIN performances p ON p.id = ea.performanceId
       GROUP BY ea.subjectId, ea.term, ea.performanceId
@@ -389,13 +394,12 @@ class SubjectService {
       if (termAvg == null) continue;
 
       final rounded = roundNote(termAvg.toDouble());
-
       subjectTerms.putIfAbsent(subjectId, () => []);
       if (rounded == null) continue;
       subjectTerms[subjectId]!.add(rounded.toDouble());
     }
 
-    // --- Schritt 2: Durchschnitt der Term-Noten pro Fach ---
+    // --- Schritt 2: Durchschnitt der gerundeten Term-Noten ---
     final Map<String, double?> averages = {};
     for (final id in subjectIds) {
       final terms = subjectTerms[id];
@@ -408,6 +412,7 @@ class SubjectService {
 
     return averages;
   }
+
 
 
 

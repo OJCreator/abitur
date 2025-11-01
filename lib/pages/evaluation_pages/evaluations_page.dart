@@ -8,6 +8,7 @@ import 'package:abitur/utils/constants.dart';
 import 'package:abitur/utils/extensions/date_extension.dart';
 import 'package:abitur/utils/extensions/lists/list_extension.dart';
 import 'package:abitur/widgets/evaluation_date_list_tile.dart';
+import 'package:abitur/widgets/fab_overlap_preventer.dart';
 import 'package:flutter/material.dart';
 import 'package:table_calendar/table_calendar.dart';
 
@@ -214,7 +215,7 @@ class _EvaluationsPageState extends State<EvaluationsPage> {
                 );
               },
             ),
-            SizedBox(height: 80,), // damit der FloatingActionButton nichts verdeckt
+            FabOverlapPreventer(),
           ],
         ),
       ),

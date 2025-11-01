@@ -45,8 +45,6 @@ class SubjectsAnalyticsState extends State<SubjectsAnalytics> {
   Future<void> _loadData() async {
     final averages = await SubjectService.getAverages(widget.subjects.map((s) => s.id).toList());
 
-    print("averages");
-    print(averages);
     data = widget.subjects.asMap().mapToIterable((index, subject) {
       return BarChartGroupData(
           x: index,

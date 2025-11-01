@@ -37,7 +37,7 @@ class ProjectionByTransformer {
 
     for (ProjectionSubjectBlock1Model subjectModel in block1) {
       Subject s = workModel.subjects[subjectModel.subjectId]!;
-      if (s.graduationEvaluationId == null || s.subjectType == SubjectType.wSeminar) {
+      if (workModel.graduationEvaluations[s.id] == null || s.subjectType == SubjectType.wSeminar) {
         continue;
       }
       for (int i = 0; i < 4; i++) {
@@ -52,7 +52,7 @@ class ProjectionByTransformer {
     if (wseminar == null) return;
     ProjectionSubjectBlock1Model wseminarBlock1 = block1.firstWhere((model) => model.subjectId == wseminar.id);
 
-    double? rawSeminararbeitNote = GraduationEvaluationService.calculateNote(workModel.graduationEvaluations[wseminar.graduationEvaluationId]!);
+    double? rawSeminararbeitNote = GraduationEvaluationService.calculateNote(workModel.graduationEvaluations[wseminar.id]!);
     int? seminararbeitNote = rawSeminararbeitNote == null
         ? null
         : roundNote(rawSeminararbeitNote * 2);
@@ -124,7 +124,7 @@ class ProjectionByTransformer {
 
     // relevante Fächer
     final relevantSubjects = block1.where((model) {
-      final noGraduationEvaluation = workModel.subjects[model.subjectId]!.graduationEvaluationId == null;
+      final noGraduationEvaluation = workModel.graduationEvaluations[model.subjectId] == null;
       final countingTermAmount = model.terms.countWhere((t) => t.counting);
       return noGraduationEvaluation && countingTermAmount > 1;
     });

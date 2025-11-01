@@ -53,6 +53,7 @@ class GraduationEvaluation implements Serializable {
   };
 
   static GraduationEvaluation fromJson(Map<String, dynamic> json) {
+    print(json);
     return GraduationEvaluation(
       id: json["id"],
       subjectId: json["subjectId"],
@@ -62,7 +63,7 @@ class GraduationEvaluation implements Serializable {
       datePartOne: json["datePartOne"] != null ? DateTime.parse(json["datePartOne"]) : null,
       weightPartOne: json["weightPartOne"],
       notePartTwo: json["notePartTwo"],
-      datePartTwo: json["datePartTwo"] != null ? DateTime.parse(json["datePartTow"]) : null,
+      datePartTwo: json["datePartTwo"] != null ? DateTime.parse(json["datePartTwo"]) : null,
       weightPartTwo: json["weightPartTwo"],
     );
   }

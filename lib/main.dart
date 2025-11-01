@@ -11,7 +11,6 @@ import 'package:abitur/sqlite/sqlite_storage.dart';
 import 'package:abitur/utils/brightness_notifier.dart';
 import 'package:abitur/utils/seed_notifier.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/date_symbol_data_local.dart';
@@ -27,13 +26,19 @@ import 'package:timezone/data/latest.dart';
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
 Future<void> main() async {
+  print("HELLO WORLD 1");
   WidgetsFlutterBinding.ensureInitialized();
+  print("HELLO WORLD 2");
   initializeDateFormatting();
+  print("HELLO WORLD 3");
   await NotificationService.init();
+  print("HELLO WORLD 4");
   initializeTimeZones();
-  // await Storage.init();
+  print("HELLO WORLD 5");
   await SqliteStorage.init();
+  print("HELLO WORLD 6");
   await PurchaseService.init();
+  print("HELLO WORLD 7");
 
   final Settings settings = await SettingsService.loadSettings();
 

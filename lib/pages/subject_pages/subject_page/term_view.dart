@@ -1,4 +1,5 @@
 import 'package:abitur/mappers/mappers/subject_mapper.dart';
+import 'package:abitur/widgets/fab_overlap_preventer.dart';
 import 'package:flutter/material.dart';
 
 import '../../../mappers/models/subject_page_term_view_model.dart';
@@ -60,26 +61,26 @@ class TermViewState extends State<TermView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Container(
-        padding: const EdgeInsets.all(8),
-        child: FutureBuilder(
-          future: termViewModelFuture,
-          builder: (context, asyncSnapshot) {
-            if (!asyncSnapshot.hasData) {
-              return Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Center(
-                      child: PercentIndicator.shimmer(),
-                    ),
+      body: FutureBuilder(
+        future: termViewModelFuture,
+        builder: (context, asyncSnapshot) {
+          if (!asyncSnapshot.hasData) {
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Center(
+                    child: PercentIndicator.shimmer(),
                   ),
-                ],
-              );
-            }
-            SubjectPageTermViewModel termViewModel = asyncSnapshot.data!;
-            return SingleChildScrollView(
+                ),
+              ],
+            );
+          }
+          SubjectPageTermViewModel termViewModel = asyncSnapshot.data!;
+          return SingleChildScrollView(
+            child: Padding(
+              padding: const EdgeInsets.all(8.0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -125,12 +126,12 @@ class TermViewState extends State<TermView> {
                         },
                       ),
                   ],
-                  SizedBox(height: 80,), // damit der FloatingActionButton nichts verdeckt
+                  FabOverlapPreventer(),
                 ],
               ),
-            );
-          }
-        ),
+            ),
+          );
+        }
       ),
     );
   }

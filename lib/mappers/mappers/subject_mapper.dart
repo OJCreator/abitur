@@ -38,7 +38,7 @@ class SubjectMapper {
   static Future<SubjectPageModel> generateSubjectPageModel(String subjectId) async {
 
     Subject? subject = await SubjectService.findById(subjectId);
-    GraduationEvaluation? graduationEvaluation = subject?.graduationEvaluationId == null ? null : await GraduationEvaluationService.findEvaluationById(subject!.graduationEvaluationId!);
+    GraduationEvaluation? graduationEvaluation = await GraduationEvaluationService.findEvaluationBySubject(subject!.id);
 
     return SubjectPageModel(
       subject: subject,

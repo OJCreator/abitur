@@ -124,7 +124,7 @@ class _TimetableEditPageState extends State<TimetableEditPage> {
       ),
     );
 
-    setState(() {});
+    loadTimetable();
   }
 }
 

@@ -104,7 +104,11 @@ class GraduationEvaluationService {
 
   static Future<void> setGraduationEvaluation(Subject s, GraduationEvaluationType graduation) async {
 
+    print("Subject $s");
+    print("Type $graduation");
+
     final existing = await findEvaluationBySubject(s.id);
+    print("Existing: $existing");
 
     if (existing == null) {
       final g = GraduationEvaluation(

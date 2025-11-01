@@ -72,128 +72,42 @@ class _SubjectEditGraduationEvaluationDialogState extends State<SubjectEditGradu
           }
           final bool secondGraduationDateAvailable = asyncSnapshot.data!;
           return Form(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                if (secondGraduationDateAvailable)
-                  ListTile(
-                    title: Text(
-                      "Hauptprüfung",
-                      style: Theme.of(context).textTheme.titleMedium,
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  if (secondGraduationDateAvailable)
+                    ListTile(
+                      title: Text(
+                        "Hauptprüfung",
+                        style: Theme.of(context).textTheme.titleMedium,
+                      ),
+                      dense: true,
                     ),
-                    dense: true,
-                  ),
-                SwitchListTile(
-                  title: Text("Note geben"),
-                  value: _giveNotePartOne,
-                  onChanged: (newValue) {
-                    setState(() {
-                      _giveNotePartOne = newValue;
-                      if (newValue) {
-                        _notePartOne = 8;
-                      } else {
-                        _notePartOne = null;
-                      }
-                    });
-                    _saveChanges();
-                  },
-                ),
-                Slider(
-                  min: 0,
-                  max: 15,
-                  divisions: 15,
-                  value: _notePartOne?.toDouble() ?? 8,
-                  label: "$_notePartOne",
-                  onChanged: _giveNotePartOne ? (newValue) {
-                    setState(() {
-                      _notePartOne = newValue.toInt();
-                    });
-                    _saveChanges();
-                  } : null,
-                  year2023: false,
-                ),
-                FormGap(),
-                Text(
-                  "Gewichtung",
-                  style: TextStyle(
-                    color: _divideEvaluation ? null : Theme.of(context).disabledColor,
-                  ),
-                ),
-                Slider(
-                  min: 0,
-                  max: 6,
-                  divisions: 6,
-                  value: _weightPartOne.toDouble(),
-                  label: "$_weightPartOne",
-                  onChanged: _divideEvaluation ? (newValue) {
-                    setState(() {
-                      _weightPartOne = newValue.toInt();
-                    });
-                    _saveChanges();
-                  } : null,
-                  year2023: false,
-                ),
-                FormGap(),
-                DateInput(
-                  dateTime: _datePartOne,
-                  onSelected: (newValue) {
-                    setState(() {
-                      _datePartOne = newValue;
-                    });
-                    _saveChanges();
-                  },
-                ),
-                FormGap(),
-                if (secondGraduationDateAvailable) ...[
-                  ListTile(
-                    title: Text(
-                      "Zweiter Prüfungstermin",
-                      style: Theme.of(context).textTheme.titleMedium,
-                    ),
-                    dense: true,
-                  ),
                   SwitchListTile(
-                    title: Text("Zweiter Prüfungstermin"),
-                    value: _divideEvaluation,
+                    title: Text("Note geben"),
+                    value: _giveNotePartOne,
                     onChanged: (newValue) {
                       setState(() {
-                        _divideEvaluation = newValue;
-                        if (!newValue) {
-                          _divideEvaluation = false;
-                          _giveNotePartTwo = false;
-                          _notePartTwo = null;
-                          _weightPartOne = 1;
-                          _weightPartTwo = 1;
-                          _datePartTwo = null;
+                        _giveNotePartOne = newValue;
+                        if (newValue) {
+                          _notePartOne = 8;
+                        } else {
+                          _notePartOne = null;
                         }
                       });
                       _saveChanges();
                     },
                   ),
-                  SwitchListTile(
-                    title: Text("Note geben"),
-                    value: _giveNotePartTwo,
-                    onChanged: _divideEvaluation ? (newValue) {
-                      setState(() {
-                        _giveNotePartTwo = newValue;
-                        if (newValue) {
-                          _notePartTwo = 8;
-                        } else {
-                          _notePartTwo = null;
-                        }
-                      });
-                      _saveChanges();
-                    } : null,
-                  ),
                   Slider(
                     min: 0,
                     max: 15,
                     divisions: 15,
-                    value: _notePartTwo?.toDouble() ?? 8,
-                    label: "$_notePartTwo",
-                    onChanged: _giveNotePartTwo ? (newValue) {
+                    value: _notePartOne?.toDouble() ?? 8,
+                    label: "$_notePartOne",
+                    onChanged: _giveNotePartOne ? (newValue) {
                       setState(() {
-                        _notePartTwo = newValue.toInt();
+                        _notePartOne = newValue.toInt();
                       });
                       _saveChanges();
                     } : null,
@@ -210,11 +124,11 @@ class _SubjectEditGraduationEvaluationDialogState extends State<SubjectEditGradu
                     min: 0,
                     max: 6,
                     divisions: 6,
-                    value: _weightPartTwo.toDouble(),
-                    label: "$_weightPartTwo",
+                    value: _weightPartOne.toDouble(),
+                    label: "$_weightPartOne",
                     onChanged: _divideEvaluation ? (newValue) {
                       setState(() {
-                        _weightPartTwo = newValue.toInt();
+                        _weightPartOne = newValue.toInt();
                       });
                       _saveChanges();
                     } : null,
@@ -222,16 +136,104 @@ class _SubjectEditGraduationEvaluationDialogState extends State<SubjectEditGradu
                   ),
                   FormGap(),
                   DateInput(
-                    dateTime: _datePartTwo,
-                    onSelected: _divideEvaluation ? (newValue) {
+                    dateTime: _datePartOne,
+                    onSelected: (newValue) {
                       setState(() {
-                        _datePartTwo = newValue;
+                        _datePartOne = newValue;
                       });
                       _saveChanges();
-                    } : null,
+                    },
                   ),
-                ]
-              ],
+                  FormGap(),
+                  if (secondGraduationDateAvailable) ...[
+                    ListTile(
+                      title: Text(
+                        "Zweiter Prüfungstermin",
+                        style: Theme.of(context).textTheme.titleMedium,
+                      ),
+                      dense: true,
+                    ),
+                    SwitchListTile(
+                      title: Text("Zweiter Prüfungstermin"),
+                      value: _divideEvaluation,
+                      onChanged: (newValue) {
+                        setState(() {
+                          _divideEvaluation = newValue;
+                          if (!newValue) {
+                            _divideEvaluation = false;
+                            _giveNotePartTwo = false;
+                            _notePartTwo = null;
+                            _weightPartOne = 1;
+                            _weightPartTwo = 1;
+                            _datePartTwo = null;
+                          }
+                        });
+                        _saveChanges();
+                      },
+                    ),
+                    SwitchListTile(
+                      title: Text("Note geben"),
+                      value: _giveNotePartTwo,
+                      onChanged: _divideEvaluation ? (newValue) {
+                        setState(() {
+                          _giveNotePartTwo = newValue;
+                          if (newValue) {
+                            _notePartTwo = 8;
+                          } else {
+                            _notePartTwo = null;
+                          }
+                        });
+                        _saveChanges();
+                      } : null,
+                    ),
+                    Slider(
+                      min: 0,
+                      max: 15,
+                      divisions: 15,
+                      value: _notePartTwo?.toDouble() ?? 8,
+                      label: "$_notePartTwo",
+                      onChanged: _giveNotePartTwo ? (newValue) {
+                        setState(() {
+                          _notePartTwo = newValue.toInt();
+                        });
+                        _saveChanges();
+                      } : null,
+                      year2023: false,
+                    ),
+                    FormGap(),
+                    Text(
+                      "Gewichtung",
+                      style: TextStyle(
+                        color: _divideEvaluation ? null : Theme.of(context).disabledColor,
+                      ),
+                    ),
+                    Slider(
+                      min: 0,
+                      max: 6,
+                      divisions: 6,
+                      value: _weightPartTwo.toDouble(),
+                      label: "$_weightPartTwo",
+                      onChanged: _divideEvaluation ? (newValue) {
+                        setState(() {
+                          _weightPartTwo = newValue.toInt();
+                        });
+                        _saveChanges();
+                      } : null,
+                      year2023: false,
+                    ),
+                    FormGap(),
+                    DateInput(
+                      dateTime: _datePartTwo,
+                      onSelected: _divideEvaluation ? (newValue) {
+                        setState(() {
+                          _datePartTwo = newValue;
+                        });
+                        _saveChanges();
+                      } : null,
+                    ),
+                  ]
+                ],
+              ),
             ),
           );
         }

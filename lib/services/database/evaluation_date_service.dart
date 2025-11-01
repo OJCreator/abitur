@@ -148,11 +148,12 @@ class EvaluationDateService {
   }
 
   static Future<List<EvaluationDate>> findAllFutureOrUngraded() async {
-    final now = DateTime.now().millisecondsSinceEpoch;
+    final now = DateTime.now().toIso8601String();
     final maps = await db.query(
       'evaluation_dates',
-      where: 'date >= ? OR note IS NULL',
+      where: '(date >= ? OR note IS NULL) AND weight != 0',
       whereArgs: [now],
+      orderBy: 'date ASC',
     );
     return maps.map(EvaluationDate.fromJson).toList();
   }

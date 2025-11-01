@@ -31,7 +31,8 @@ class Subject implements Serializable {
   int countingTermAmount;
   List<int?> manuallyEnteredTermNotes;
 
-  String? graduationEvaluationId; // FOREIGN KEY
+  @Deprecated("Graduation Evaluation zeigt auf Subject, nicht umgekehrt. DIE RICHTIGKEIT DIESES ATTRIBUTES WIRD NICHT GEWÄHRLEISTET!!!")
+  String? graduationEvaluationId; // FOREIGN KEY // TODO DEPRECATED
 
   Subject({
     String? id,
