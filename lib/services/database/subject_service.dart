@@ -79,11 +79,11 @@ class SubjectService {
 
   static Future<List<Subject>> findGraduationSubjectsFiltered(GraduationEvaluationType filter) async {
     final List<Map<String, dynamic>> maps = await db.rawQuery('''
-    SELECT s.*
-    FROM subjects s
-    JOIN graduation_evaluations ge ON ge.subjectId = s.id
-    WHERE ge.graduationEvaluationType = ?
-  ''', [filter.name]);
+      SELECT s.*
+      FROM subjects s
+      JOIN graduation_evaluations ge ON ge.subjectId = s.id
+      WHERE ge.graduationEvaluationType = ?
+    ''', [filter.code]);
 
     return maps
         .map((m) => Subject.fromJson(m))
@@ -110,12 +110,8 @@ class SubjectService {
     }
 
     final oldSubjects = await getGraduationSubjects();
-    for (Subject oldSubj in oldSubjects.where((s) => !all.contains(s))) {
-      await db.delete(
-        'graduation_evaluations',
-        where: 'subjectId = ?',
-        whereArgs: [oldSubj.id],
-      );
+    for (Subject oldSubj in oldSubjects.where((s) => !all.contains(s) && s.subjectType != SubjectType.wSeminar)) {
+      GraduationEvaluationService.deleteGraduationEvaluation(oldSubj);
     }
 
     for (Subject? s in subjectsWritten) {
@@ -159,7 +155,7 @@ class SubjectService {
       INNER JOIN graduation_evaluations g
         ON g.subjectId = s.id
     ''');
-    return maps.map((m) => Subject.fromJson(m)).toList();
+    return maps.map((m) => Subject.fromJson(m)).where((s) => s.subjectType != SubjectType.wSeminar).toList();
   }
 
 

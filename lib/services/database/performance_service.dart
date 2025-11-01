@@ -102,7 +102,6 @@ class PerformanceService {
   /// Baut die Performances aus JSON neu auf
   static Future<void> buildFromJson(List<Map<String, dynamic>> jsonData) async {
     final existing = await findAll();
-    print(existing);
     await deletePerformances(existing);
 
     List<Performance> performances = jsonData.map((e) => Performance.fromJson(e)).toList();

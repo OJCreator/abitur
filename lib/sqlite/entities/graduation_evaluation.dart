@@ -53,7 +53,6 @@ class GraduationEvaluation implements Serializable {
   };
 
   static GraduationEvaluation fromJson(Map<String, dynamic> json) {
-    print(json);
     return GraduationEvaluation(
       id: json["id"],
       subjectId: json["subjectId"],

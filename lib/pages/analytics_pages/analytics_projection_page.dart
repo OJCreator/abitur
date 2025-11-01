@@ -1,4 +1,5 @@
 import 'package:abitur/isolates/models/projection/projection_model.dart';
+import 'package:abitur/pages/subject_pages/subject_chose_graduation_page.dart';
 import 'package:abitur/services/projection_service.dart';
 import 'package:abitur/widgets/analytics/note_projection.dart';
 import 'package:abitur/widgets/forms/form_gap.dart';
@@ -157,7 +158,7 @@ class _ProjectionAnalyticsPageState extends State<ProjectionAnalyticsPage> {
                       await Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => Scaffold(), // TODO
+                          builder: (context) => SubjectChoseGraduationPage(),
                           fullscreenDialog: true,
                         ),
                       );

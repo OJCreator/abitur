@@ -3,7 +3,7 @@ import 'dart:convert';
 import 'package:abitur/utils/pair.dart';
 import 'package:flutter/material.dart';
 
-const Color primaryColor = Color(0xFF327D94);
+const Color primaryColor = Color(0xFFB4E9FF);
 const Color shimmerColor = Color(0x0D000000);
 
 

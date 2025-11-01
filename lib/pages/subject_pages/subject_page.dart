@@ -224,7 +224,7 @@ class _SubjectPageState extends State<SubjectPage> with SingleTickerProviderStat
             if (!asyncSnapshot.hasData || _tabController == null) {
               return const SizedBox(
                 height: kToolbarHeight,
-                child: Center(child: CircularProgressIndicator()), // TODO: Default Subject Page (Shimmer)
+                child: Center(child: CircularProgressIndicator()),
               );
             }
 

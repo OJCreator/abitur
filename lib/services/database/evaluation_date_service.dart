@@ -170,7 +170,7 @@ class EvaluationDateService {
 
     await db.insert('evaluation_dates', e.toJson());
 
-    await CalendarService.syncEvaluationCalendarEvent(e, evaluation);
+    await CalendarService.syncSingle(e, evaluation);
     NotificationService.scheduleNotificationsForEvaluation(e);
 
     return e;
@@ -197,7 +197,7 @@ class EvaluationDateService {
     final evaluation = await EvaluationService.findById(e.evaluationId);
     if (evaluation == null) return;
 
-    await CalendarService.syncEvaluationCalendarEvent(e, evaluation);
+    await CalendarService.syncSingle(e, evaluation);
     NotificationService.scheduleNotificationsForEvaluation(e);
   }
 
@@ -218,11 +218,16 @@ class EvaluationDateService {
   static Future<void> setCalendarId(EvaluationDate e, {required String? calendarId}) async {
     if (calendarId == null) return;
     e.calendarId = calendarId;
-    await saveEvaluationDate(e);
+    await db.update(
+      'evaluation_dates',
+      e.toJson(),
+      where: 'id = ?',
+      whereArgs: [e.id],
+    );
   }
 
   static Future<void> deleteEvaluationDate(String evaluationDateId) async {
-    await CalendarService.deleteEvaluationCalendarEvent(evaluationDateId);
+    await CalendarService.deleteEvaluationEvent(evaluationDateId);
     await db.delete('evaluation_dates', where: 'id = ?', whereArgs: [evaluationDateId]);
     NotificationService.cancelEvaluationNotifications(evaluationDateId);
   }

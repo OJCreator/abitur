@@ -92,23 +92,19 @@ class GraduationEvaluationService {
   // Änderungen an Evaluationsdaten
   // ---------------------------------------------------------
   static Future<void> deleteGraduationEvaluation(Subject s) async {
-    final g = await findEvaluationBySubject(s.id);
-    if (g != null && canDisableGraduation(s)) {
-      await db.delete(
-        'graduation_evaluations',
-        where: 'id = ?',
-        whereArgs: [g.id],
-      );
+    if (!canDisableGraduation(s)) {
+      return;
     }
+    await db.delete(
+      'graduation_evaluations',
+      where: 'subjectId = ?',
+      whereArgs: [s.id],
+    );
   }
 
   static Future<void> setGraduationEvaluation(Subject s, GraduationEvaluationType graduation) async {
 
-    print("Subject $s");
-    print("Type $graduation");
-
     final existing = await findEvaluationBySubject(s.id);
-    print("Existing: $existing");
 
     if (existing == null) {
       final g = GraduationEvaluation(

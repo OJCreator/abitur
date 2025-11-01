@@ -1,166 +1,191 @@
-import 'dart:ui';
-
-import 'package:abitur/services/database/evaluation_service.dart';
-import 'package:abitur/services/database/evaluation_type_service.dart';
-import 'package:abitur/services/database/subject_service.dart';
-import 'package:abitur/sqlite/entities/evaluation/evaluation_type.dart';
+import 'package:collection/collection.dart';
 import 'package:device_calendar/device_calendar.dart';
 import 'package:flutter/material.dart';
 
 import '../sqlite/entities/evaluation/evaluation.dart';
 import '../sqlite/entities/evaluation/evaluation_date.dart';
-import '../sqlite/entities/settings.dart';
 import '../sqlite/entities/subject.dart';
 import 'database/evaluation_date_service.dart';
+import 'database/evaluation_service.dart';
+import 'database/evaluation_type_service.dart';
 import 'database/settings_service.dart';
+import 'database/subject_service.dart';
 import 'database/timetable_entry_service.dart';
 
 class CalendarService {
-  static final DeviceCalendarPlugin _deviceCalendarPlugin = DeviceCalendarPlugin();
+  static final _calendar = DeviceCalendarPlugin();
+  static const _calendarName = "Schule";
 
-  static Future<void> syncEvaluationCalendarEvent(EvaluationDate evaluationDate, Evaluation evaluation) async {
-    if (!await _shouldSyncCalendar()) return;
+  // ---- Öffentliche Methoden ----
 
-    final calendarId = await _getCalendarId();
-    if (calendarId.isEmpty) return;
+  static Future<void> syncSingle(EvaluationDate date, Evaluation evaluation) async {
+    if (!await _shouldSync()) return;
+    final calendarId = await _ensureCalendar();
+    if (calendarId == null) return;
 
-    await _syncSingleEvaluation(calendarId, evaluationDate, evaluation);
+    final settings = await SettingsService.loadSettings();
 
-    debugPrint("Eine Prüfung wurde in den Kalender übernommen.");
+    await _replaceEvent(calendarId, date, evaluation, fullDayEvents: settings.calendarFullDayEvents);
   }
-  static Future<void> syncAllEvaluationCalendarEvents() async {
-    List<EvaluationDate> evaluationDates = await EvaluationDateService.findAll();
-    if (!await _shouldSyncCalendar()) return;
 
-    final calendarId = await _getCalendarId();
-    if (calendarId.isEmpty) return;
+  static Future<void> syncAll() async {
+    if (!await _shouldSync()) return;
+    final calendarId = await _ensureCalendar();
+    if (calendarId == null) return;
 
-    for (final evaluationDate in evaluationDates) {
-      Evaluation? evaluation = await EvaluationService.findById(evaluationDate.id);
-      if (evaluation == null) continue;
-      await _syncSingleEvaluation(calendarId, evaluationDate, evaluation);
+    final dates = await EvaluationDateService.findAll();
+    final evaluations = await EvaluationService.findAllById(
+      dates.map((d) => d.evaluationId).toSet().toList(),
+    );
+    final subjects = await SubjectService.findAllAsMap();
+
+    final settings = await SettingsService.loadSettings();
+
+    int counter = 0;
+    for (final date in dates) {
+      final eval = evaluations[date.evaluationId];
+      if (eval == null) continue;
+      bool result = await _replaceEvent(calendarId, date, eval, subjects: subjects, fullDayEvents: settings.calendarFullDayEvents);
+      if (result) counter++;
     }
 
-    debugPrint("${evaluationDates.length} Prüfung(en) wurde(n) in den Kalender übernommen.");
-  }
-  static Future<bool> _shouldSyncCalendar() {
-    return SettingsService.calendarSynchronisation();
-  }
-  static Future<void> _syncSingleEvaluation(String calendarId, EvaluationDate evaluationDate, Evaluation evaluation) async {
-    await deleteEvaluationCalendarEvent(evaluationDate.id);
-
-    if (!await _shouldCreateEvent(evaluationDate, evaluation)) return;
-
-    final event = await _eventFromEvaluationDate(calendarId, evaluationDate, evaluation);
-    final newEventId = await _deviceCalendarPlugin.createOrUpdateEvent(event);
-    await EvaluationDateService.setCalendarId(evaluationDate, calendarId: newEventId?.data);
-  }
-  static Future<bool> _shouldCreateEvent(EvaluationDate eval, Evaluation evaluation) async {
-    EvaluationType? evaluationType = await EvaluationTypeService.findById(evaluation.evaluationTypeId);
-    if (evaluationType == null) return false;
-    return evaluationType.showInCalendar && eval.date != null;
+    debugPrint("$counter Prüfung(en) synchronisiert.");
   }
 
-  static Future<Event?> _eventFromEvaluationDate(String calendarId, EvaluationDate evaluationDate, Evaluation evaluation) async {
+  static Future<void> deleteAll() async {
+    final calendarId = await _ensureCalendar();
+    if (calendarId == null) return;
 
-    Subject? subject = await SubjectService.findById(evaluation.subjectId);
-
-    DateTime? start = await TimetableEntryService.getStartTime(evaluation.term, evaluation.subjectId, evaluationDate.date!.weekday);
-    DateTime? end = await TimetableEntryService.getEndTime(evaluation.term, evaluation.subjectId, evaluationDate.date!.weekday);
-
-    if (start == null || end == null) {
-      return null;
+    final evaluationDates = await EvaluationDateService.findAll();
+    int counter = 0;
+    for (final e in evaluationDates) {
+      final result = await _calendar.deleteEvent(calendarId, e.calendarId);
+      await EvaluationDateService.setCalendarId(e, calendarId: null);
+      if (result.data == true) counter++;
     }
+    debugPrint("$counter Prüfung(en) gelöscht.");
+  }
 
-    Settings settings = await SettingsService.loadSettings();
+  static Future<void> deleteEvaluationEvent(String evaluationDateId) async {
+    final calendarId = await _ensureCalendar();
+    if (calendarId == null) return;
+
+    final date = await EvaluationDateService.findById(evaluationDateId);
+    if (date.calendarId == null) return;
+
+    await _calendar.deleteEvent(calendarId, date.calendarId);
+    await EvaluationDateService.setCalendarId(date, calendarId: null);
+  }
+
+  static Future<void> changeCalendarColor(Color color) async {
+    if (!await _shouldSync()) return;
+    if (!await _hasPermission()) return;
+
+    final calendars = (await _calendar.retrieveCalendars()).data ?? [];
+    final c = calendars.firstWhere((c) => c.name == _calendarName, orElse: () => Calendar(name: ""));
+    if (c.id != null && c.id!.isNotEmpty) {
+      await _calendar.createCalendar(
+        _calendarName,
+        calendarColor: color,
+        localAccountName: _calendarName,
+      );
+    }
+  }
+
+  // ---- Private Hilfsmethoden ----
+
+  static Future<bool> _replaceEvent(
+      String calendarId,
+      EvaluationDate date,
+      Evaluation evaluation, {
+        Map<String, Subject>? subjects,
+        required bool fullDayEvents,
+      }) async {
+
+    await _calendar.deleteEvent(calendarId, date.calendarId);
+
+    if (!await _shouldCreate(date, evaluation)) return false;
+
+    final event = await _buildEvent(calendarId, date, evaluation, subjects: subjects, fullDayEvents: fullDayEvents);
+    final result = await _calendar.createOrUpdateEvent(event);
+    await EvaluationDateService.setCalendarId(date, calendarId: result?.data);
+    return result != null;
+  }
+
+  static Future<Event?> _buildEvent(
+      String calendarId,
+      EvaluationDate date,
+      Evaluation evaluation, {
+        Map<String, Subject>? subjects,
+        required bool fullDayEvents
+      }) async {
+    final subject = subjects != null
+        ? subjects[evaluation.subjectId]
+        : await SubjectService.findById(evaluation.subjectId);
+
+    final start = await TimetableEntryService.getStartTime(
+      evaluation.term,
+      evaluation.subjectId,
+      date.date!.weekday,
+    );
+    final end = await TimetableEntryService.getEndTime(
+      evaluation.term,
+      evaluation.subjectId,
+      date.date!.weekday,
+    );
+
+    final allDay = fullDayEvents || start == null || end == null;
+    final tz = getLocation("Europe/Berlin");
+
+    final startTime = allDay
+        ? TZDateTime.from(date.date!, tz)
+        : TZDateTime.from(date.date!.copyWith(hour: start.hour, minute: start.minute), tz);
+
+    final endTime = allDay
+        ? TZDateTime.from(date.date!, tz)
+        : TZDateTime.from(date.date!.copyWith(hour: end.hour, minute: end.minute), tz);
 
     return Event(
       calendarId,
-      eventId: evaluationDate.id, // TODO ein Event bearbeiten, statt es immer zu löschen und neu zu generieren
+      eventId: null, // date.calendarId,
       title: "${subject?.shortName ?? 'Prüfung'} ${evaluation.name}",
-      start: TZDateTime.from(evaluationDate.date!.copyWith(hour: start.hour, minute: start.minute), getLocation("Europe/Berlin")),
-      end: TZDateTime.from(evaluationDate.date!.copyWith(hour: end.hour, minute: end.minute), getLocation("Europe/Berlin")),
-      allDay: settings.calendarFullDayEvents,
-      description: evaluationDate.description,
+      start: startTime,
+      end: endTime,
+      allDay: allDay,
+      description: date.description,
     );
   }
 
-  static Future<void> deleteAllCalendarEvents() async {
-    String calendarId = await _getCalendarId();
-    if (calendarId.isEmpty) {
-      return;
-    }
-    var events = (await _deviceCalendarPlugin.retrieveEvents(calendarId, RetrieveEventsParams())).data;
-    for (Event e in events!) {
-      await _deviceCalendarPlugin.deleteEvent(calendarId, e.eventId);
-    }
-    debugPrint("${events.length} Prüfung(en) wurde(n) aus dem Kalender gelöscht.");
+  static Future<bool> _shouldCreate(EvaluationDate date, Evaluation evaluation) async {
+    final type = await EvaluationTypeService.findById(evaluation.evaluationTypeId);
+    return type?.showInCalendar == true && date.date != null;
   }
 
-  static Future<void> deleteAllEvaluationCalendarEvents(List<EvaluationDate> evaluationDates) async {
+  static Future<bool> _shouldSync() => SettingsService.calendarSynchronisation();
 
-    for (EvaluationDate eval in evaluationDates) {
-      await deleteEvaluationCalendarEvent(eval.id);
-    }
+  static Future<bool> _hasPermission() async {
+    var res = await _calendar.hasPermissions();
+    if (res.isSuccess && res.data == true) return true;
+
+    res = await _calendar.requestPermissions();
+    return res.isSuccess && res.data == true;
   }
 
-  static Future<void> deleteEvaluationCalendarEvent(String evaluationDateId) async {
+  static Future<String?> _ensureCalendar() async {
+    if (!await _hasPermission()) return null;
 
-    String calendarId = await _getCalendarId();
-    if (calendarId.isEmpty) {
-      return;
-    }
-    EvaluationDate evaluationDate = await EvaluationDateService.findById(evaluationDateId);
-    await _deviceCalendarPlugin.deleteEvent(calendarId, evaluationDate.calendarId);
-    EvaluationDateService.setCalendarId(evaluationDate, calendarId: null);
-  }
+    final result = await _calendar.retrieveCalendars();
+    final calendars = result.data?.toList();
+    final existing = calendars?.firstWhereOrNull((c) => c.name == _calendarName);
 
-  static Future<void> changeCalendarColor(Color seed) async {
+    if (existing != null && existing.id != null && existing.id!.isNotEmpty) return existing.id;
 
-    if (!await SettingsService.calendarSynchronisation()) {
-      return;
-    }
-    if (!await _hasCalendarPermission()) {
-      return;
-    }
-
-    final calendarResult = await _deviceCalendarPlugin.retrieveCalendars();
-    final calendars = calendarResult.data ?? (throw Exception("Failed to retrieve calendars"));
-
-    Calendar? c = calendars.where((c) => c.name == "Schule").firstOrNull;
-    c?.color = seed.toARGB32();
-  }
-
-  static Future<String> _getCalendarId() async {
-
-    if (!await _hasCalendarPermission()) {
-      debugPrint("Keine Kalender-Berechtigung!");
-      return "";
-    }
-
-    final calendarResult = await _deviceCalendarPlugin.retrieveCalendars();
-    final calendars = calendarResult.data ?? (throw Exception("Failed to retrieve calendars"));
-
-    Calendar? c = calendars.where((c) => c.name == "Schule").firstOrNull;
-
-    if (c == null) {
-      Settings settings = await SettingsService.loadSettings();
-      final cName = await _deviceCalendarPlugin.createCalendar("Schule", calendarColor: settings.accentColor, localAccountName: "Schule");
-      return cName.data ?? "";
-    }
-
-    return c.id ?? "";
-  }
-
-  static Future<bool> _hasCalendarPermission() async {
-    var permissionGranted = await _deviceCalendarPlugin.hasPermissions();
-    if (permissionGranted.isSuccess && permissionGranted.data!) {
-      return true;
-    }
-    permissionGranted = await _deviceCalendarPlugin.requestPermissions();
-    if (permissionGranted.isSuccess && permissionGranted.data!) {
-      return true;
-    }
-    return false;
+    final settings = await SettingsService.loadSettings();
+    final created = await _calendar.createCalendar(
+      _calendarName,
+      calendarColor: settings.accentColor,
+      localAccountName: _calendarName,
+    );
+    return created.data;
   }
 }

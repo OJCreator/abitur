@@ -137,8 +137,6 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
 
         Map<String, dynamic> jsonData = jsonDecode(fileContent);
 
-        // TODO SQLITE Tabelle aus JSON wiederherstellen
-
         debugPrint("Extracted data from JSON...");
         await SettingsService.buildFromJson(jsonData["settings"] as Map<String, dynamic>);
         debugPrint("Extracted Settings from JSON.");
@@ -160,7 +158,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
         debugPrint("Extracted EvaluationDates from JSON.");
 
         // Kalender und Notifications
-        await CalendarService.syncAllEvaluationCalendarEvents();
+        await CalendarService.syncAll();
         NotificationService.scheduleAllNotifications();
 
         SettingsService.markWelcomeScreenAsViewed();

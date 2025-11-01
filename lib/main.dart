@@ -28,17 +28,11 @@ final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 Future<void> main() async {
   print("HELLO WORLD 1");
   WidgetsFlutterBinding.ensureInitialized();
-  print("HELLO WORLD 2");
   initializeDateFormatting();
-  print("HELLO WORLD 3");
   await NotificationService.init();
-  print("HELLO WORLD 4");
   initializeTimeZones();
-  print("HELLO WORLD 5");
   await SqliteStorage.init();
-  print("HELLO WORLD 6");
   await PurchaseService.init();
-  print("HELLO WORLD 7");
 
   final Settings settings = await SettingsService.loadSettings();
 

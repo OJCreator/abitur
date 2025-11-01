@@ -284,8 +284,6 @@ class _SettingsPageState extends State<SettingsPage> {
 
   Future<void> _exportToJson() async {
 
-    // TODO Von SQLITE EXPORTIEREN
-
     List<Evaluation> evaluations = await EvaluationService.findAll();
     List<EvaluationDate> evaluationDates = await EvaluationDateService.findAll();
     List<EvaluationType> evaluationTypes = await EvaluationTypeService.findAll();

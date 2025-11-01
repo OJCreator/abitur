@@ -146,7 +146,7 @@ class TimetableEntryService {
       SELECT MIN(hour) AS firstHour
       FROM timetable_entries
       WHERE term = ? AND day = ? AND subjectId = ?
-    ''', [term, weekday, subjectId]);
+    ''', [term, weekday-1, subjectId]);
 
     final firstHour = result.first['firstHour'] as int?;
     if (firstHour == null) return null;
@@ -172,7 +172,7 @@ class TimetableEntryService {
       SELECT MAX(hour) AS lastHour
       FROM timetable_entries
       WHERE term = ? AND day = ? AND subjectId = ?
-    ''', [term, weekday, subjectId]);
+    ''', [term, weekday-1, subjectId]);
 
     final lastHour = result.first['lastHour'] as int?;
     if (lastHour == null) return null;

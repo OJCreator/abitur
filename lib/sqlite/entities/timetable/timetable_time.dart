@@ -7,7 +7,7 @@ class TimetableTime implements Serializable {
 
   final String id;
 
-  int slot;
+  int slot; // From 0
   TimeOfDay from;
   TimeOfDay to;
 

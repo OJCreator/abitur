@@ -62,9 +62,9 @@ class _SettingsCalendarPageState extends State<SettingsCalendarPage> {
                     });
                     SettingsService.saveSettings(settings);
                     if (!settings.calendarSynchronisation) {
-                      await CalendarService.deleteAllCalendarEvents();
+                      await CalendarService.deleteAll();
                     } else {
-                      CalendarService.syncAllEvaluationCalendarEvents();
+                      CalendarService.syncAll();
                     }
                   },
                 );
@@ -99,7 +99,7 @@ class _SettingsCalendarPageState extends State<SettingsCalendarPage> {
                           setState(() {
                             EvaluationTypeService.editEvaluationType(evaluationType, showInCalendar: !evaluationType.showInCalendar);
                           });
-                          CalendarService.syncAllEvaluationCalendarEvents();
+                          CalendarService.syncAll();
                         } : null,
                       ),
                   ],
@@ -128,8 +128,7 @@ class _SettingsCalendarPageState extends State<SettingsCalendarPage> {
                       settings.calendarFullDayEvents = !settings.calendarFullDayEvents;
                     });
                     SettingsService.saveSettings(settings);
-                    CalendarService.syncAllEvaluationCalendarEvents();
-                    // todo neu zeichnen
+                    CalendarService.syncAll();
                   } : null,
                 );
               }

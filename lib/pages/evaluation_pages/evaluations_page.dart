@@ -240,8 +240,6 @@ class _EvaluationsPageState extends State<EvaluationsPage> {
   Future<void> _onDaySelected(DateTime selected, DateTime focused) async {
     String? holiday = isHoliday(selected);
     final pageModel = await evaluationsPageModelFuture;
-    print(selected);
-    print(evaluationMapOfCurrentMonth);
     await showDialog(
       context: context,
       builder: (context) {

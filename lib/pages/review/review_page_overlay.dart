@@ -45,11 +45,9 @@ class _ReviewPageOverlayState extends State<ReviewPageOverlay> {
   }
 
   void _nextStory() {
-    // todo ganz am Ende auf so eine Übersichtsseite springen
     if (_currentStoryIndex >= widget.storyDurations.length) {
       return;
     }
-    debugPrint("Next: ");
     _changeStory(_currentStoryIndex+1);
   }
 
