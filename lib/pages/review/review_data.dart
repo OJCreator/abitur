@@ -50,6 +50,7 @@ class ReviewData {
 
   Future<void> _fillData() async {
     evaluationDates = await EvaluationDateService.findAll();
+    evaluationDates.removeWhere((e) => e.note == null);
     evaluations = await EvaluationService.findAllById(evaluationDates.map((e) => e.evaluationId).toList());
     evaluationTypes = await EvaluationTypeService.findAllAsMap();
     _fillSubjectsData();

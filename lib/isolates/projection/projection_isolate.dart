@@ -211,7 +211,7 @@ class ProjectionWorkModel {
     return subjects.values.where((value) => value.subjectType == SubjectType.wSeminar).firstOrNull;
   }
   List<Subject> graduationSubjects() {
-    return subjects.values.where((s) => s.graduationEvaluationId != null && s.subjectType != SubjectType.wSeminar).toList();
+    return subjects.values.where((s) => graduationEvaluations.containsKey(s.id) && s.subjectType != SubjectType.wSeminar).toList();
   }
   List<GraduationEvaluation> finalGraduationEvaluations() { // Abiprüfungen (ohne W-Seminar-Arbeit)
     return graduationSubjects().map((s) => graduationEvaluations[s.id]!).toList();

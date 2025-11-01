@@ -31,9 +31,6 @@ class Subject implements Serializable {
   int countingTermAmount;
   List<int?> manuallyEnteredTermNotes;
 
-  @Deprecated("Graduation Evaluation zeigt auf Subject, nicht umgekehrt. DIE RICHTIGKEIT DIESES ATTRIBUTES WIRD NICHT GEWÄHRLEISTET!!!")
-  String? graduationEvaluationId; // FOREIGN KEY // TODO DEPRECATED
-
   Subject({
     String? id,
     required this.name,
@@ -44,7 +41,6 @@ class Subject implements Serializable {
     Set<int> terms = const {0,1,2,3},
     required this.countingTermAmount,
     this.manuallyEnteredTermNotes = const [null, null, null, null],
-    this.graduationEvaluationId,
   }) :
         _terms = terms,
         id = id ?? Uuid.generate();
@@ -69,21 +65,19 @@ class Subject implements Serializable {
     "terms": jsonEncode(terms.toList()),
     "countingTermAmount": countingTermAmount,
     "manuallyEnteredTermNotes": jsonEncode(manuallyEnteredTermNotes),
-    "graduationEvaluationId": graduationEvaluationId,
   };
 
   static Subject fromJson(Map<String, dynamic> json) {
     return Subject(
-        id: json["id"],
-        name: json["name"],
-        shortName: json["shortName"],
-        color: Color(json["color"]),
-        subjectNiveau: SubjectNiveau.fromCode(json["subjectNiveau"]),
-        subjectType: SubjectType.fromCode(json["subjectType"]),
-        terms: Set<int>.from(jsonDecode(json["terms"]) as List),
-        countingTermAmount: json["countingTermAmount"] as int,
-        manuallyEnteredTermNotes: List<int?>.from(jsonDecode(json["manuallyEnteredTermNotes"])),
-        graduationEvaluationId: json["graduationEvaluationId"]
+      id: json["id"],
+      name: json["name"],
+      shortName: json["shortName"],
+      color: Color(json["color"]),
+      subjectNiveau: SubjectNiveau.fromCode(json["subjectNiveau"]),
+      subjectType: SubjectType.fromCode(json["subjectType"]),
+      terms: Set<int>.from(jsonDecode(json["terms"]) as List),
+      countingTermAmount: json["countingTermAmount"] as int,
+      manuallyEnteredTermNotes: List<int?>.from(jsonDecode(json["manuallyEnteredTermNotes"])),
     );
   }
 

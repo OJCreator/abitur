@@ -11,7 +11,7 @@ class AnalyticsMapper {
     DateTime dayToChoseGraduationSubjects = await SettingsService.dayToChoseGraduationSubjects();
 
     double? currentAverage = await SubjectService.getCurrentAverage();
-    bool reviewEnabled = !DateTime.now().isBefore(dayToShowReview);
+    bool reviewEnabled = true;//!DateTime.now().isBefore(dayToShowReview); TODO wieder auskommentieren
     bool choseGraduationSubjects = !DateTime.now().isBefore(dayToChoseGraduationSubjects);
 
     return AnalyticsPageModel(

@@ -78,11 +78,10 @@ class SubjectService {
   }
 
   static Future<List<Subject>> findGraduationSubjectsFiltered(GraduationEvaluationType filter) async {
-
     final List<Map<String, dynamic>> maps = await db.rawQuery('''
     SELECT s.*
     FROM subjects s
-    JOIN graduation_evaluations ge ON ge.id = s.graduationEvaluationId
+    JOIN graduation_evaluations ge ON ge.subjectId = s.id
     WHERE ge.graduationEvaluationType = ?
   ''', [filter.name]);
 
@@ -112,19 +111,11 @@ class SubjectService {
 
     final oldSubjects = await getGraduationSubjects();
     for (Subject oldSubj in oldSubjects.where((s) => !all.contains(s))) {
-      if (oldSubj.graduationEvaluationId != null) {
-        await db.delete(
-          'graduation_evaluations',
-          where: 'id = ?',
-          whereArgs: [oldSubj.graduationEvaluationId],
-        );
-        await db.update(
-          'subjects',
-          {'graduationEvaluationId': null},
-          where: 'id = ?',
-          whereArgs: [oldSubj.id],
-        );
-      }
+      await db.delete(
+        'graduation_evaluations',
+        where: 'subjectId = ?',
+        whereArgs: [oldSubj.id],
+      );
     }
 
     for (Subject? s in subjectsWritten) {
@@ -153,28 +144,21 @@ class SubjectService {
       weightPartTwo: 1,
     );
 
-    // Insert oder replace
     await db.insert(
       'graduation_evaluations',
       evaluation.toJson(),
       conflictAlgorithm: ConflictAlgorithm.replace,
     );
-
-    // subject mit graduationEvaluationId updaten
-    await db.update(
-      'subjects',
-      {'graduationEvaluationId': evaluation.id},
-      where: 'id = ?',
-      whereArgs: [subject.id],
-    );
   }
 
   // Hilfsmethode: aktuelle GraduationSubjects laden
   static Future<List<Subject>> getGraduationSubjects() async {
-    final maps = await db.query(
-      'subjects',
-      where: 'graduationEvaluationId IS NOT NULL',
-    );
+    final maps = await db.rawQuery('''
+      SELECT s.*
+      FROM subjects s
+      INNER JOIN graduation_evaluations g
+        ON g.subjectId = s.id
+    ''');
     return maps.map((m) => Subject.fromJson(m)).toList();
   }
 
@@ -189,7 +173,7 @@ class SubjectService {
         required int countingTermAmount,
         required SubjectNiveau subjectNiveau,
         required SubjectType subjectType,
-        required List performances, // TODO: später zu async Performance-Objekten ändern
+        required List performances, // TODO: später zu async Performance-Objekten ändern, DAS HIER FUNKTIONIERT NOCH NICHT!!
       }) async {
 
     final db = SqliteStorage.database;

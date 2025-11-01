@@ -281,7 +281,9 @@ class EvaluationListTile extends StatelessWidget {
       subject: subject,
       showDate: showDate,
       onTap: !enabled || subject == null || evaluation == null ? null : () async { // TODO Enabled umfunktionieren: -> Link zu Fach??
-        if (subject!.graduationEvaluationId == evaluation!.id) {
+
+        // TODO Wenn es eine Graduation ist -> Link zu Fach!!
+        if (false) {
           await Navigator.push(
             context,
             MaterialPageRoute(builder: (context) {

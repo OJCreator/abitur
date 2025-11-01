@@ -15,6 +15,7 @@ class SqliteStorage {
       onConfigure: (db) async {
         await db.execute('PRAGMA foreign_keys = ON');
       },
+      version: 1,
       onCreate: (db, version) async {
         await db.execute('''
           CREATE TABLE settings (
@@ -36,7 +37,7 @@ class SqliteStorage {
         await db.execute('''
           CREATE TABLE graduation_evaluations (
             id TEXT PRIMARY KEY,
-            subjectId TEXT,
+            subjectId TEXT NOT NULL,
             graduationEvaluationType TEXT NOT NULL,
             isDividedEvaluation INTEGER NOT NULL,
             notePartOne INTEGER,
@@ -71,11 +72,7 @@ class SqliteStorage {
             subjectType TEXT NOT NULL,
             terms TEXT NOT NULL,
             countingTermAmount INTEGER NOT NULL,
-            manuallyEnteredTermNotes TEXT NOT NULL,
-            graduationEvaluationId TEXT,
-            FOREIGN KEY (graduationEvaluationId)
-              REFERENCES graduation_evaluations(id)
-              ON DELETE SET NULL
+            manuallyEnteredTermNotes TEXT NOT NULL
           );
         ''');
         // EVALUATIONS
@@ -144,7 +141,6 @@ class SqliteStorage {
           );
         ''');
       },
-      version: 1,
     );
     await initialValues();
   }
