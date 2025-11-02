@@ -21,10 +21,10 @@ class TimetableView extends StatefulWidget {
         shimmer = true;
 
   @override
-  State<TimetableView> createState() => _TimetableViewState();
+  State<TimetableView> createState() => TimetableViewState();
 }
 
-class _TimetableViewState extends State<TimetableView> {
+class TimetableViewState extends State<TimetableView> {
 
   late Future<_TimetableData> _timetableFuture;
 
@@ -33,15 +33,21 @@ class _TimetableViewState extends State<TimetableView> {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.shimmer != widget.shimmer || oldWidget.term != widget.term) {
       setState(() {
-        _timetableFuture = _loadTimetableData();
+        setTimetableData();
       });
     }
   }
 
   @override
   void initState() {
-    _timetableFuture = _loadTimetableData();
+    setTimetableData();
     super.initState();
+  }
+
+  void setTimetableData() {
+    setState(() {
+      _timetableFuture = _loadTimetableData();
+    });
   }
 
   Future<_TimetableData> _loadTimetableData() async {

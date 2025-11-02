@@ -101,6 +101,14 @@ class _SubjectInputPageState extends State<SubjectInputPage> {
           nameController: _name,
           shortNameController: _shortName,
           color: _color,
+          onSelectedSubjectTemplate: (selection) {
+            _name.text = selection.name;
+            _shortName.text = selection.shortName;
+            _setSubjectType(selection.subjectType);
+            _setSubjectNiveau(selection.subjectNiveau);
+            _setCountingTerms(selection.terms);
+            _setCountingTermAmount(selection.countingTermAmount);
+          },
           onSelectedColor: (newColor) {
             setState(() {
               _color = newColor;
@@ -113,50 +121,21 @@ class _SubjectInputPageState extends State<SubjectInputPage> {
 
         SubjectTypeDropdown(
           selectedSubjectType: _subjectType,
-          onSelected: (SubjectType? newSubjectType) {
-            if (newSubjectType == null) {
-              return;
-            }
-            setState(() {
-              _subjectType = newSubjectType;
-              _unsavedChanges = true;
-
-              if (_subjectType.canBeLeistungsfach) {
-                _subjectNiveauDisabled = false;
-              } else {
-                _subjectNiveauDisabled = true;
-                _subjectNiveau = SubjectNiveau.basic;
-              }
-            });
-          },
+          onSelected: _setSubjectType,
         ),
 
         FormGap(),
 
         SubjectNiveauSelector(
           selectedSubjectNiveau: _subjectNiveau,
-          onSelected: _subjectNiveauDisabled ? null : (SubjectNiveau newSelection) {
-            setState(() {
-              _subjectNiveau = newSelection;
-              _unsavedChanges = true;
-            });
-          },
+          onSelected: _subjectNiveauDisabled ? null : _setSubjectNiveau,
         ),
 
         FormGap(),
 
         TermsMultipleChoice(
           selectedTerms: _terms,
-          onSelected: (Set<int> newSelection) {
-            setState(() {
-              _terms = newSelection;
-              _unsavedChanges = true;
-
-              if (_countingTerms > _terms.length) {
-                _countingTerms = _terms.length;
-              }
-            });
-          },
+          onSelected: _setCountingTerms,
         ),
 
         FormGap(),
@@ -169,12 +148,7 @@ class _SubjectInputPageState extends State<SubjectInputPage> {
           divisions: _terms.length,
           value: _countingTerms.toDouble(),
           label: "$_countingTerms",
-          onChanged: (newValue) {
-            setState(() {
-              _countingTerms = newValue.toInt();
-              _unsavedChanges = true;
-            });
-          },
+          onChanged: _setCountingTermAmount,
           year2023: false,
         ),
 
@@ -197,6 +171,48 @@ class _SubjectInputPageState extends State<SubjectInputPage> {
         ),
       ],
     );
+  }
+
+  void _setSubjectType(SubjectType? newSubjectType) {
+    if (newSubjectType == null) {
+      return;
+    }
+    setState(() {
+      _subjectType = newSubjectType;
+      _unsavedChanges = true;
+
+      if (_subjectType.canBeLeistungsfach) {
+        _subjectNiveauDisabled = false;
+      } else {
+        _subjectNiveauDisabled = true;
+        _subjectNiveau = SubjectNiveau.basic;
+      }
+    });
+  }
+
+  void _setSubjectNiveau(SubjectNiveau newSelection) {
+    setState(() {
+      _subjectNiveau = newSelection;
+      _unsavedChanges = true;
+    });
+  }
+
+  void _setCountingTerms(Set<int> newSelection) {
+    setState(() {
+      _terms = newSelection;
+      _unsavedChanges = true;
+
+      if (_countingTerms > _terms.length) {
+        _countingTerms = _terms.length;
+      }
+    });
+  }
+
+  void _setCountingTermAmount(newValue) {
+    setState(() {
+      _countingTerms = newValue.toInt();
+      _unsavedChanges = true;
+    });
   }
 
   Future<void> save() async {

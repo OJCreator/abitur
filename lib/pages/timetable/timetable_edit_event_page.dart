@@ -27,21 +27,14 @@ class _TimetableEditEventPageState extends State<TimetableEditEventPage> {
 
   Subject? _selectedSubject;
   final TextEditingController _roomController = TextEditingController();
-  List<Subject?> subjects = [null];
+  Future<List<Subject>> subjects = Future.value([]);
 
   @override
   void initState() {
+    subjects = SubjectService.findAll();
     _selectedSubject = widget.initialSubject;
     _roomController.text = widget.initialRoom ?? "";
-    _loadData();
     super.initState();
-  }
-
-  Future<void> _loadData() async {
-    final allSubjects = await SubjectService.findAll();
-    setState(() {
-      subjects = [null, ...allSubjects.where((s) => s.terms.contains(widget.term))];
-    });
   }
 
   @override
@@ -62,25 +55,31 @@ class _TimetableEditEventPageState extends State<TimetableEditEventPage> {
           child: Form(
             child: Column(
               children: [
-                SubjectDropdown(
-                  subjects: subjects,
-                  selectedSubject: _selectedSubject,
-                  onSelected: (s) async {
-                    setState(() {
-                      _selectedSubject = s;
-                    });
-                    if (s == null) {
-                      setState(() {
-                        _roomController.text = "";
-                      });
-                      return;
-                    }
-                    String? knownRoom = await TimetableEntryService.knownRoom(s.id);
-                    if (knownRoom != null) {
-                      _roomController.text = knownRoom;
-                    }
-                    setState(() { });
-                  },
+                FutureBuilder(
+                  future: subjects,
+                  builder: (context, asyncSnapshot) {
+                    if (!asyncSnapshot.hasData) return CircularProgressIndicator();
+                    return SubjectDropdown(
+                      subjects: [null, ...asyncSnapshot.data!],
+                      selectedSubject: _selectedSubject,
+                      onSelected: (s) async {
+                        setState(() {
+                          _selectedSubject = s;
+                        });
+                        if (s == null) {
+                          setState(() {
+                            _roomController.text = "";
+                          });
+                          return;
+                        }
+                        String? knownRoom = await TimetableEntryService.knownRoom(s.id);
+                        if (knownRoom != null) {
+                          _roomController.text = knownRoom;
+                        }
+                        setState(() { });
+                      },
+                    );
+                  }
                 ),
 
                 FormGap(),

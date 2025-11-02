@@ -13,6 +13,7 @@ class TimetablePage extends StatefulWidget {
 
 class _TimetablePageState extends State<TimetablePage> with SingleTickerProviderStateMixin {
 
+  final _termKeys = List.generate(4, (_) => GlobalKey<TimetableViewState>());
   late TabController _tabController;
 
   late Future<int> currentProbableTerm;
@@ -53,7 +54,10 @@ class _TimetablePageState extends State<TimetablePage> with SingleTickerProvider
           return SingleChildScrollView(
             child: Padding(
               padding: const EdgeInsets.all(8.0),
-              child: TimetableView(term: index),
+              child: TimetableView(
+                key: _termKeys[index],
+                term: index,
+              ),
             ),
           );
         })
@@ -66,7 +70,7 @@ class _TimetablePageState extends State<TimetablePage> with SingleTickerProvider
               return TimetableEditPage(term: _tabController.index);
             })
           );
-          setState(() { });
+          _termKeys[_tabController.index].currentState?.setTimetableData();
         },
       ),
     );

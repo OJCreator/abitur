@@ -1,4 +1,5 @@
 import 'package:abitur/utils/constants.dart';
+import 'package:abitur/utils/enums/subject_type.dart';
 import 'package:abitur/widgets/forms/form_gap.dart';
 import 'package:flutter/material.dart';
 
@@ -9,9 +10,17 @@ class SubjectNameAndColorInput extends StatelessWidget {
   final TextEditingController nameController;
   final TextEditingController shortNameController;
   final Color color;
+  final Function(SubjectTemplate subjectTemplate) onSelectedSubjectTemplate;
   final Function(Color newColor) onSelectedColor;
 
-  const SubjectNameAndColorInput({super.key, required this.nameController, required this.shortNameController, required this.color, required this.onSelectedColor});
+  const SubjectNameAndColorInput({
+    super.key,
+    required this.nameController,
+    required this.shortNameController,
+    required this.color,
+    required this.onSelectedSubjectTemplate,
+    required this.onSelectedColor,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -19,19 +28,60 @@ class SubjectNameAndColorInput extends StatelessWidget {
       children: [
         Flexible(
           flex: 2,
-          child: TextFormField(
-            controller: nameController,
-            validator: (input) {
-              if (input == null || input.isEmpty) {
-                return "Erforderlich";
+          child: Autocomplete<SubjectTemplate>(
+            displayStringForOption: (o) => o.name,
+            optionsBuilder: (TextEditingValue textEditingValue) {
+              if (textEditingValue.text.isEmpty) {
+                return const Iterable<SubjectTemplate>.empty();
               }
-              return null;
+              final currentOption = SubjectTemplate(textEditingValue.text, "", SubjectType.wahlfach);
+              return [currentOption, ...subjectsBayern].where((option) => option.name
+                  .toLowerCase()
+                  .startsWith(textEditingValue.text.toLowerCase()));
             },
-            decoration: InputDecoration(
-              labelText: "Name",
-              helperText: "Vollständiger Name",
-              border: OutlineInputBorder(),
-            ),
+            optionsViewBuilder: (context, onSelected, options) {
+              return Align(
+                alignment: Alignment.topLeft,
+                child: Material(
+                  elevation: 4,
+                  borderRadius: BorderRadius.circular(8),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: options.map((option) {
+                      return InkWell(
+                        onTap: () => onSelected(option),
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                          child: Text(option.name, style: const TextStyle(fontSize: 16)),
+                        ),
+                      );
+                    }).toList(),
+                  ),
+                ),
+              );
+            },
+            fieldViewBuilder: (context, textEditingController, focusNode, onFieldSubmitted) {
+              return TextFormField(
+                controller: textEditingController,
+                focusNode: focusNode,
+                decoration: const InputDecoration(
+                  labelText: "Name",
+                  helperText: "Vollständiger Name",
+                  border: OutlineInputBorder(),
+                ),
+                validator: (input) {
+                  if (input == null || input.isEmpty) {
+                    return "Erforderlich";
+                  }
+                  return null;
+                },
+              );
+            },
+            onSelected: (SubjectTemplate selection) {
+              debugPrint('Ausgewählt: $selection');
+              onSelectedSubjectTemplate(selection);
+            },
           ),
         ),
 

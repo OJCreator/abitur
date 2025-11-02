@@ -16,6 +16,8 @@ class _TimetableAnalyticsState extends State<TimetableAnalytics> {
 
   late Future<int> currentProbableTerm;
 
+  final GlobalKey<TimetableViewState> _termViewKey = GlobalKey<TimetableViewState>();
+
   @override
   void initState() {
     currentProbableTerm = SettingsService.currentProbableTerm();
@@ -47,13 +49,16 @@ class _TimetableAnalyticsState extends State<TimetableAnalytics> {
                   return TimetablePage();
                 })
               );
-              setState(() { });
+              _termViewKey.currentState?.setTimetableData();
             },
             child: FutureBuilder(
               future: currentProbableTerm,
               builder: (context, asyncSnapshot) {
                 if (!asyncSnapshot.hasData || asyncSnapshot.data == null) return TimetableView.shimmer();
-                return TimetableView(term: asyncSnapshot.data!);
+                return TimetableView(
+                  key: _termViewKey,
+                  term: asyncSnapshot.data!,
+                );
               }
             ),
           ),

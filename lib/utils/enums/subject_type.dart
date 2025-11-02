@@ -1,3 +1,5 @@
+import 'package:abitur/utils/enums/subject_niveau.dart';
+
 enum SubjectType {
   wahlfach("Wahlfach", ["Orchester", "BigBand", "Theater"], false, false, null),
   profilfach("Profilfach", ["Instrumentalensemble", "Vokalensemble", "Psychologie"], false, true, 2),
@@ -76,4 +78,47 @@ enum SubjectType {
         throw ArgumentError("Unbekannter SubjectType-Code: $code");
     }
   }
+}
+
+final subjectsBayern = [ // TODO
+  SubjectTemplate("Biologie", "Bio", SubjectType.naturwissenschaftOhneInf),
+  SubjectTemplate("Chemie", "Ch", SubjectType.naturwissenschaftOhneInf),
+  SubjectTemplate("Deutsch", "D", SubjectType.standardPflichtfach, terms: {0,1,2,3}, countingTermAmount: 4, subjectNiveau: SubjectNiveau.advanced),
+  SubjectTemplate("Englisch", "E", SubjectType.fortgefuehrteFremdsprache),
+  SubjectTemplate("Ethik", "Eth", SubjectType.standardPflichtfach),
+  SubjectTemplate("Religion", "Rel", SubjectType.standardPflichtfach),
+  SubjectTemplate("Evangelische Religion", "Rel", SubjectType.standardPflichtfach),
+  SubjectTemplate("Katholische Religion", "Rel", SubjectType.standardPflichtfach),
+  SubjectTemplate("Französisch", "F", SubjectType.fortgefuehrteFremdsprache),
+  SubjectTemplate("Geographie", "Geo", SubjectType.gesellschaftswissenschaften),
+  SubjectTemplate("Geschichte", "G", SubjectType.standardPflichtfach),
+  SubjectTemplate("Informatik", "Inf", SubjectType.informatik),
+  SubjectTemplate("Kunst", "Ku", SubjectType.standardPflichtfach),
+  SubjectTemplate("Mathematik", "M", SubjectType.standardPflichtfach, terms: {0,1,2,3}, countingTermAmount: 4, subjectNiveau: SubjectNiveau.advanced),
+  SubjectTemplate("Musik", "Mu", SubjectType.standardPflichtfach),
+  SubjectTemplate("Physik", "Ph", SubjectType.naturwissenschaftOhneInf),
+  SubjectTemplate("Politik und Gesellschaft", "PuG", SubjectType.gesellschaftswissenschaften),
+  SubjectTemplate("Spanisch", "S", SubjectType.fortgefuehrteFremdsprache),
+  SubjectTemplate("Sport", "Spo", SubjectType.standardPflichtfach),
+  SubjectTemplate("Wirtschaft und Recht", "WuR", SubjectType.gesellschaftswissenschaften),
+  SubjectTemplate("W-Seminar", "WS", SubjectType.wSeminar, terms: {0,1,2}, countingTermAmount: 2),
+];
+
+class SubjectTemplate {
+  final String name;
+  final String shortName;
+  final SubjectType subjectType;
+  final Set<int> terms;
+  final int countingTermAmount;
+  final SubjectNiveau subjectNiveau;
+
+  const SubjectTemplate(
+      this.name,
+      this.shortName,
+      this.subjectType,
+      {
+        this.terms = const {0,1,2,3},
+        this.countingTermAmount = 3,
+        this.subjectNiveau = SubjectNiveau.basic,
+      });
 }
