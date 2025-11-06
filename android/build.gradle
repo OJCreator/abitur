@@ -1,3 +1,13 @@
+buildscript {
+    ext {
+        compose_version = '1.5.0' // oder die Version, die du nutzt
+    }
+}
+plugins {
+    id 'org.jetbrains.kotlin.plugin.compose' version '2.1.20' apply false
+}
+
+
 allprojects {
     repositories {
         google()

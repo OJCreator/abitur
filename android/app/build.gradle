@@ -3,6 +3,7 @@ plugins {
     id "kotlin-android"
     // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
     id "dev.flutter.flutter-gradle-plugin"
+//    id 'org.jetbrains.kotlin.plugin.compose' für GLANCE
 }
 
 
@@ -32,6 +33,7 @@ android {
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
         minSdkVersion = flutter.minSdkVersion
+//        minSdkVersion = 24 für GLANCE
         targetSdk = 36
         versionCode = 3
         versionName = flutter.versionName
@@ -50,10 +52,18 @@ android {
             signingConfig signingConfigs.release
         }
     }
+
+//    buildFeatures {
+//        compose = true für GLANCE
+//    }
 }
 
 dependencies {
     coreLibraryDesugaring "com.android.tools:desugar_jdk_libs:2.1.5"
+
+    // Glance
+//    implementation "androidx.glance:glance:1.1.1" für GLANCE
+//    implementation "androidx.glance:glance-appwidget:1.1.1" für GLANCE
 }
 
 flutter {
