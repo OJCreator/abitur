@@ -35,7 +35,7 @@ class _EvaluationsPageState extends State<EvaluationsPage> {
   DateTime firstDay = DateTime.now().copyWith(day: 0);
   DateTime lastDay = DateTime.now().copyWith(month: DateTime.now().month+1, day: 1).add(Duration(days: -1));
   DateTime focusedDay = DateTime.now();
-  late Map<DateTime, List<EvaluationDate>> evaluationMapOfCurrentMonth = {};
+  late Map<DateTime, List<EvaluationDate>> _events = {};
 
   @override
   void initState() {
@@ -45,27 +45,32 @@ class _EvaluationsPageState extends State<EvaluationsPage> {
     super.initState();
   }
 
-  Future<void> setVisibleMonth(DateTime date) async {
+  Future<void> _loadSettings() async {
+    Settings s = await SettingsService.loadSettings();
     setState(() {
-      focusedDay = date;
+      firstDay = DateTime(s.graduationYear.year-2, 9, 1);
+      lastDay = DateTime(s.graduationYear.year, 8, 1);
     });
+    _loadEvents();
+  }
 
-    final first = DateTime(date.year, date.month, 1);
-    final last = DateTime(date.year, date.month + 1, 0);
-    evaluationMapOfCurrentMonth = await EvaluationDateService.findAllBetweenDays(first, last);
-    setState(() {
-      focusedDay = date;
-    });
-
-    holidays = await ApiService.loadHolidays(date.year);
-    if (!mounted) return;
-    setState(() { });
+  Future<void> _loadEvents() async {
+    _events = await EvaluationDateService.findAllBetweenDays(firstDay, lastDay);
   }
 
   void searchEvaluations() {
     setState(() {
       evaluationsPageModelFuture = EvaluationsMapper.generateEvaluationsPageModel();
     });
+  }
+
+  Future<void> setVisibleMonth(DateTime date) async {
+
+    focusedDay = date;
+
+    holidays = await ApiService.loadHolidays(date.year);
+    if (!mounted) return;
+    setState(() { });
   }
 
   Future<void> newEvaluation() async {
@@ -86,14 +91,6 @@ class _EvaluationsPageState extends State<EvaluationsPage> {
       );
     }
     searchEvaluations();
-  }
-
-  Future<void> _loadSettings() async {
-    Settings s = await SettingsService.loadSettings();
-    setState(() {
-      firstDay = DateTime(s.graduationYear.year-2, 9, 1);
-      lastDay = DateTime(s.graduationYear.year, 8, 1);
-    });
   }
 
   @override
@@ -132,7 +129,8 @@ class _EvaluationsPageState extends State<EvaluationsPage> {
           children: [
             // Kalender
             TableCalendar( // TODO eigener Kalender, der a) das vertikale Scrollen nicht blockiert und b) sich akualisiert, wenn sich Werte ändern.
-              key: ValueKey(focusedDay),
+              key: ValueKey(_events.hashCode),
+              availableGestures: AvailableGestures.horizontalSwipe,
               onPageChanged: setVisibleMonth,
               focusedDay: focusedDay,
               locale: "de_DE",
@@ -160,7 +158,7 @@ class _EvaluationsPageState extends State<EvaluationsPage> {
               headerStyle: HeaderStyle(formatButtonVisible: false, titleCentered: true,),
               onDaySelected: _onDaySelected,
               startingDayOfWeek: StartingDayOfWeek.monday,
-              eventLoader: (day) => evaluationMapOfCurrentMonth[DateTime(day.year, day.month, day.day)] ?? [],
+              eventLoader: (day) => _events[DateTime(day.year, day.month, day.day)] ?? [],
               calendarBuilders: CalendarBuilders(
                 markerBuilder: (context, date, events) {
                   if (events.isNotEmpty) {
@@ -248,7 +246,7 @@ class _EvaluationsPageState extends State<EvaluationsPage> {
             day: selected,
             reloadEvaluations: searchEvaluations,
             newEvaluation: newEvaluation,
-            evaluationDates: evaluationMapOfCurrentMonth[DateTime(selected.year, selected.month, selected.day)] ?? [],
+            evaluationDates: _events[DateTime(selected.year, selected.month, selected.day)] ?? [],
             evaluations: pageModel.evaluations,
             subjects: pageModel.subjects,
           );
