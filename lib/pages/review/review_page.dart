@@ -4,7 +4,7 @@ import 'package:abitur/pages/review/review_page_overlay.dart';
 import 'package:abitur/pages/review/stories/average_story.dart';
 import 'package:abitur/pages/review/stories/differences_story.dart';
 import 'package:abitur/pages/review/stories/evaluations_story.dart';
-import 'package:abitur/pages/review/stories/filnal_story.dart';
+import 'package:abitur/pages/review/stories/final_story.dart';
 import 'package:abitur/pages/review/stories/story.dart';
 import 'package:abitur/pages/review/stories/subjects_story.dart';
 import 'package:abitur/pages/review/stories/welcome_story.dart';

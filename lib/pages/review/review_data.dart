@@ -40,6 +40,7 @@ class ReviewData {
   late final List<double> weekdayAverages = List.generate(5, (_) => 0);
   late final List<double?> monthAverages = List.generate(24, (_) => null);
   late final DateTime startMonth;
+  late final Map<DateTime, int> evaluationsPerDay;
 
   // FINAL
   final Future<ProjectionModel> projection = ProjectionService.computeProjectionIsolated();
@@ -141,6 +142,8 @@ class ReviewData {
         monthAverages[index] = sum / notes.length;
       }
     });
+
+    evaluationsPerDay = (await EvaluationDateService.findAllMappedByDate()).map((date, list) => MapEntry(date, list.length));
   }
 
 

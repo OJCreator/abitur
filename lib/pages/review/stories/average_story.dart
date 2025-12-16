@@ -1,5 +1,6 @@
 import 'package:abitur/pages/review/review_data.dart';
 import 'package:abitur/pages/review/stories/story.dart';
+import 'package:abitur/pages/review/story_widgets/story_heatmap_view.dart';
 import 'package:abitur/pages/review/story_widgets/story_number_view.dart';
 import 'package:abitur/utils/extensions/int_extension.dart';
 import 'package:abitur/utils/extensions/lists/nullable_num_list_extension.dart';
@@ -14,12 +15,13 @@ class AverageStory extends StatelessWidget implements Story {
   final GlobalKey<StoryNumberViewState> key1 = GlobalKey();
   final GlobalKey<StoryGraphViewState> key2 = GlobalKey();
   final GlobalKey<StoryGraphViewState> key3 = GlobalKey();
+  final GlobalKey<StoryGraphViewState> key4 = GlobalKey();
 
   AverageStory({super.key, required this.data});
 
   @override
   Duration getDuration() {
-    return Duration(seconds: 24);
+    return Duration(seconds: 32);
   }
 
   @override
@@ -27,6 +29,7 @@ class AverageStory extends StatelessWidget implements Story {
     key1.currentState?.pause();
     key2.currentState?.pause();
     key3.currentState?.pause();
+    key4.currentState?.pause();
   }
 
   @override
@@ -34,6 +37,7 @@ class AverageStory extends StatelessWidget implements Story {
     key1.currentState?.resume();
     key2.currentState?.resume();
     key3.currentState?.resume();
+    key4.currentState?.resume();
   }
 
   @override
@@ -41,6 +45,7 @@ class AverageStory extends StatelessWidget implements Story {
     key1.currentState?.restart();
     key2.currentState?.restart();
     key3.currentState?.restart();
+    key4.currentState?.restart();
   }
 
   @override
@@ -93,6 +98,12 @@ class AverageStory extends StatelessWidget implements Story {
             final monthNumber = (data.startMonth.month - 1 + index) % 12 + 1;
             return monthNumber.monthShort();
           }
+        ),
+        StoryHeatmapView(
+          key: key4,
+          title: "Wann war es am stressigsten?",
+          delay: Duration(seconds: 24),
+          evaluationsPerDay: data.evaluationsPerDay,
         ),
       ],
     );

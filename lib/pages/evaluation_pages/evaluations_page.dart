@@ -40,6 +40,7 @@ class _EvaluationsPageState extends State<EvaluationsPage> {
   @override
   void initState() {
     _loadSettings();
+    _loadEvents();
     searchEvaluations();
     setVisibleMonth(DateTime.now());
     super.initState();
@@ -51,11 +52,10 @@ class _EvaluationsPageState extends State<EvaluationsPage> {
       firstDay = DateTime(s.graduationYear.year-2, 9, 1);
       lastDay = DateTime(s.graduationYear.year, 8, 1);
     });
-    _loadEvents();
   }
 
   Future<void> _loadEvents() async {
-    _events = await EvaluationDateService.findAllBetweenDays(firstDay, lastDay);
+    _events = await EvaluationDateService.findAllMappedByDate();
   }
 
   void searchEvaluations() {
@@ -128,7 +128,7 @@ class _EvaluationsPageState extends State<EvaluationsPage> {
         child: Column(
           children: [
             // Kalender
-            TableCalendar( // TODO eigener Kalender, der a) das vertikale Scrollen nicht blockiert und b) sich akualisiert, wenn sich Werte ändern.
+            TableCalendar( // TODO Graduation Evaluations auch im Kalender anzeigen
               key: ValueKey(_events.hashCode),
               availableGestures: AvailableGestures.horizontalSwipe,
               onPageChanged: setVisibleMonth,

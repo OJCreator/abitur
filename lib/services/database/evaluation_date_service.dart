@@ -244,16 +244,9 @@ class EvaluationDateService {
       await db.insert('evaluation_dates', e);
     }
   }
-  static Future<Map<DateTime, List<EvaluationDate>>> findAllBetweenDays(
-      DateTime start,
-      DateTime end,
-      ) async {
-
-    final List<Map<String, dynamic>> maps = await db.query(
-      'evaluation_dates',
-      where: 'date BETWEEN ? AND ?',
-      whereArgs: [start.toIso8601String(), end.toIso8601String()],
-    );
+  static Future<Map<DateTime, List<EvaluationDate>>> findAllMappedByDate() async {
+    final List<Map<String, dynamic>> maps =
+    await db.query('evaluation_dates');
 
     if (maps.isEmpty) return {};
 
