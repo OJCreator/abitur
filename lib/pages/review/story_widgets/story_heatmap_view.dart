@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 
 import '../delayed_animation_controller.dart';
 
+// TODO: Dieses Widget müsste nochmal überarbeitet werden
 class StoryHeatmapView extends StatefulWidget {
   final String title;
   final Map<DateTime, int> evaluationsPerDay;

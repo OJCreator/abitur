@@ -1,6 +1,5 @@
 import 'package:abitur/pages/review/review_data.dart';
 import 'package:abitur/pages/review/stories/story.dart';
-import 'package:abitur/pages/review/story_widgets/story_heatmap_view.dart';
 import 'package:abitur/pages/review/story_widgets/story_number_view.dart';
 import 'package:abitur/utils/extensions/int_extension.dart';
 import 'package:abitur/utils/extensions/lists/nullable_num_list_extension.dart';
@@ -15,7 +14,7 @@ class AverageStory extends StatelessWidget implements Story {
   final GlobalKey<StoryNumberViewState> key1 = GlobalKey();
   final GlobalKey<StoryGraphViewState> key2 = GlobalKey();
   final GlobalKey<StoryGraphViewState> key3 = GlobalKey();
-  final GlobalKey<StoryHeatmapViewState> key4 = GlobalKey();
+  final GlobalKey<StoryGraphViewState> key4 = GlobalKey();
 
   AverageStory({super.key, required this.data});
 
@@ -97,15 +96,63 @@ class AverageStory extends StatelessWidget implements Story {
             if (index % 2 != 0) return "";
             final monthNumber = (data.startMonth.month - 1 + index) % 12 + 1;
             return monthNumber.monthShort();
-          }
+          },
         ),
-        StoryHeatmapView(
+        StoryGraphView(
           key: key4,
           title: "Wann war es am stressigsten?",
-          delay: Duration(seconds: 24),
-          evaluationsPerDay: data.evaluationsPerDay,
+          delay: const Duration(seconds: 24),
+          data: evaluationsPerWeek(
+            evaluationsPerDay: data.evaluationsPerDay,
+            startDate: data.firstDayOfSchool,
+          ),
+          xAxisTitle: "Wochen",
+          yAxisTitle: "Prüfungen",
+          xValues: (index) {
+            final start = data.firstDayOfSchool;
+
+            if (index == weekIndex(start, data.firstDayOfSchool)) return "HJ 1";
+            if (index == weekIndex(start, data.firstDayOfTerm2)) return "HJ 2";
+            if (index == weekIndex(start, data.firstDayOfTerm3)) return "HJ 3";
+            if (index == weekIndex(start, data.firstDayOfTerm4)) return "HJ 4";
+
+            return "";
+          },
         ),
+
       ],
     );
   }
 }
+
+List<int> evaluationsPerWeek({
+  required Map<DateTime, int> evaluationsPerDay,
+  required DateTime startDate,
+}) {
+  if (evaluationsPerDay.isEmpty) return [];
+
+  int maxWeek = 0;
+
+  // zuerst maximale Woche bestimmen
+  for (final date in evaluationsPerDay.keys) {
+    final daysDiff = date.difference(startDate).inDays;
+    final week = daysDiff ~/ 7;
+    if (week > maxWeek) maxWeek = week;
+  }
+
+  final weeks = List<int>.filled(maxWeek + 1, 0);
+
+  // dann aufsummieren
+  evaluationsPerDay.forEach((date, count) {
+    final daysDiff = date.difference(startDate).inDays;
+    final week = daysDiff ~/ 7;
+    if (week >= 0) {
+      weeks[week] += count;
+    }
+  });
+
+  return weeks;
+}
+
+int weekIndex(DateTime start, DateTime date) =>
+    date.difference(start).inDays ~/ 7;

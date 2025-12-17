@@ -45,6 +45,13 @@ class ReviewData {
   // FINAL
   final Future<ProjectionModel> projection = ProjectionService.computeProjectionIsolated();
 
+  // SETTINGS
+  late final DateTime firstDayOfSchool;
+  late final DateTime firstDayOfTerm2;
+  late final DateTime firstDayOfTerm3;
+  late final DateTime firstDayOfTerm4;
+  late final DateTime lastDayOfSchool;
+
   ReviewData() {
     _fillData();
   }
@@ -105,6 +112,12 @@ class ReviewData {
 
   Future<void> _fillAverageData() async {
 
+    firstDayOfSchool = await SettingsService.firstDayOfSchool();
+    firstDayOfTerm2 = await SettingsService.firstDayOfTerm2();
+    firstDayOfTerm3 = await SettingsService.firstDayOfTerm3();
+    firstDayOfTerm4 = await SettingsService.firstDayOfTerm4();
+    lastDayOfSchool = await SettingsService.lastDayOfSchool();
+
     DateTime? lastDate;
     for (final eval in evaluationDates) {
       final current = eval.date;
@@ -114,7 +127,7 @@ class ReviewData {
         }
       }
     }
-    lastDate ??= await SettingsService.lastDayOfSchool();
+    lastDate ??= lastDayOfSchool;
     schoolDays = await ApiService.countSchoolDaysBetween(await SettingsService.firstDayOfSchool(), lastDate);
 
     final groupedEvaluationDatesByDay = evaluationDates.where((e) => e.date != null).toList().groupBy((e) => e.date!.weekday);
