@@ -7,6 +7,7 @@ import 'package:abitur/widgets/enum_radio_sheet.dart';
 import 'package:collection/collection.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../services/database/subject_service.dart';
 import '../../sqlite/entities/subject.dart';
@@ -29,8 +30,18 @@ class _AnalyticsSubjectsPageState extends State<AnalyticsSubjectsPage> {
 
   @override
   void initState() {
-    _loadSubjects();
+    _loadSortOption();
     super.initState();
+  }
+
+  Future<void> _loadSortOption() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      sortOption = SortOption.fromName(
+        prefs.getString(analyticsPageSortOptionPrefsKey),
+      );
+    });
+    _loadSubjects();
   }
 
   Future<void> _loadSubjects() async {
@@ -46,6 +57,13 @@ class _AnalyticsSubjectsPageState extends State<AnalyticsSubjectsPage> {
     final avgs = await SubjectService.getAverages(subjects.map((s) => s.id).toList(), filterByTerm: termOption.term);
     setState(() {
       subjectNotes = subjects.map((s) => Pair(s, avgs[s.id] ?? 0)).toList();
+    });
+    _sort();
+  }
+
+  void _sort() {
+    setState(() {
+      subjectNotes = subjectNotes.sorted(sortOption.sortAlgorithm);
     });
   }
 
@@ -136,11 +154,13 @@ class _AnalyticsSubjectsPageState extends State<AnalyticsSubjectsPage> {
         return EnumRadioSheet(
           values: SortOption.values,
           groupValue: sortOption,
-          onSelected: (value) {
+          onSelected: (value) async {
             setState(() {
               sortOption = value;
-              subjectNotes = subjectNotes.sorted(sortOption.sortAlgorithm);
             });
+            _sort();
+            final prefs = await SharedPreferences.getInstance();
+            await prefs.setString(analyticsPageSortOptionPrefsKey, value.name);
           },
           displayName: (option) => option.displayName,
         );
@@ -182,6 +202,13 @@ enum SortOption {
       case SortOption.color:
         return (a, b) => HSLColor.fromColor(a.first.color).hue.compareTo(HSLColor.fromColor(b.first.color).hue);
     }
+  }
+
+  static SortOption fromName(String? name) {
+    return SortOption.values.firstWhere(
+          (e) => e.name == name,
+      orElse: () => SortOption.alphabet,
+    );
   }
 }
 

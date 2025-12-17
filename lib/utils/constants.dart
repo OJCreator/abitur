@@ -6,7 +6,7 @@ import 'package:flutter/material.dart';
 const Color primaryColor = Color(0xFFB4E9FF);
 const Color shimmerColor = Color(0x0D000000);
 
-
+const String analyticsPageSortOptionPrefsKey = "analytics_subjects_page:sort_option";
 
 
 double? avg(Iterable<int?> values) {

@@ -15,7 +15,7 @@ class AverageStory extends StatelessWidget implements Story {
   final GlobalKey<StoryNumberViewState> key1 = GlobalKey();
   final GlobalKey<StoryGraphViewState> key2 = GlobalKey();
   final GlobalKey<StoryGraphViewState> key3 = GlobalKey();
-  final GlobalKey<StoryGraphViewState> key4 = GlobalKey();
+  final GlobalKey<StoryHeatmapViewState> key4 = GlobalKey();
 
   AverageStory({super.key, required this.data});
 

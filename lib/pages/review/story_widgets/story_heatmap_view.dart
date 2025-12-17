@@ -157,7 +157,6 @@ class _StoryHeatmap extends StatelessWidget {
   final Map<DateTime, int> evaluationsPerDay;
 
   const _StoryHeatmap({
-    super.key,
     required this.evaluationsPerDay,
   });
 
@@ -169,17 +168,20 @@ class _StoryHeatmap extends StatelessWidget {
     // TODO hier der erste Schultag!
     final dayOne = evaluationsPerDay.keys.sorted((a,b) => a.compareTo(b)).first;
 
-    return GridView.builder(
-      itemCount: 356*2,
-      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 30, mainAxisSpacing: 2, crossAxisSpacing: 2, childAspectRatio: 1),
-      padding: const EdgeInsets.all(2),
-      itemBuilder: (context, index) {
-        int amount = evaluationsPerDay[dayOne.add(Duration(days: index))] ?? 0;
-        if (amount > 3) amount = 3;
-        return Container(
-          color: colors[amount],
-        );
-      },
+    return Padding(
+      padding: const EdgeInsets.all(16),
+      child: GridView.builder(
+        itemCount: 356*2,
+        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 30, mainAxisSpacing: 2, crossAxisSpacing: 2, childAspectRatio: 1),
+        padding: const EdgeInsets.all(2),
+        itemBuilder: (context, index) {
+          int amount = evaluationsPerDay[dayOne.add(Duration(days: index))] ?? 0;
+          if (amount > 3) amount = 3;
+          return Container(
+            color: colors[amount],
+          );
+        },
+      ),
     );
   }
 }
