@@ -17,11 +17,13 @@ class TermView extends StatefulWidget {
 
   final Subject subject;
   final int term;
+  final VoidCallback? evaluationEdited;
 
   const TermView({
     super.key,
     required this.subject,
     required this.term,
+    this.evaluationEdited,
   });
 
   @override
@@ -122,7 +124,9 @@ class TermViewState extends State<TermView> {
                               return EvaluationInputPage(evaluation: e);
                             }),
                           );
-                          loadData();
+                          if (widget.evaluationEdited != null) {
+                            widget.evaluationEdited!();
+                          }
                         },
                       ),
                   ],

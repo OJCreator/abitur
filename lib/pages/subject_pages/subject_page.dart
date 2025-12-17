@@ -93,9 +93,13 @@ class _SubjectPageState extends State<SubjectPage> with SingleTickerProviderStat
     setState(() {
       _tabController = TabController(length: tabLength, vsync: this, initialIndex: initialTabIndex);
     });
-    _tabController!.addListener(() {
-      setState(() {});
-    });
+  }
+
+  void _reloadAllTerms() {
+    for (final key in _tabKeys) {
+      key.currentState?.loadData();
+    }
+    _graduationWorkTermViewKey.currentState?.loadData();
   }
 
   Future<void> editSubject(BuildContext context) async {
@@ -109,7 +113,6 @@ class _SubjectPageState extends State<SubjectPage> with SingleTickerProviderStat
       }),
     );
     _loadData();
-    _tabKeys[_tabController!.index].currentState!.loadData();
   }
 
   Future<void> deleteSubject() async {
@@ -125,7 +128,7 @@ class _SubjectPageState extends State<SubjectPage> with SingleTickerProviderStat
           },
         );
       },
-    );
+    ) ?? false;
     if (!deletedSubject) {
       return;
     }
@@ -138,14 +141,14 @@ class _SubjectPageState extends State<SubjectPage> with SingleTickerProviderStat
       MaterialPageRoute(builder: (context) {
         return EvaluationInputPage(
           subjectId: widget.subjectId,
-          term: term,//subject.terms.elementAt(_tabController.index),
+          term: term,
         );
       }),
     );
     if (newEvaluation == null) {
       return;
     }
-    _tabKeys[_tabController!.index].currentState?.loadData();
+    _reloadAllTerms();
   }
 
   @override
@@ -239,6 +242,7 @@ class _SubjectPageState extends State<SubjectPage> with SingleTickerProviderStat
                     subject: s,
                     term: entry.value,
                     key: _tabKeys[entry.key],
+                    evaluationEdited: _reloadAllTerms,
                   ),
                 if (ge != null)
                   GraduationWorkTermView(
@@ -295,7 +299,6 @@ class _SubjectPageState extends State<SubjectPage> with SingleTickerProviderStat
         return SubjectEditGraduationEvaluationDialog(
           graduationEvaluation: e,
         );
-        // return ManualTermNoteEnterSheet(subject: widget.subject, term: widget.term);
       },
     ).then((value) {
       _graduationWorkTermViewKey.currentState!.loadData();
