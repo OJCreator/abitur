@@ -35,7 +35,7 @@ android {
         minSdkVersion = flutter.minSdkVersion
 //        minSdkVersion = 24 für GLANCE
         targetSdk = 36
-        versionCode = 3
+        versionCode = 4
         versionName = flutter.versionName
     }
 

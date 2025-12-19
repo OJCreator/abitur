@@ -1,5 +1,4 @@
 import 'package:abitur/utils/extensions/color_extension.dart';
-import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 
 import '../delayed_animation_controller.dart';
@@ -8,12 +7,14 @@ import '../delayed_animation_controller.dart';
 class StoryHeatmapView extends StatefulWidget {
   final String title;
   final Map<DateTime, int> evaluationsPerDay;
+  final DateTime firstSchoolDay;
   final Duration delay;
 
   const StoryHeatmapView({
     super.key,
     required this.title,
     required this.evaluationsPerDay,
+    required this.firstSchoolDay,
     this.delay = const Duration(seconds: 0),
   });
 
@@ -138,6 +139,7 @@ class StoryHeatmapViewState extends State<StoryHeatmapView> with TickerProviderS
                           padding: const EdgeInsets.only(top: 8),
                           child: _StoryHeatmap(
                             evaluationsPerDay: widget.evaluationsPerDay,
+                            firstSchoolDay: widget.firstSchoolDay,
                           ),
                         ),
                       );
@@ -156,18 +158,17 @@ class StoryHeatmapViewState extends State<StoryHeatmapView> with TickerProviderS
 class _StoryHeatmap extends StatelessWidget {
 
   final Map<DateTime, int> evaluationsPerDay;
+  final DateTime firstSchoolDay;
 
   const _StoryHeatmap({
     required this.evaluationsPerDay,
+    required this.firstSchoolDay,
   });
 
   @override
   Widget build(BuildContext context) {
 
     final colors = Theme.of(context).colorScheme.surface.generatePalette(4).reversed.toList();
-
-    // TODO hier der erste Schultag!
-    final dayOne = evaluationsPerDay.keys.sorted((a,b) => a.compareTo(b)).first;
 
     return Padding(
       padding: const EdgeInsets.all(16),
@@ -176,7 +177,7 @@ class _StoryHeatmap extends StatelessWidget {
         gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 30, mainAxisSpacing: 2, crossAxisSpacing: 2, childAspectRatio: 1),
         padding: const EdgeInsets.all(2),
         itemBuilder: (context, index) {
-          int amount = evaluationsPerDay[dayOne.add(Duration(days: index))] ?? 0;
+          int amount = evaluationsPerDay[firstSchoolDay.add(Duration(days: index))] ?? 0;
           if (amount > 3) amount = 3;
           return Container(
             color: colors[amount],

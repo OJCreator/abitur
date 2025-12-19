@@ -288,7 +288,6 @@ class SubjectService {
 
 
 
-  /// Durchschnittsberechnungen (vereinfacht, TODO: Isolate)
   static Future<double?> getCurrentAverage() async {
     final subjects = await findAllGradable();
     final averages = <int>[];

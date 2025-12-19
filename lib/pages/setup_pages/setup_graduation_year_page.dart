@@ -10,17 +10,22 @@ class SetupGraduationYearPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Padding(
-        padding: const EdgeInsets.all(8),
-        child: SafeArea(
-          child: SingleChildScrollView(
+      body: SafeArea(
+        child: SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.all(16),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
+                const Text(
                   "In welchem Jahr machst du voraussichtlich dein Abitur?",
-                  style: Theme.of(context).textTheme.titleMedium,
+                  style: TextStyle(
+                    fontSize: 35,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
+                const SizedBox(height: 12),
+
                 ...possibleGraduationYears().map((year) {
                   return ListTile(
                     dense: true,

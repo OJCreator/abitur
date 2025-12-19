@@ -26,7 +26,6 @@ import 'package:timezone/data/latest.dart';
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
 Future<void> main() async {
-  print("HELLO WORLD 1");
   WidgetsFlutterBinding.ensureInitialized();
   initializeDateFormatting();
   await NotificationService.init();

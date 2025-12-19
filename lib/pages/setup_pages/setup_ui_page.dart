@@ -25,17 +25,21 @@ class _SetupUiPageState extends State<SetupUiPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Padding(
-        padding: const EdgeInsets.all(8),
-        child: SafeArea(
-          child: SingleChildScrollView(
+      body: SafeArea(
+        child: SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.all(16),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
+                const Text(
                   "Und jetzt die wirklich wichtigen Fragen:",
-                  style: Theme.of(context).textTheme.titleMedium,
+                  style: TextStyle(
+                    fontSize: 35,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
+                const SizedBox(height: 12),
                 ListTile(
                   title: Text("Design"),
                   subtitle: Text(themeMode.label),
@@ -78,20 +82,32 @@ class _SetupUiPageState extends State<SetupUiPage> {
                     });
                   },
                 ),
-                FilledButton(
-                  onPressed: () {
-                    SettingsService.markWelcomeScreenAsViewed();
-                    Navigator.pushReplacement(
-                      context,
-                      MaterialPageRoute(builder: (context) {
-                        return ScreenScaffolding();
-                      }),
-                    );
-                  },
-                  child: Text("Fertigstellen"),
-                ),
               ],
             ),
+          ),
+        ),
+      ),
+      bottomNavigationBar: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              FilledButton.icon(
+                onPressed: () {
+                  SettingsService.markWelcomeScreenAsViewed();
+                  Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(builder: (context) {
+                      return ScreenScaffolding();
+                    }),
+                  );
+                },
+                icon: Icon(Icons.check_circle),
+                label: Text("Fertigstellen"),
+                style: FilledButton.styleFrom(minimumSize: Size(double.infinity, 56)),
+              ),
+            ],
           ),
         ),
       ),
