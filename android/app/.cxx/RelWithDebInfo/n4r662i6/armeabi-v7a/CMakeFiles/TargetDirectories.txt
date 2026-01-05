@@ -1,0 +1,2 @@
+C:/Users/User/Documents/Programme/flutter/abitur/android/app/.cxx/RelWithDebInfo/n4r662i6/armeabi-v7a/CMakeFiles/edit_cache.dir
+C:/Users/User/Documents/Programme/flutter/abitur/android/app/.cxx/RelWithDebInfo/n4r662i6/armeabi-v7a/CMakeFiles/rebuild_cache.dir
