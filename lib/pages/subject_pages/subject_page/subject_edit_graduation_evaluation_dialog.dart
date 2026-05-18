@@ -114,27 +114,29 @@ class _SubjectEditGraduationEvaluationDialogState extends State<SubjectEditGradu
                     year2023: false,
                   ),
                   FormGap(),
-                  Text(
-                    "Gewichtung",
-                    style: TextStyle(
-                      color: _divideEvaluation ? null : Theme.of(context).disabledColor,
+                  if (secondGraduationDateAvailable) ...[
+                    Text(
+                      "Gewichtung",
+                      style: TextStyle(
+                        color: _divideEvaluation ? null : Theme.of(context).disabledColor,
+                      ),
                     ),
-                  ),
-                  Slider(
-                    min: 0,
-                    max: 6,
-                    divisions: 6,
-                    value: _weightPartOne.toDouble(),
-                    label: "$_weightPartOne",
-                    onChanged: _divideEvaluation ? (newValue) {
-                      setState(() {
-                        _weightPartOne = newValue.toInt();
-                      });
-                      _saveChanges();
-                    } : null,
-                    year2023: false,
-                  ),
-                  FormGap(),
+                    Slider(
+                      min: 0,
+                      max: 6,
+                      divisions: 6,
+                      value: _weightPartOne.toDouble(),
+                      label: "$_weightPartOne",
+                      onChanged: _divideEvaluation ? (newValue) {
+                        setState(() {
+                          _weightPartOne = newValue.toInt();
+                        });
+                        _saveChanges();
+                      } : null,
+                      year2023: false,
+                    ),
+                    FormGap(),
+                  ],
                   DateInput(
                     dateTime: _datePartOne,
                     onSelected: (newValue) {

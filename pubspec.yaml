@@ -60,6 +60,7 @@ dependencies:
   package_info_plus: ^9.0.0
   crypto: ^3.0.6
   collection: ^1.19.1
+  google_fonts: ^8.1.0
 
   # review
   just_audio: ^0.10.4

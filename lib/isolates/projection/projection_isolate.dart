@@ -25,7 +25,7 @@ class ProjectionIsolate {
       return _calculateProjection(model);
     } catch (e, st) {
       print("ISOLATE ERROR (ProjectionIsolate): $e\n$st");
-      return ProjectionModel(6, 0, 0, [], []);
+      return ProjectionModel(false, 6, 0, 0, [], []);
     }
   }
 
@@ -41,7 +41,8 @@ class ProjectionIsolate {
 
     final double graduationAverage = abiturAvg(resultBlock1 + resultBlock2);
 
-    return ProjectionModel(graduationAverage, resultBlock1, resultBlock2, block1, block2);
+    // TODO supported länder
+    return ProjectionModel(model.land == Land.by, graduationAverage, resultBlock1, resultBlock2, block1, block2);
   }
 
   static List<ProjectionSubjectBlock1Model> _calculateBlock1(ProjectionWorkModel workModel) {

@@ -67,9 +67,8 @@ class _SettingsAppearancePageState extends State<SettingsAppearancePage> {
                     if (newAccentColor == null) {
                       return;
                     }
-                    setState(() {
-                      SettingsService.setAccentColor(context, newAccentColor);
-                    });
+                    await SettingsService.setAccentColor(context, newAccentColor);
+                    setState(() { });
                     _loadSettings();
                   },
                 );

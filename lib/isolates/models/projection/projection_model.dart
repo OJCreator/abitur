@@ -4,6 +4,8 @@ import 'package:abitur/utils/extensions/lists/iterable_extension.dart';
 
 class ProjectionModel {
 
+  final bool landSupported;
+
   final double graduationAverage;
   final int resultBlock1;
   final int resultBlock2;
@@ -11,7 +13,7 @@ class ProjectionModel {
   final List<ProjectionSubjectBlock1Model> block1; // subjectId -> TermModelList
   final List<ProjectionSubjectBlock2Model> block2; // subjectId -> Model
 
-  ProjectionModel(this.graduationAverage, this.resultBlock1, this.resultBlock2, this.block1, this.block2);
+  ProjectionModel(this.landSupported, this.graduationAverage, this.resultBlock1, this.resultBlock2, this.block1, this.block2);
 }
 
 class ProjectionSubjectBlock1Model {

@@ -50,6 +50,7 @@ class _SubjectPageState extends State<SubjectPage> with SingleTickerProviderStat
 
   @override
   void dispose() {
+    _tabController?.removeListener(_onTabChanged);
     _tabController?.dispose();
     super.dispose();
   }
@@ -90,9 +91,15 @@ class _SubjectPageState extends State<SubjectPage> with SingleTickerProviderStat
       _graduationWorkTermViewKey = GlobalKey<GraduationWorkTermViewState>();
       giveGraduationNote = ge.notePartOne != null;
     }
-    setState(() {
-      _tabController = TabController(length: tabLength, vsync: this, initialIndex: initialTabIndex);
-    });
+
+    _tabController = TabController(length: tabLength, vsync: this, initialIndex: initialTabIndex);
+    _tabController!.addListener(_onTabChanged);
+
+    setState(() { });
+  }
+
+  void _onTabChanged() {
+    if (mounted) setState(() {});
   }
 
   void _reloadAllTerms() {

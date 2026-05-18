@@ -6,6 +6,7 @@ import 'package:abitur/widgets/forms/form_gap.dart';
 import 'package:abitur/widgets/info_card.dart';
 import 'package:abitur/widgets/linear_percent_indicator.dart';
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../services/database/subject_service.dart';
 import '../../sqlite/entities/subject.dart';
@@ -47,6 +48,37 @@ class _ProjectionAnalyticsPageState extends State<ProjectionAnalyticsPage> {
           padding: const EdgeInsets.all(8.0),
           child: Column(
             children: [
+              FutureBuilder(
+                future: projection,
+                builder: (context, snapshot) {
+                  if (!snapshot.hasData || snapshot.data!.landSupported) return Container();
+                  return InfoCard(
+                    "Die App unterstützt dein Bundesland momentan noch nicht. Wenn du bei der Programmierung unterstützen möchtest, melde dich doch gerne!",
+                    type: InfoCardType.warning,
+                    action: "Kontakt",
+                    onAction: () {
+                      final email = Uri.encodeComponent("oj.creator@gmail.com");
+                      final subject = Uri.encodeComponent("Abi-Planer: Hochrechnung in neuem Bundesland");
+                      final message = Uri.encodeComponent("""
+Hallo!
+
+Ich komme aus dem Bundesland [DEIN BUNDESLAND] und könnte Informationen zur Oberstufe helfen!
+Melde dich doch gerne mit ein paar Fragen bei mir.
+
+Viele Grüße,
+[DEIN NAME]
+""");
+                      final url = Uri.parse("mailto:$email?subject=$subject&body=$message");
+
+                      try {
+                        launchUrl(url, mode: LaunchMode.externalApplication);
+                      } catch (e) {
+                        debugPrint('E-Mail-App konnte nicht geöffnet werden.');
+                      }
+                    },
+                  );
+                },
+              ),
               FutureBuilder(
                 future: projection,
                 builder: (context, snapshot) {

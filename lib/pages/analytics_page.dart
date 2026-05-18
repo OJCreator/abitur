@@ -121,7 +121,7 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
               }
             ),
             TimetableAnalytics(),
-            AverageAnalytics(),
+            // AverageAnalytics(), TODO Durchschnittsgraph
             ProjectionAnalytics(),
           ],
         ),

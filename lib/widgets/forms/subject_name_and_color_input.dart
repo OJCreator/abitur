@@ -40,6 +40,7 @@ class SubjectNameAndColorInput extends StatelessWidget {
                   .startsWith(textEditingValue.text.toLowerCase()));
             },
             optionsViewBuilder: (context, onSelected, options) {
+              return Container(); // TODO Vorschläge
               return Align(
                 alignment: Alignment.topLeft,
                 child: Material(

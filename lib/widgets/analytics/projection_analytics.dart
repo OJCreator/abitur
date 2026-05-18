@@ -1,5 +1,6 @@
 import 'package:abitur/isolates/models/projection/projection_model.dart';
 import 'package:abitur/pages/analytics_pages/analytics_projection_page.dart';
+import 'package:abitur/widgets/info_card.dart';
 import 'package:abitur/widgets/percent_indicator.dart';
 import 'package:flutter/material.dart';
 
@@ -61,6 +62,16 @@ class _ProjectionAnalyticsState extends State<ProjectionAnalytics> {
             child: Center(
               child: Column(
                 children: [
+                  FutureBuilder(
+                    future: projection,
+                    builder: (context, snapshot) {
+                      if (!snapshot.hasData || snapshot.data!.landSupported) return Container();
+                      return InfoCard(
+                        "Die App unterstützt dein Bundesland momentan noch nicht.",
+                        type: InfoCardType.warning,
+                      );
+                    },
+                  ),
                   FutureBuilder(
                     future: projection,
                     builder: (context, snapshot) {

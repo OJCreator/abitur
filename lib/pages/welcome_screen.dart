@@ -86,10 +86,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
             mainAxisSize: MainAxisSize.min,
             children: [
               FilledButton.icon(
-                onPressed: () {
-                  if (loading) {
-                    return;
-                  }
+                onPressed: loading ? null : () {
                   Navigator.push(
                     context,
                     MaterialPageRoute(builder: (context) {
@@ -103,7 +100,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
               ),
               const SizedBox(height: 16.0,),
               FilledButton.tonalIcon(
-                onPressed: () => _pickAndImportJson(context),
+                onPressed: loading ? null : () => _pickAndImportJson(context),
                 icon: Icon(Icons.folder),
                 label: Text("Daten importieren"),
                 style: FilledButton.styleFrom(minimumSize: Size(double.infinity, 56)),
@@ -119,6 +116,11 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
     if (loading) {
       return;
     }
+
+    setState(() {
+      loading = true;
+    });
+
     try {
 
       FilePickerResult? result = await FilePicker.platform.pickFiles(
@@ -128,9 +130,6 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
 
       if (result != null && result.files.single.path != null) {
 
-        setState(() {
-          loading = true;
-        });
 
         File file = File(result.files.single.path!);
         String fileContent = await file.readAsString();
@@ -179,11 +178,6 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
         );
       }
     } catch (e) {
-
-      setState(() {
-        loading = false;
-      });
-
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text("Es gab einen Fehler beim Einlesen der Daten."),
@@ -191,5 +185,9 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
       );
       debugPrint(e.toString());
     }
+
+    setState(() {
+      loading = false;
+    });
   }
 }

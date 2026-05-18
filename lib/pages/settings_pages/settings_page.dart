@@ -267,7 +267,7 @@ class _SettingsPageState extends State<SettingsPage> {
                           title: Text(l.name),
                           onTap: () {
                             debugPrint("TODO (Bundesland: ${l.name})");
-                            Navigator.of(context).pop();
+                            Navigator.of(context).pop(l);
                           },
                         ),
                     ],
@@ -277,7 +277,11 @@ class _SettingsPageState extends State<SettingsPage> {
             }
         );
       },
-    ).then((value) {
+    ).then((value) async {
+      if (value == null) return;
+      Settings s = await SettingsService.loadSettings();
+      s.land = value;
+      await SettingsService.saveSettings(s);
       setState(() { });
     });
   }
