@@ -4,7 +4,7 @@ import '../../utils/uuid.dart';
 
 class Performance implements Serializable {
 
-  String id;
+  final String id;
   String name;
   double weighting;
   String subjectId; // FOREIGN KEY

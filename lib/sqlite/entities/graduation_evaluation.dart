@@ -6,7 +6,7 @@ import '../../utils/enums/graduation_evaluation_type.dart';
 
 class GraduationEvaluation implements Serializable {
 
-  String id;
+  final String id;
   String subjectId; // FOREIGN KEY
 
   GraduationEvaluationType graduationEvaluationType;
@@ -22,7 +22,7 @@ class GraduationEvaluation implements Serializable {
 
   GraduationEvaluation({
     String? id,
-    this.subjectId = "",
+    required this.subjectId,
     this.graduationEvaluationType = GraduationEvaluationType.written,
     this.isDividedEvaluation = false,
     this.notePartOne,
@@ -32,11 +32,6 @@ class GraduationEvaluation implements Serializable {
     this.datePartTwo,
     this.weightPartTwo = 1,
   }) : id = id ?? Uuid.generate();
-
-
-  static GraduationEvaluation empty() {
-    return GraduationEvaluation();
-  }
 
   @override
   Map<String, dynamic> toJson() => {
@@ -59,10 +54,10 @@ class GraduationEvaluation implements Serializable {
       graduationEvaluationType: GraduationEvaluationType.fromCode(json["graduationEvaluationType"]),
       isDividedEvaluation: json["isDividedEvaluation"] == 1,
       notePartOne: json["notePartOne"],
-      datePartOne: json["datePartOne"] != null ? DateTime.parse(json["datePartOne"]) : null,
+      datePartOne: json["datePartOne"] is String ? DateTime.tryParse(json["datePartOne"]) : null,
       weightPartOne: json["weightPartOne"],
       notePartTwo: json["notePartTwo"],
-      datePartTwo: json["datePartTwo"] != null ? DateTime.parse(json["datePartTwo"]) : null,
+      datePartTwo: json["datePartTwo"] is String ? DateTime.tryParse(json["datePartTwo"]) : null,
       weightPartTwo: json["weightPartTwo"],
     );
   }

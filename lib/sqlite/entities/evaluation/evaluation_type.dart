@@ -5,7 +5,7 @@ import '../../../utils/enums/assessment_type.dart';
 
 class EvaluationType implements Serializable {
 
-  String id;
+  final String id;
 
   String name;
   AssessmentType assessmentType;

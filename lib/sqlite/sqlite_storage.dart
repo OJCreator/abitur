@@ -12,7 +12,7 @@ class SqliteStorage {
 
   static late Database database;
 
-  static init() async {
+  static Future<void> init() async {
     database = await openDatabase(
       join(await getDatabasesPath(), 'abitur_database.db'),
       onConfigure: (db) async {

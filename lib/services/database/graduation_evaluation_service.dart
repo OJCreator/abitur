@@ -31,14 +31,14 @@ class GraduationEvaluationService {
     return result.map((e) => GraduationEvaluation.fromJson(e)).toList();
   }
 
-  static Future<GraduationEvaluation> findEvaluationById(String id) async {
+  static Future<GraduationEvaluation?> findEvaluationById(String id) async {
     final result = await db.query(
       'graduation_evaluations',
       where: 'id = ?',
       whereArgs: [id],
       limit: 1,
     );
-    if (result.isEmpty) return GraduationEvaluation.empty();
+    if (result.isEmpty) return null;
     return GraduationEvaluation.fromJson(result.first);
   }
 

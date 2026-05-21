@@ -83,7 +83,6 @@ class AbiturApp extends StatelessWidget {
                 brightness: b,
                 fontFamily: GoogleFonts.googleSans().fontFamily,
               ),
-              home: viewedWelcomeScreen ? ScreenScaffolding() : WelcomeScreen(),
               initialRoute: viewedWelcomeScreen ? '/home' : '/welcome',
               routes: {
                 '/welcome': (context) => const WelcomeScreen(),

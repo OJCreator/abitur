@@ -3,7 +3,7 @@ import 'package:abitur/utils/uuid.dart';
 
 class EvaluationDate implements Serializable, Comparable<EvaluationDate> {
 
-  String id;
+  final String id;
 
   String evaluationId; // FOREIGN KEY
 
@@ -31,7 +31,7 @@ class EvaluationDate implements Serializable, Comparable<EvaluationDate> {
   Map<String, dynamic> toJson() => {
     "id": id,
     "evaluationId": evaluationId,
-    "date": date.toString(),
+    "date": date?.toIso8601String(),
     "note": note,
     "calendarId": calendarId,
     "weight": weight,
@@ -42,7 +42,7 @@ class EvaluationDate implements Serializable, Comparable<EvaluationDate> {
     return EvaluationDate(
       id: json["id"],
       evaluationId: json["evaluationId"],
-      date: json["date"] == "null" ? null : DateTime.parse(json["date"]),
+      date: json["date"] == null ? null : DateTime.parse(json["date"]),
       note: json["note"],
       calendarId: json["calendarId"],
       weight: json["weight"],

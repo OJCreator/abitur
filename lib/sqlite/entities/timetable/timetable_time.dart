@@ -27,11 +27,13 @@ class TimetableTime implements Serializable {
   };
 
   static TimetableTime fromJson(Map<String, dynamic> json) {
+    final fromMinutes = json["from"] as int;
+    final toMinutes = json["to"] as int;
     return TimetableTime(
       id: json["id"],
       slot: json["slot"],
-      from: TimeOfDay(hour: json["from"] ~/ 60, minute: json["from"] % 60),
-      to: TimeOfDay(hour: json["to"] ~/ 60, minute: json["to"] % 60),
+      from: TimeOfDay(hour: fromMinutes ~/ 60, minute: fromMinutes % 60),
+      to: TimeOfDay(hour: toMinutes ~/ 60, minute: toMinutes % 60),
     );
   }
 }

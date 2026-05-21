@@ -3,7 +3,7 @@ import 'package:abitur/utils/uuid.dart';
 
 class Evaluation implements Serializable {
 
-  String id;
+  final String id;
 
   String subjectId; // FOREIGN KEY
   String performanceId; // FOREIGN KEY
@@ -14,16 +14,12 @@ class Evaluation implements Serializable {
 
   Evaluation({
     String? id,
-    this.subjectId = "",
+    required this.subjectId,
     this.performanceId = "",
     this.evaluationTypeId = "",
     required this.name,
     required this.term,
   }) : id = id ?? Uuid.generate();
-
-  static Evaluation empty() {
-    return Evaluation(name: "", term: 0);
-  }
 
   @override
   String toString() {

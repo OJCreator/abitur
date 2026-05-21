@@ -11,7 +11,7 @@ import '../../utils/uuid.dart';
 
 class Subject implements Serializable {
 
-  String id;
+  final String id;
   String name;
   String shortName;
 
