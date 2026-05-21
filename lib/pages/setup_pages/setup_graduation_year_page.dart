@@ -1,8 +1,8 @@
-import 'package:abitur/pages/setup_pages/setup_ui_page.dart';
 import 'package:flutter/material.dart';
 
 import '../../services/database/settings_service.dart';
 import '../../sqlite/entities/settings.dart';
+import '../../widgets/product_features/product_title.dart';
 
 class SetupGraduationYearPage extends StatelessWidget {
   const SetupGraduationYearPage({super.key});
@@ -17,30 +17,22 @@ class SetupGraduationYearPage extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
+
+
+
+                const ProductTitle(
                   "In welchem Jahr machst du voraussichtlich dein Abitur?",
-                  style: TextStyle(
-                    fontSize: 35,
-                    fontWeight: FontWeight.bold,
-                  ),
                 ),
-                const SizedBox(height: 12),
 
                 ...possibleGraduationYears().map((year) {
                   return ListTile(
-                    dense: true,
                     title: Text(year.toString()),
                     onTap: () async {
                       Settings s = await SettingsService.loadSettings();
                       s.graduationYear = DateTime(year);
                       await SettingsService.saveSettings(s);
 
-                      Navigator.pushReplacement(
-                        context,
-                        MaterialPageRoute(builder: (context) {
-                          return SetupUiPage();
-                        }),
-                      );
+                      Navigator.pushReplacementNamed(context, "/welcome/ui");
                     },
                   );
                 })

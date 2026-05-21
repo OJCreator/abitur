@@ -2,13 +2,15 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:abitur/main.dart';
-import 'package:abitur/pages/setup_pages/setup_land_page.dart';
 import 'package:abitur/services/calendar_service.dart';
 import 'package:abitur/services/database/timetable_entry_service.dart';
 import 'package:abitur/services/database/timetable_time_service.dart';
 import 'package:abitur/services/notification_service.dart';
 import 'package:abitur/utils/brightness_notifier.dart';
 import 'package:abitur/utils/seed_notifier.dart';
+import 'package:abitur/widgets/product_features/product_button.dart';
+import 'package:abitur/widgets/product_features/product_feature.dart';
+import 'package:abitur/widgets/product_features/product_title.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -21,6 +23,7 @@ import '../services/database/performance_service.dart';
 import '../services/database/settings_service.dart';
 import '../services/database/subject_service.dart';
 import '../sqlite/entities/settings.dart';
+import '../widgets/product_features/product_action_area.dart';
 
 class WelcomeScreen extends StatefulWidget {
   const WelcomeScreen({super.key});
@@ -42,77 +45,51 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
           padding: const EdgeInsets.all(16.0),
           child: Column(
             children: [
-              const Text(
+              const ProductTitle(
                 "Willkommen in deiner Abitur-App.",
-                style: TextStyle(
-                  fontSize: 40,
-                  fontWeight: FontWeight.bold,
-                ),
               ),
-              const SizedBox(height: 12),
         
-              ListTile(
-                leading: Icon(Icons.remove_red_eye, color: Theme.of(context).colorScheme.primary, size: 32),
-                title: Text(
-                  "Behalte die Übersicht",
-                  style: TextStyle(fontWeight: FontWeight.bold),
-                ),
-                subtitle: Text("Über Prüfungen, Noten und Fächer"),
+              ProductFeature(
+                icon: Icons.remove_red_eye,
+                title: "Behalte die Übersicht",
+                subtitle: "Über Prüfungen, Noten und Fächer",
               ),
-              ListTile(
-                leading: Icon(Icons.notifications, color: Theme.of(context).colorScheme.primary, size: 32),
-                title: Text(
-                  "Vergiss nie mehr einen Termin",
-                  style: TextStyle(fontWeight: FontWeight.bold),
-                ),
-                subtitle: Text("Du wirst automatisch an alles Wichtige erinnert"),
+              ProductFeature(
+                icon: Icons.notifications,
+                title: "Vergiss nie mehr einen Termin",
+                subtitle: "Du wirst automatisch an alles Wichtige erinnert",
               ),
-              ListTile(
-                leading: Icon(Icons.query_stats, color: Theme.of(context).colorScheme.primary, size: 32),
-                title: Text(
-                  "Wie gut wird dein Abi?",
-                  style: TextStyle(fontWeight: FontWeight.bold),
-                ),
-                subtitle: Text("Sieh dir dynamische Hochrechnungen für deinen Abischnitt an"),
+              ProductFeature(
+                icon: Icons.query_stats,
+                title: "Wie gut wird dein Abi?",
+                subtitle: "Sieh dir dynamische Hochrechnungen für deinen Abischnitt an",
               ),
             ],
           ),
         ),
       ),
-      bottomNavigationBar: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
+      bottomNavigationBar: ProductActionArea(
             children: [
-              FilledButton.icon(
-                onPressed: loading ? null : () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) {
-                      return SetupLandPage();
-                    }),
-                  );
-                },
-                icon: Icon(Icons.double_arrow),
-                label: Text("Loslegen"),
-                style: FilledButton.styleFrom(minimumSize: Size(double.infinity, 56)),
+              ProductButton(
+                icon: Icons.double_arrow,
+                label: "Loslegen",
+                onPressed: loading ? null : _openSetupPage,
               ),
-              const SizedBox(height: 16.0,),
-              FilledButton.tonalIcon(
-                onPressed: loading ? null : () => _pickAndImportJson(context),
-                icon: Icon(Icons.folder),
-                label: Text("Daten importieren"),
-                style: FilledButton.styleFrom(minimumSize: Size(double.infinity, 56)),
+              ProductButton.tonal(
+                icon: Icons.folder,
+                label: "Daten importieren",
+                onPressed: loading ? null : _pickAndImportJson,
               ),
             ],
           ),
-        ),
-      ),
     );
   }
 
-  Future<void> _pickAndImportJson(BuildContext context) async {
+  void _openSetupPage() {
+    Navigator.pushReplacementNamed(context, "/welcome/land");
+  }
+
+  Future<void> _pickAndImportJson() async {
     if (loading) {
       return;
     }

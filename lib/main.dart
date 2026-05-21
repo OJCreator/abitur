@@ -2,6 +2,9 @@ import 'package:abitur/in_app_purchases/purchase_service.dart';
 import 'package:abitur/pages/evaluation_pages/evaluation_input_page.dart';
 import 'package:abitur/pages/evaluation_pages/evaluations_page.dart';
 import 'package:abitur/pages/analytics_page.dart';
+import 'package:abitur/pages/setup_pages/setup_graduation_year_page.dart';
+import 'package:abitur/pages/setup_pages/setup_land_page.dart';
+import 'package:abitur/pages/setup_pages/setup_ui_page.dart';
 import 'package:abitur/pages/subject_pages/subjects_page.dart';
 import 'package:abitur/pages/welcome_screen.dart';
 import 'package:abitur/services/database/settings_service.dart';
@@ -81,6 +84,14 @@ class AbiturApp extends StatelessWidget {
                 fontFamily: GoogleFonts.googleSans().fontFamily,
               ),
               home: viewedWelcomeScreen ? ScreenScaffolding() : WelcomeScreen(),
+              initialRoute: viewedWelcomeScreen ? '/home' : '/welcome',
+              routes: {
+                '/welcome': (context) => const WelcomeScreen(),
+                '/welcome/land': (context) => const SetupLandPage(),
+                '/welcome/graduationYear': (context) => const SetupGraduationYearPage(),
+                '/welcome/ui': (context) => const SetupUiPage(),
+                '/home': (context) => ScreenScaffolding(),
+              },
             );
           },
         );

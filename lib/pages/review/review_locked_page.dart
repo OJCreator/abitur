@@ -1,9 +1,13 @@
 import 'dart:async';
 
 import 'package:abitur/pages/review/review_page.dart';
+import 'package:abitur/widgets/product_features/product_action_area.dart';
+import 'package:abitur/widgets/product_features/product_button.dart';
 import 'package:flutter/material.dart';
 import 'package:in_app_purchase/in_app_purchase.dart';
 import '../../in_app_purchases/purchase_service.dart';
+import '../../widgets/product_features/product_feature.dart';
+import '../../widgets/product_features/product_title.dart';
 
 class ReviewLockedPage extends StatefulWidget {
 
@@ -15,14 +19,22 @@ class ReviewLockedPage extends StatefulWidget {
 
 class _ReviewLockedPageState extends State<ReviewLockedPage> {
 
+  late final ProductDetails? product;
+
   bool purchaseInProgress = false;
 
   @override
-  Widget build(BuildContext context) {
+  void initState() {
 
-    final ProductDetails? product = PurchaseService.products
+    product = PurchaseService.products
         .where((p) => p.id == PurchaseService.abiturReviewProductId)
         .firstOrNull;
+
+    super.initState();
+  }
+
+  @override
+  Widget build(BuildContext context) {
 
     return Scaffold(
       appBar: AppBar(),
@@ -31,100 +43,85 @@ class _ReviewLockedPageState extends State<ReviewLockedPage> {
           padding: const EdgeInsets.all(16.0),
           child: Column(
             children: [
-              const Text(
+              const ProductTitle(
                 "Willkommen zu deinem Abitur-Review.",
-                style: TextStyle(
-                  fontSize: 40,
-                  fontWeight: FontWeight.bold,
-                ),
               ),
-              const SizedBox(height: 12),
-        
-              ListTile(
-                leading: Icon(Icons.star, color: Theme.of(context).colorScheme.primary, size: 32),
-                title: Text(
-                  "Deine Highligts",
-                  style: TextStyle(fontWeight: FontWeight.bold),
-                ),
-                subtitle: Text("Sieh deine persönliche Geschichte der letzten beiden Jahre an"),
+
+              ProductFeature(
+                icon: Icons.star,
+                title: "Deine Highligts",
+                subtitle: "Sieh deine persönliche Geschichte der letzten beiden Jahre an",
               ),
-              ListTile(
-                leading: Icon(Icons.query_stats, color: Theme.of(context).colorScheme.primary, size: 32),
-                title: Text(
-                  "Erkunde interessante Statistiken",
-                  style: TextStyle(fontWeight: FontWeight.bold),
-                ),
-                subtitle: Text("Darunter der beste Wochentag oder Analysen der Prüfungen"),
+              ProductFeature(
+                icon: Icons.query_stats,
+                title: "Erkunde interessante Statistiken",
+                subtitle: "Darunter der beste Wochentag oder Analysen der Prüfungen",
               ),
-              ListTile(
-                leading: Icon(Icons.send, color: Theme.of(context).colorScheme.primary, size: 32),
-                title: Text(
-                  "Teile deine Highlights",
-                  style: TextStyle(fontWeight: FontWeight.bold),
-                ),
-                subtitle: Text("Zeig Freunden deine spannendsten Ergebnisse"),
+              ProductFeature(
+                icon: Icons.send,
+                title: "Teile deine Highlights",
+                subtitle: "Zeig Freunden deine spannendsten Ergebnisse",
               ),
-              ListTile(
-                leading: Icon(Icons.favorite, color: Theme.of(context).colorScheme.primary, size: 32),
-                title: Text(
-                  "Unterstütze den Entwickler",
-                  style: TextStyle(fontWeight: FontWeight.bold),
-                ),
-                subtitle: Text("Hilf dabei, neue Features möglich zu machen"),
+              ProductFeature(
+                icon: Icons.favorite,
+                title: "Unterstütze den Entwickler",
+                subtitle: "Hilf dabei, neue Features möglich zu machen",
               ),
             ],
           ),
         ),
       ),
-      bottomNavigationBar: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: FilledButton.icon(
+      bottomNavigationBar: ProductActionArea(
+        children: [
+          ProductButton(
+            icon: Icons.shopping_cart,
+            loading: purchaseInProgress,
+            label: product == null
+                ? "Review freischalten"
+                : "Review freischalten (${product?.price})",
             onPressed: product == null
                 ? null
-                : () async {
-              await PurchaseService.buy(product);
-
-              late final StreamSubscription<PurchaseDetails> sub;
-              sub = PurchaseService.purchaseUpdates.listen((purchase) async {
-                if (purchase.productID != product.id) {
-                  return;
-                }
-                if (purchase.status == PurchaseStatus.purchased) {
-                  if (purchase.pendingCompletePurchase) {
-                    await InAppPurchase.instance.completePurchase(purchase);
-                  }
-
-                  sub.cancel();
-
-                  if (context.mounted) {
-                    Navigator.pushReplacement(
-                      context,
-                      MaterialPageRoute(builder: (_) => ReviewPage()),
-                    );
-                  }
-                } else if (purchase.status == PurchaseStatus.pending) {
-                  setState(() {
-                    purchaseInProgress = true;
-                  });
-                } else if (purchase.status == PurchaseStatus.error) {
-                  sub.cancel();
-                  setState(() {
-                    purchaseInProgress = false;
-                  });
-                }
-              });
-            },
-            icon: purchaseInProgress ? CircularProgressIndicator(color: Colors.grey, constraints: BoxConstraints(minHeight: 20, minWidth: 20, maxHeight: 20, maxWidth: 20),) : Icon(Icons.shopping_cart),
-            label: Text(
-              product == null
-                  ? "Review freischalten"
-                  : "Review freischalten (${product.price})",
-            ),
-            style: FilledButton.styleFrom(minimumSize: Size(double.infinity, 56)),
+                : _buy,
           ),
-        ),
+        ],
       ),
     );
+  }
+
+  void _buy() async {
+
+    if (purchaseInProgress || product == null) return;
+
+    await PurchaseService.buy(product!);
+
+    late final StreamSubscription<PurchaseDetails> sub;
+    sub = PurchaseService.purchaseUpdates.listen((purchase) async {
+      if (purchase.productID != product!.id) {
+        return;
+      }
+      if (purchase.status == PurchaseStatus.purchased) {
+        if (purchase.pendingCompletePurchase) {
+          await InAppPurchase.instance.completePurchase(purchase);
+        }
+
+        sub.cancel();
+
+        if (context.mounted) {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (_) => ReviewPage()),
+          );
+        }
+      } else if (purchase.status == PurchaseStatus.pending) {
+        setState(() {
+          purchaseInProgress = true;
+        });
+      } else if (purchase.status == PurchaseStatus.error) {
+        sub.cancel();
+        setState(() {
+          purchaseInProgress = false;
+        });
+      }
+    });
   }
 }

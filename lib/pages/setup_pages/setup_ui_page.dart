@@ -1,13 +1,15 @@
-import 'package:abitur/main.dart';
 import 'package:abitur/utils/brightness_notifier.dart';
 import 'package:abitur/utils/constants.dart';
 import 'package:abitur/utils/extensions/theme_mode_extension.dart';
+import 'package:abitur/widgets/product_features/product_action_area.dart';
+import 'package:abitur/widgets/product_features/product_button.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../services/database/settings_service.dart';
 import '../../sqlite/entities/settings.dart';
 import '../../widgets/color_dialog.dart';
+import '../../widgets/product_features/product_title.dart';
 import '../settings_pages/settings_appearance_page.dart';
 
 class SetupUiPage extends StatefulWidget {
@@ -32,14 +34,11 @@ class _SetupUiPageState extends State<SetupUiPage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
+
+                const ProductTitle(
                   "Und jetzt die wirklich wichtigen Fragen:",
-                  style: TextStyle(
-                    fontSize: 35,
-                    fontWeight: FontWeight.bold,
-                  ),
                 ),
-                const SizedBox(height: 12),
+
                 ListTile(
                   title: Text("Design"),
                   subtitle: Text(themeMode.label),
@@ -87,29 +86,17 @@ class _SetupUiPageState extends State<SetupUiPage> {
           ),
         ),
       ),
-      bottomNavigationBar: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              FilledButton.icon(
-                onPressed: () {
-                  SettingsService.markWelcomeScreenAsViewed();
-                  Navigator.pushReplacement(
-                    context,
-                    MaterialPageRoute(builder: (context) {
-                      return ScreenScaffolding();
-                    }),
-                  );
-                },
-                icon: Icon(Icons.check_circle),
-                label: Text("Fertigstellen"),
-                style: FilledButton.styleFrom(minimumSize: Size(double.infinity, 56)),
-              ),
-            ],
+      bottomNavigationBar: ProductActionArea(
+        children: [
+          ProductButton(
+            icon: Icons.check_circle,
+            label: "Fertigstellen",
+            onPressed: () {
+              SettingsService.markWelcomeScreenAsViewed();
+              Navigator.pushNamedAndRemoveUntil(context, "/home", (route) => false,);
+            },
           ),
-        ),
+        ],
       ),
     );
   }

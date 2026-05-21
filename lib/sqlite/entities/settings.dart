@@ -24,7 +24,7 @@ class Settings implements Serializable {
     this.accentColor = primaryColor,
     this.land = Land.none,
     this.viewedWelcomeScreen = false,
-    this.calendarSynchronisation = true,
+    this.calendarSynchronisation = false,
     this.calendarFullDayEvents = false,
     this.evaluationReminder = false,
     this.evaluationReminderTime = const TimeOfDay(hour: 18, minute: 0),

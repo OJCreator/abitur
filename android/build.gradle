@@ -1,6 +1,6 @@
 buildscript {
     ext {
-        compose_version = '1.5.0' // oder die Version, die du nutzt
+        compose_version = '1.5.0'
     }
 }
 plugins {

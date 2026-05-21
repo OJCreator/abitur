@@ -1,8 +1,13 @@
 import 'dart:async';
 
+import 'package:abitur/widgets/product_features/product_action_area.dart';
+import 'package:abitur/widgets/product_features/product_button.dart';
+import 'package:abitur/widgets/product_features/product_feature_badge.dart';
+import 'package:abitur/widgets/product_features/product_title.dart';
 import 'package:flutter/material.dart';
 import 'package:in_app_purchase/in_app_purchase.dart';
 import '../../in_app_purchases/purchase_service.dart';
+import '../../widgets/product_features/product_feature.dart';
 
 class FullVersionPage extends StatefulWidget {
 
@@ -16,14 +21,22 @@ class FullVersionPage extends StatefulWidget {
 
 class _FullVersionPageState extends State<FullVersionPage> {
 
+  late final ProductDetails? product;
+
   bool purchaseInProgress = false;
 
   @override
-  Widget build(BuildContext context) {
+  void initState() {
 
-    final ProductDetails? product = PurchaseService.products
+    product = PurchaseService.products
         .where((p) => p.id == PurchaseService.fullVersionProductId)
         .firstOrNull;
+
+    super.initState();
+  }
+
+  @override
+  Widget build(BuildContext context) {
 
     return Scaffold(
       appBar: AppBar(),
@@ -32,121 +45,89 @@ class _FullVersionPageState extends State<FullVersionPage> {
           padding: const EdgeInsets.all(16.0),
           child: Column(
             children: [
-              const Text(
+              const ProductTitle(
                 "Schalte mehr Features frei.",
-                style: TextStyle(
-                  fontSize: 40,
-                  fontWeight: FontWeight.bold,
-                ),
               ),
-              const SizedBox(height: 12),
-        
-              ListTile(
-                leading: Icon(Icons.calendar_month, color: Theme.of(context).colorScheme.primary, size: 32),
-                title: Text(
-                  "Kalendersynchronisierung",
-                  style: TextStyle(fontWeight: FontWeight.bold),
-                ),
-                subtitle: Text("Synchronisiere Prüfungen bestimmter Typen und Events mit deinem Geräte-Kalender"),
+
+              ProductFeature(
+                icon: Icons.calendar_month,
+                title: "Kalendersynchronisierung",
+                subtitle: "Synchronisiere Prüfungen bestimmter Typen und Events mit deinem Geräte-Kalender",
               ),
-              ListTile(
-                leading: Icon(Icons.widgets, color: Theme.of(context).colorScheme.primary, size: 32),
-                title: Row(
-                  children: [
-                    Text(
-                      "Widgets",
-                      style: TextStyle(fontWeight: FontWeight.bold),
-                    ),
-                    SizedBox(width: 10,),
-                    Badge(
-                      label: Text("Demnächst"),
-                      backgroundColor: Theme.of(context).colorScheme.primary,
-                    ),
-                  ],
-                ),
-                subtitle: Text("Platziere Widgets auf deinem Homescreen"),
+              ProductFeature(
+                icon: Icons.widgets,
+                title: "Widgets",
+                badge: ProductFeatureBadge.comingSoon,
+                subtitle: "Platziere Widgets auf deinem Homescreen",
               ),
-              ListTile(
-                leading: Icon(Icons.query_stats, color: Theme.of(context).colorScheme.primary, size: 32),
-                title: Row(
-                  children: [
-                    Text(
-                      "Analysen",
-                      style: TextStyle(fontWeight: FontWeight.bold),
-                    ),
-                  ],
-                ),
-                subtitle: Text("Profitiere von zusätzlichen Statistiken"),
+              ProductFeature(
+                icon: Icons.query_stats,
+                title: "Analysen",
+                subtitle: "Profitiere von zusätzlichen Statistiken",
               ),
-              ListTile(
-                leading: Icon(Icons.star, color: Theme.of(context).colorScheme.primary, size: 32),
-                title: Text(
-                  "Erhalte das Abitur-Review",
-                  style: TextStyle(fontWeight: FontWeight.bold),
-                ),
-                subtitle: Text("Du erhältst ein spannendes Review am Ende deiner Schulzeit"),
+              ProductFeature(
+                icon: Icons.star,
+                title: "Erhalte das Abitur-Review",
+                subtitle: "Du erhältst ein spannendes Review am Ende deiner Schulzeit",
               ),
-              ListTile(
-                leading: Icon(Icons.favorite, color: Theme.of(context).colorScheme.primary, size: 32),
-                title: Text(
-                  "Unterstütze den Entwickler",
-                  style: TextStyle(fontWeight: FontWeight.bold),
-                ),
-                subtitle: Text("Hilf dabei, neue Features möglich zu machen"),
+              ProductFeature(
+                icon: Icons.favorite,
+                title: "Unterstütze den Entwickler",
+                subtitle: "Hilf dabei, neue Features möglich zu machen",
               ),
             ],
           ),
         ),
       ),
-      bottomNavigationBar: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: FilledButton.icon(
-            onPressed: product == null
-                ? null
-                : () async {
-              await PurchaseService.buy(product);
-
-              late final StreamSubscription<PurchaseDetails> sub;
-              sub = PurchaseService.purchaseUpdates.listen((purchase) async {
-                if (purchase.productID != product.id) {
-                  return;
-                }
-                if (purchase.status == PurchaseStatus.purchased) {
-                  if (purchase.pendingCompletePurchase) {
-                    await InAppPurchase.instance.completePurchase(purchase);
-                  }
-
-                  sub.cancel();
-
-                  if (context.mounted) {
-                    Navigator.pushReplacement(
-                      context,
-                      MaterialPageRoute(builder: (_) => widget.nextPage),
-                    );
-                  }
-                } else if (purchase.status == PurchaseStatus.pending) {
-                  setState(() {
-                    purchaseInProgress = true;
-                  });
-                } else if (purchase.status == PurchaseStatus.error) {
-                  sub.cancel();
-                  setState(() {
-                    purchaseInProgress = false;
-                  });
-                }
-              });
-            },
-            icon: purchaseInProgress ? CircularProgressIndicator(color: Colors.grey, constraints: BoxConstraints(minHeight: 20, minWidth: 20, maxHeight: 20, maxWidth: 20),) : Icon(Icons.shopping_cart),
-            label: Text(
-              product == null
-                  ? "Vollversion kaufen"
-                  : "Vollversion kaufen (${product.price})",
-            ),
-            style: FilledButton.styleFrom(minimumSize: Size(double.infinity, 56)),
+      bottomNavigationBar: ProductActionArea(
+        children: [
+          ProductButton(
+            icon: Icons.shopping_cart,
+            loading: purchaseInProgress,
+            label: product == null
+                ? "Vollversion kaufen"
+                : "Vollversion kaufen (${product?.price})",
+            onPressed: product == null ? null : _buy,
           ),
-        ),
+        ],
       ),
     );
+  }
+
+  void _buy() async {
+
+    if (purchaseInProgress || product == null) return;
+
+    await PurchaseService.buy(product!);
+
+    late final StreamSubscription<PurchaseDetails> sub;
+    sub = PurchaseService.purchaseUpdates.listen((purchase) async {
+      if (purchase.productID != product!.id) {
+        return;
+      }
+      if (purchase.status == PurchaseStatus.purchased) {
+        if (purchase.pendingCompletePurchase) {
+          await InAppPurchase.instance.completePurchase(purchase);
+        }
+
+        sub.cancel();
+
+        if (context.mounted) {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (_) => widget.nextPage),
+          );
+        }
+      } else if (purchase.status == PurchaseStatus.pending) {
+        setState(() {
+          purchaseInProgress = true;
+        });
+      } else if (purchase.status == PurchaseStatus.error) {
+        sub.cancel();
+        setState(() {
+          purchaseInProgress = false;
+        });
+      }
+    });
   }
 }
