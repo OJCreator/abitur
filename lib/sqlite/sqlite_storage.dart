@@ -18,7 +18,17 @@ class SqliteStorage {
       onConfigure: (db) async {
         await db.execute('PRAGMA foreign_keys = ON');
       },
-      version: 1,
+      version: 2,
+      onUpgrade: (db, oldVersion, newVersion) async {
+        if (oldVersion < 2) {
+          await db.execute(
+            'ALTER TABLE subjects ADD COLUMN technicalName TEXT',
+          );
+          await db.execute(
+            'UPDATE subjects SET technicalName = shortName',
+          );
+        }
+      },
       onCreate: (db, version) async {
         await db.execute('''
           CREATE TABLE settings (
@@ -70,6 +80,7 @@ class SqliteStorage {
             id TEXT PRIMARY KEY,
             name TEXT NOT NULL,
             shortName TEXT NOT NULL,
+            technicalName TEXT,
             color INTEGER NOT NULL,
             subjectNiveau TEXT NOT NULL,
             subjectType TEXT NOT NULL,

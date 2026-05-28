@@ -1,6 +1,6 @@
 import 'package:abitur/mappers/mappers/subject_mapper.dart';
 import 'package:abitur/pages/subject_pages/subject_chose_graduation_page.dart';
-import 'package:abitur/pages/subject_pages/subject_input_page.dart';
+import 'package:abitur/pages/subject_pages/subject_new/subject_new_page.dart';
 import 'package:abitur/pages/subject_pages/subject_page.dart';
 import 'package:abitur/widgets/fab_overlap_preventer.dart';
 import 'package:abitur/widgets/info_card.dart';
@@ -37,7 +37,7 @@ class _SubjectsPageState extends State<SubjectsPage> {
   Future<void> _addNewSubject() async {
     await Navigator.push(context,
       MaterialPageRoute(builder: (context) {
-        return SubjectInputPage();
+        return SubjectNewPage();
       }),
     );
     _loadSubjects();

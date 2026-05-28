@@ -101,14 +101,6 @@ class _SubjectInputPageState extends State<SubjectInputPage> {
           nameController: _name,
           shortNameController: _shortName,
           color: _color,
-          onSelectedSubjectTemplate: (selection) {
-            _name.text = selection.name;
-            _shortName.text = selection.shortName;
-            _setSubjectType(selection.subjectType);
-            _setSubjectNiveau(selection.subjectNiveau);
-            _setCountingTerms(selection.terms);
-            _setCountingTermAmount(selection.countingTermAmount);
-          },
           onSelectedColor: (newColor) {
             setState(() {
               _color = newColor;

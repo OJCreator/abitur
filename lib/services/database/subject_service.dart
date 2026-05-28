@@ -229,6 +229,19 @@ class SubjectService {
     final rows = await db.query('subjects', orderBy: 'name ASC');
     return rows.map((row) => Subject.fromJson(Map<String, dynamic>.from(row))).toList();
   }
+  /// Alle Fächer-TechnicalName laden
+  static Future<List<String>> findAllTechnicalName() async {
+    final db = SqliteStorage.database;
+
+    final rows = await db.query(
+      'subjects',
+      columns: ['technicalName'],
+    );
+
+    return rows
+        .map((row) => row['technicalName'] as String)
+        .toList();
+  }
   /// Alle Fächer laden (alphabetisch) und als Map zurückgeben
   static Future<Map<String, Subject>> findAllAsMap() async {
     final db = SqliteStorage.database;

@@ -1,6 +1,8 @@
 enum SubjectNiveau {
   basic("Grundlegendes Anforderungsniveau", "gA"),
-  advanced("Erhöhtes Anforderungsniveau", "eA");
+  advanced("Erhöhtes Anforderungsniveau", "eA"),
+  profile("Profilfach", "Profilfach"),
+  voluntary("Wahlfach", "Wahlfach");
 
   final String name;
   final String shortName;
@@ -10,6 +12,10 @@ enum SubjectNiveau {
         return "basic";
       case SubjectNiveau.advanced:
         return "advanced";
+      case SubjectNiveau.profile:
+        return "profile";
+      case SubjectNiveau.voluntary:
+        return "voluntary";
     }
   }
 
@@ -19,8 +25,12 @@ enum SubjectNiveau {
     switch (code) {
       case "basic":
         return SubjectNiveau.basic;
-      default:
+      case "advanced":
         return SubjectNiveau.advanced;
+      case "profile":
+        return SubjectNiveau.profile;
+      default:
+        return SubjectNiveau.voluntary;
     }
   }
 }

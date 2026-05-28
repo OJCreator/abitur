@@ -80,45 +80,614 @@ enum SubjectType {
   }
 }
 
-final subjectsBayern = [ // TODO
-  SubjectTemplate("Biologie", "Bio", SubjectType.naturwissenschaftOhneInf),
-  SubjectTemplate("Chemie", "Ch", SubjectType.naturwissenschaftOhneInf),
-  SubjectTemplate("Deutsch", "D", SubjectType.standardPflichtfach, terms: {0,1,2,3}, countingTermAmount: 4, subjectNiveau: SubjectNiveau.advanced),
-  SubjectTemplate("Englisch", "E", SubjectType.fortgefuehrteFremdsprache),
-  SubjectTemplate("Ethik", "Eth", SubjectType.standardPflichtfach),
-  SubjectTemplate("Religion", "Rel", SubjectType.standardPflichtfach),
-  SubjectTemplate("Evangelische Religion", "Rel", SubjectType.standardPflichtfach),
-  SubjectTemplate("Katholische Religion", "Rel", SubjectType.standardPflichtfach),
-  SubjectTemplate("Französisch", "F", SubjectType.fortgefuehrteFremdsprache),
-  SubjectTemplate("Geographie", "Geo", SubjectType.gesellschaftswissenschaften),
-  SubjectTemplate("Geschichte", "G", SubjectType.standardPflichtfach),
-  SubjectTemplate("Informatik", "Inf", SubjectType.informatik),
-  SubjectTemplate("Kunst", "Ku", SubjectType.standardPflichtfach),
-  SubjectTemplate("Mathematik", "M", SubjectType.standardPflichtfach, terms: {0,1,2,3}, countingTermAmount: 4, subjectNiveau: SubjectNiveau.advanced),
-  SubjectTemplate("Musik", "Mu", SubjectType.standardPflichtfach),
-  SubjectTemplate("Physik", "Ph", SubjectType.naturwissenschaftOhneInf),
-  SubjectTemplate("Politik und Gesellschaft", "PuG", SubjectType.gesellschaftswissenschaften),
-  SubjectTemplate("Spanisch", "S", SubjectType.fortgefuehrteFremdsprache),
-  SubjectTemplate("Sport", "Spo", SubjectType.standardPflichtfach),
-  SubjectTemplate("Wirtschaft und Recht", "WuR", SubjectType.gesellschaftswissenschaften),
-  SubjectTemplate("W-Seminar", "WS", SubjectType.wSeminar, terms: {0,1,2}, countingTermAmount: 2),
+final subjectsBayern = [
+  SubjectTemplate(
+    id: "arc",
+    name: "Archäologie",
+    shortName: "Arc",
+    termsOptions: [
+      {0,1},
+      {0, 1, 2, 3},
+      {2, 3},
+    ],
+    minCountingTermAmount: 0,
+    niveauOptions: [
+      SubjectNiveau.profile
+    ],
+  ),
+
+  SubjectTemplate(
+    id: "bio",
+    name: "Biologie",
+    shortName: "Bio",
+    termsOptions: [
+      {0, 1, 2, 3},
+      {2, 3},
+    ],
+    minCountingTermAmount: 3,
+    niveauOptions: [
+      SubjectNiveau.basic,
+      SubjectNiveau.advanced,
+    ],
+  ),
+
+  SubjectTemplate(
+    id: "che",
+    name: "Chemie",
+    shortName: "Ch",
+    termsOptions: [
+      {0, 1, 2, 3},
+      {2, 3},
+    ],
+    minCountingTermAmount: 3,
+    niveauOptions: [
+      SubjectNiveau.basic,
+      SubjectNiveau.advanced,
+    ],
+  ),
+
+  SubjectTemplate(
+    id: "chi",
+    name: "Chinesisch",
+    shortName: "Zh",
+    termsOptions: [
+      {0, 1, 2, 3},
+      {2, 3},
+    ],
+    minCountingTermAmount: 3,
+    niveauOptions: [
+      SubjectNiveau.basic,
+      SubjectNiveau.advanced,
+    ],
+  ),
+
+  SubjectTemplate(
+    id: "deu",
+    name: "Deutsch",
+    shortName: "D",
+    termsOptions: [
+      {0, 1, 2, 3},
+    ],
+    minCountingTermAmount: 4,
+    niveauOptions: [
+      SubjectNiveau.advanced,
+    ],
+  ),
+
+  SubjectTemplate(
+    id: "eng",
+    name: "Englisch",
+    shortName: "E",
+    termsOptions: [
+      {0, 1, 2, 3},
+    ],
+    minCountingTermAmount: 4,
+    niveauOptions: [
+      SubjectNiveau.basic,
+      SubjectNiveau.advanced,
+    ],
+  ),
+
+  SubjectTemplate(
+    id: "eth",
+    name: "Ethik",
+    shortName: "Eth",
+    termsOptions: [
+      {0, 1, 2, 3},
+    ],
+    minCountingTermAmount: 4,
+    niveauOptions: [
+      SubjectNiveau.basic,
+      SubjectNiveau.advanced,
+    ],
+  ),
+
+  SubjectTemplate(
+    id: "evg",
+    name: "Evangelische Religion",
+    shortName: "Rel",
+    termsOptions: [
+      {0, 1, 2, 3},
+    ],
+    minCountingTermAmount: 4,
+    niveauOptions: [
+      SubjectNiveau.basic,
+      SubjectNiveau.advanced,
+    ],
+  ),
+
+  SubjectTemplate(
+    id: "frz",
+    name: "Französisch",
+    shortName: "F",
+    termsOptions: [
+      {0, 1, 2, 3},
+    ],
+    minCountingTermAmount: 4,
+    niveauOptions: [
+      SubjectNiveau.basic,
+      SubjectNiveau.advanced,
+    ],
+  ),
+
+  SubjectTemplate(
+    id: "geo",
+    name: "Geographie",
+    shortName: "Geo",
+    termsOptions: [
+      {0, 1},
+      {0, 1, 2, 3},
+    ],
+    minCountingTermAmount: 2,
+    niveauOptions: [
+      SubjectNiveau.basic,
+      SubjectNiveau.advanced,
+    ],
+  ),
+
+  SubjectTemplate(
+    id: "glg",
+    name: "Geologie",
+    shortName: "Glg",
+    termsOptions: [
+      {0, 1},
+      {0, 1, 2, 3},
+      {2, 3},
+    ],
+    minCountingTermAmount: 0,
+    niveauOptions: [
+      SubjectNiveau.profile,
+    ],
+  ),
+
+  SubjectTemplate(
+    id: "ges",
+    name: "Geschichte",
+    shortName: "G",
+    termsOptions: [
+      {0, 1, 2, 3},
+    ],
+    minCountingTermAmount: 3,
+    niveauOptions: [
+      SubjectNiveau.basic,
+      SubjectNiveau.advanced,
+    ],
+  ),
+
+  SubjectTemplate(
+    id: "gri",
+    name: "Griechisch",
+    shortName: "Gr",
+    termsOptions: [
+      {0, 1, 2, 3},
+    ],
+    minCountingTermAmount: 3,
+    niveauOptions: [
+      SubjectNiveau.basic,
+      SubjectNiveau.advanced,
+    ],
+  ),
+
+  SubjectTemplate(
+    id: "kat",
+    name: "Katholische Religion",
+    shortName: "Rel",
+    termsOptions: [
+      {0, 1, 2, 3},
+    ],
+    minCountingTermAmount: 3,
+    niveauOptions: [
+      SubjectNiveau.basic,
+      SubjectNiveau.advanced,
+    ],
+  ),
+
+  SubjectTemplate(
+    id: "inf",
+    name: "Informatik",
+    shortName: "Inf",
+    termsOptions: [
+      {0, 1, 2, 3},
+    ],
+    minCountingTermAmount: 3,
+    niveauOptions: [
+      SubjectNiveau.basic,
+      SubjectNiveau.advanced,
+    ],
+  ),
+
+  SubjectTemplate(
+    id: "kun",
+    name: "Kunst",
+    shortName: "Ku",
+    termsOptions: [
+      {0, 1, 2, 3},
+    ],
+    minCountingTermAmount: 3,
+    niveauOptions: [
+      SubjectNiveau.basic,
+      SubjectNiveau.advanced,
+    ],
+  ),
+
+  SubjectTemplate(
+    id: "mat",
+    name: "Mathematik",
+    shortName: "M",
+    termsOptions: [
+      {0, 1, 2, 3},
+    ],
+    minCountingTermAmount: 4,
+    niveauOptions: [
+      SubjectNiveau.advanced,
+    ],
+  ),
+
+  SubjectTemplate(
+    id: "mus",
+    name: "Musik",
+    shortName: "Mu",
+    termsOptions: [
+      {0, 1, 2, 3},
+    ],
+    minCountingTermAmount: 3,
+    niveauOptions: [
+      SubjectNiveau.basic,
+      SubjectNiveau.advanced,
+    ],
+  ),
+
+  SubjectTemplate(
+    id: "phy",
+    name: "Physik",
+    shortName: "Ph",
+    termsOptions: [
+      {0, 1, 2, 3},
+      {2, 3},
+    ],
+    minCountingTermAmount: 3,
+    niveauOptions: [
+      SubjectNiveau.basic,
+      SubjectNiveau.advanced,
+    ],
+  ),
+
+  SubjectTemplate(
+    id: "pug",
+    name: "Politik und Gesellschaft",
+    shortName: "PuG",
+    termsOptions: [
+      {0, 1},
+      {0, 1, 2, 3},
+    ],
+    minCountingTermAmount: 1,
+    niveauOptions: [
+      SubjectNiveau.basic,
+      SubjectNiveau.advanced,
+    ],
+  ),
+
+  SubjectTemplate(
+    id: "spa",
+    name: "Spanisch",
+    shortName: "S",
+    termsOptions: [
+      {0, 1, 2, 3},
+    ],
+    minCountingTermAmount: 3,
+    niveauOptions: [
+      SubjectNiveau.basic,
+      SubjectNiveau.advanced,
+    ],
+  ),
+
+  SubjectTemplate(
+    id: "spo",
+    name: "Sport",
+    shortName: "Spo",
+    termsOptions: [
+      {0, 1, 2, 3},
+    ],
+    minCountingTermAmount: 0,
+    niveauOptions: [
+      SubjectNiveau.basic,
+      SubjectNiveau.advanced,
+    ],
+  ),
+
+  SubjectTemplate(
+    id: "wur",
+    name: "Wirtschaft und Recht",
+    shortName: "WuR",
+    termsOptions: [
+      {0, 1},
+      {0, 1, 2, 3},
+    ],
+    minCountingTermAmount: 1,
+    niveauOptions: [
+      SubjectNiveau.basic,
+      SubjectNiveau.advanced,
+    ],
+  ),
+
+  SubjectTemplate(
+    id: "ins",
+    name: "Instrumentalensemble",
+    shortName: "Ins",
+    termsOptions: [
+      {0, 1},
+      {0, 1, 2, 3},
+      {2, 3},
+    ],
+    minCountingTermAmount: 0,
+    niveauOptions: [
+      SubjectNiveau.profile,
+    ],
+  ),
+
+  SubjectTemplate(
+    id: "isl",
+    name: "Islamischer Unterricht",
+    shortName: "Isl",
+    termsOptions: [
+      {0, 1, 2, 3},
+    ],
+    minCountingTermAmount: 3,
+    niveauOptions: [
+      SubjectNiveau.basic,
+    ],
+  ),
+
+  SubjectTemplate(
+    id: "isr",
+    name: "Israelitische Religionslehre",
+    shortName: "Isr",
+    termsOptions: [
+      {0, 1, 2, 3},
+    ],
+    minCountingTermAmount: 3,
+    niveauOptions: [
+      SubjectNiveau.basic,
+    ],
+  ),
+
+  SubjectTemplate(
+    id: "ita",
+    name: "Italienisch",
+    shortName: "I",
+    termsOptions: [
+      {0, 1, 2, 3},
+    ],
+    minCountingTermAmount: 3,
+    niveauOptions: [
+      SubjectNiveau.basic,
+      SubjectNiveau.advanced,
+    ],
+  ),
+
+  SubjectTemplate(
+    id: "lat",
+    name: "Latein",
+    shortName: "L",
+    termsOptions: [
+      {0, 1, 2, 3},
+    ],
+    minCountingTermAmount: 3,
+    niveauOptions: [
+      SubjectNiveau.basic,
+      SubjectNiveau.advanced,
+    ],
+  ),
+
+  SubjectTemplate(
+    id: "ort",
+    name: "Orthodoxe Religionslehre",
+    shortName: "Ort",
+    termsOptions: [
+      {0, 1, 2, 3},
+    ],
+    minCountingTermAmount: 0,
+    niveauOptions: [
+      SubjectNiveau.basic,
+    ],
+  ),
+
+  SubjectTemplate(
+    id: "pol",
+    name: "Polnisch",
+    shortName: "Pol",
+    termsOptions: [
+      {0, 1, 2, 3},
+    ],
+    minCountingTermAmount: 3,
+    niveauOptions: [
+      SubjectNiveau.basic,
+      SubjectNiveau.advanced,
+    ],
+  ),
+
+  SubjectTemplate(
+    id: "psy",
+    name: "Psychologie",
+    shortName: "Psy",
+    termsOptions: [
+      {0, 1},
+      {0, 1, 2, 3},
+      {2, 3},
+    ],
+    minCountingTermAmount: 0,
+    niveauOptions: [
+      SubjectNiveau.profile,
+    ],
+  ),
+
+  SubjectTemplate(
+    id: "rus",
+    name: "Russisch",
+    shortName: "Rus",
+    termsOptions: [
+      {0, 1, 2, 3},
+    ],
+    minCountingTermAmount: 3,
+    niveauOptions: [
+      SubjectNiveau.basic,
+      SubjectNiveau.advanced,
+    ],
+  ),
+
+  SubjectTemplate(
+    id: "swf",
+    name: "Sozialwissenschaftliche Arbeitsfelder",
+    shortName: "SwA",
+    termsOptions: [
+      {0, 1},
+      {0, 1, 2, 3},
+      {2, 3},
+    ],
+    minCountingTermAmount: 0,
+    niveauOptions: [
+      SubjectNiveau.profile,
+    ],
+  ),
+
+  SubjectTemplate(
+    id: "sug",
+    name: "Sport und Gesellschaft",
+    shortName: "SuG",
+    termsOptions: [
+      {0, 1},
+      {0, 1, 2, 3},
+      {2, 3},
+    ],
+    minCountingTermAmount: 0,
+    niveauOptions: [
+      SubjectNiveau.profile,
+    ],
+  ),
+
+  SubjectTemplate(
+    id: "tbk",
+    name: "Tanz- und Bewegungskünste",
+    shortName: "TBk",
+    termsOptions: [
+      {0, 1},
+      {0, 1, 2, 3},
+      {2, 3},
+    ],
+    minCountingTermAmount: 0,
+    niveauOptions: [
+      SubjectNiveau.profile,
+    ],
+  ),
+
+  SubjectTemplate(
+    id: "thf",
+    name: "Theater und Film",
+    shortName: "ThF",
+    termsOptions: [
+      {0, 1},
+      {0, 1, 2, 3},
+      {2, 3},
+    ],
+    minCountingTermAmount: 0,
+    niveauOptions: [
+      SubjectNiveau.profile,
+    ],
+  ),
+
+  SubjectTemplate(
+    id: "tsc",
+    name: "Tschechisch",
+    shortName: "Tsc",
+    termsOptions: [
+      {0, 1, 2, 3},
+    ],
+    minCountingTermAmount: 3,
+    niveauOptions: [
+      SubjectNiveau.basic,
+      SubjectNiveau.advanced,
+    ],
+  ),
+
+  SubjectTemplate(
+    id: "tue",
+    name: "Türkisch",
+    shortName: "Tür",
+    termsOptions: [
+      {0, 1, 2, 3},
+    ],
+    minCountingTermAmount: 3,
+    niveauOptions: [
+      SubjectNiveau.basic,
+      SubjectNiveau.advanced,
+    ],
+  ),
+
+  SubjectTemplate(
+    id: "vok",
+    name: "Vokalensemble",
+    shortName: "Vok",
+    termsOptions: [
+      {0, 1},
+      {0, 1, 2, 3},
+      {2, 3},
+    ],
+    minCountingTermAmount: 0,
+    niveauOptions: [
+      SubjectNiveau.profile,
+    ],
+  ),
+
+  SubjectTemplate(
+    id: "win",
+    name: "Wirtschaftsinformatik",
+    shortName: "Win",
+    termsOptions: [
+      {0, 1},
+      {0, 1, 2, 3},
+      {2, 3},
+    ],
+    minCountingTermAmount: 0,
+    niveauOptions: [
+      SubjectNiveau.basic,
+      SubjectNiveau.advanced,
+    ],
+  ),
+
+  SubjectTemplate(
+    id: "wse",
+    name: "W-Seminar",
+    shortName: "WS",
+    termsOptions: [
+      {0, 1, 2},
+    ],
+    minCountingTermAmount: 2,
+    niveauOptions: [
+      SubjectNiveau.basic,
+    ],
+  ),
 ];
 
-class SubjectTemplate {
+class SubjectTemplate implements Comparable<SubjectTemplate> {
+  final String id;
   final String name;
   final String shortName;
-  final SubjectType subjectType;
-  final Set<int> terms;
-  final int countingTermAmount;
-  final SubjectNiveau subjectNiveau;
 
-  const SubjectTemplate(
-      this.name,
-      this.shortName,
-      this.subjectType,
-      {
-        this.terms = const {0,1,2,3},
-        this.countingTermAmount = 3,
-        this.subjectNiveau = SubjectNiveau.basic,
-      });
+  final List<Set<int>> termsOptions;
+  final int minCountingTermAmount;
+  final List<SubjectNiveau> niveauOptions;
+
+  const SubjectTemplate({
+    required this.id,
+    required this.name,
+    required this.shortName,
+    required this.niveauOptions,
+    required this.termsOptions,
+    this.minCountingTermAmount = 0,
+  });
+
+  @override
+  int compareTo(SubjectTemplate other) {
+    return name.compareTo(other.name);
+  }
 }
